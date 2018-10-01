@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Undani.Tracking.Execution\Undani.Tracking.Execution.csproj" />
+    <ProjectReference Include="..\Undani.Tracking\Undani.Tracking.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Data.SqlClient">
+      <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\system.data.sqlclient\4.4.0\ref\netstandard2.0\System.Data.SqlClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Undani.Tracking.Execution.Core.Invoke.Integration">
+      <HintPath>..\DLL Invoke\Undani.Tracking.Execution.Core.Invoke.Integration.dll</HintPath>
+    </Reference>
+    <Reference Include="Undani.Tracking.Execution.Core.Invoke.KeyCalculation">
+      <HintPath>..\DLL Invoke\Undani.Tracking.Execution.Core.Invoke.KeyCalculation.dll</HintPath>
+    </Reference>
+    <Reference Include="Undani.Tracking.Execution.Core.Invoke.State">
+      <HintPath>..\DLL Invoke\Undani.Tracking.Execution.Core.Invoke.State.dll</HintPath>
+    </Reference>
+    <Reference Include="Undani.Tracking.Execution.Core.Invoke.Template">
+      <HintPath>..\DLL Invoke\Undani.Tracking.Execution.Core.Invoke.Template.dll</HintPath>
+    </Reference>
+    <Reference Include="Undani.Tracking.Execution.Core.Invoke.UserSelected">
+      <HintPath>..\DLL Invoke\Undani.Tracking.Execution.Core.Invoke.UserSelected.dll</HintPath>
+    </Reference>
+    <Reference Include="Undani.Tracking.Execution.Core.Invoke.Verify">
+      <HintPath>..\DLL Invoke\Undani.Tracking.Execution.Core.Invoke.Verify.dll</HintPath>
+    </Reference>
+    <Reference Include="Undani.Tracking.Execution.Core.Invoke.Wait">
+      <HintPath>..\DLL Invoke\Undani.Tracking.Execution.Core.Invoke.Wait.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
