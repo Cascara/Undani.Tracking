@@ -105,10 +105,12 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@UserGroupTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@GetFormInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     string activityId = (string)cmd.Parameters["@ActivityId"].Value;
+                    string getFormInstanceKey = (string)cmd.Parameters["@GetFormInstanceKey"].Value;
 
                     if ((int)cmd.Parameters["@UserGroupTypeId"].Value == 1)
                     {
@@ -120,13 +122,13 @@ namespace Undani.Tracking.Execution.Core
                         {
                             while (reader.Read())
                             {
-                                Create(reader.GetGuid(0), activityId, flowInstanceId, Guid.Empty);
+                                Create(reader.GetGuid(0), activityId, flowInstanceId, Guid.Empty, getFormInstanceKey);
                             }
                         }
                     }
                     else
                     {
-                        return Create(userId, activityId, flowInstanceId, Guid.Empty);
+                        return Create(userId, activityId, flowInstanceId, Guid.Empty, getFormInstanceKey);
                     }
                 }
             }
@@ -146,11 +148,13 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@UserGroupTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@GetFormInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     string activityId = (string)cmd.Parameters["@ActivityId"].Value;
                     int flowInstanceId = (int)cmd.Parameters["@FlowInstanceId"].Value;
+                    string getFormInstanceKey = (string)cmd.Parameters["@GetFormInstanceKey"].Value;
 
                     if ((int)cmd.Parameters["@UserGroupTypeId"].Value == 1)
                     {
@@ -162,19 +166,19 @@ namespace Undani.Tracking.Execution.Core
                         {
                             while (reader.Read())
                             {
-                                Create(reader.GetGuid(0), activityId, flowInstanceId, Guid.Empty);
+                                Create(reader.GetGuid(0), activityId, flowInstanceId, Guid.Empty, getFormInstanceKey);
                             }
                         }
                     }
                     else
                     {
-                        Create(Guid.Empty, activityId, flowInstanceId, Guid.Empty);
+                        Create(Guid.Empty, activityId, flowInstanceId, Guid.Empty, getFormInstanceKey);
                     }
                 }
             }
         }
 
-        private static Guid Create(Guid userId, string activityId, int flowInstanceId, Guid actionInstanceId)
+        private static Guid Create(Guid userId, string activityId, int flowInstanceId, Guid actionInstanceId, string getFormInstanceKey)
         {
             using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
             {
@@ -187,13 +191,12 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Value = actionInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityGetFormInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     int activityInstanceId = (int)cmd.Parameters["@ActivityInstanceId"].Value;
 
-                    if ((string)cmd.Parameters["@ActivityGetFormInstanceKey"].Value == "auto")
+                    if (getFormInstanceKey == "auto")
                         ActionInstanceHelper.Execute(userId, activityInstanceId);
                     else
                         MessageHelper.Create(userId, activityInstanceId);
@@ -203,163 +206,163 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public static Guid CreateFirst_old(Guid userId, int flowInstanceId)
-        {
-            Guid environmentId;
-            string activityId;
-            int activityTypeId;
-            string activityGetFormInstanceKey;
-            Guid formId;
-            int formVersionId;
-            bool formReadOnly;
+        //public static Guid CreateFirst_old(Guid userId, int flowInstanceId)
+        //{
+        //    Guid environmentId;
+        //    string activityId;
+        //    int activityTypeId;
+        //    string activityGetFormInstanceKey;
+        //    Guid formId;
+        //    int formVersionId;
+        //    bool formReadOnly;
 
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
-            {
-                cn.Open();
+        //    using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+        //    {
+        //        cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_FirstActivity", cn))
-                {                    
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@EnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityGetFormInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@FormId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@FormVersionId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@FormReadOnly", SqlDbType.Bit) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@UserGroupTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+        //        using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_FirstActivity", cn))
+        //        {                    
+        //            cmd.CommandType = CommandType.StoredProcedure;
+        //            cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
+        //            cmd.Parameters.Add(new SqlParameter("@EnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@ActivityTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@ActivityGetFormInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@FormId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@FormVersionId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@FormReadOnly", SqlDbType.Bit) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@UserGroupTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
 
-                    cmd.ExecuteNonQuery();
+        //            cmd.ExecuteNonQuery();
 
-                    activityId = (string)cmd.Parameters["@ActivityId"].Value;
-                    environmentId = (Guid)cmd.Parameters["@EnvironmentId"].Value;
-                    activityTypeId = (int)cmd.Parameters["@ActivityTypeId"].Value;
-                    activityGetFormInstanceKey = (string)cmd.Parameters["@ActivityGetFormInstanceKey"].Value;
-                    formId = (Guid)cmd.Parameters["@FormId"].Value;
-                    formVersionId = (int)cmd.Parameters["@FormVersionId"].Value;
-                    formReadOnly = (bool)cmd.Parameters["@FormReadOnly"].Value;
+        //            activityId = (string)cmd.Parameters["@ActivityId"].Value;
+        //            environmentId = (Guid)cmd.Parameters["@EnvironmentId"].Value;
+        //            activityTypeId = (int)cmd.Parameters["@ActivityTypeId"].Value;
+        //            activityGetFormInstanceKey = (string)cmd.Parameters["@ActivityGetFormInstanceKey"].Value;
+        //            formId = (Guid)cmd.Parameters["@FormId"].Value;
+        //            formVersionId = (int)cmd.Parameters["@FormVersionId"].Value;
+        //            formReadOnly = (bool)cmd.Parameters["@FormReadOnly"].Value;
 
-                    if ((int)cmd.Parameters["@UserGroupTypeId"].Value == 1)
-                    {
-                        cmd.Parameters.Clear();
-                        cmd.CommandText = "EXECUTION.usp_Get_UserGroup";
-                        cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
+        //            if ((int)cmd.Parameters["@UserGroupTypeId"].Value == 1)
+        //            {
+        //                cmd.Parameters.Clear();
+        //                cmd.CommandText = "EXECUTION.usp_Get_UserGroup";
+        //                cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
 
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {                                
-                                Create(reader.GetGuid(0), environmentId, formId, formVersionId, formReadOnly, activityId, activityTypeId, activityGetFormInstanceKey, flowInstanceId);
-                            }
-                        }
-                    }
-                    else
-                    {                        
-                        return Create(userId, environmentId, formId, formVersionId, formReadOnly, activityId, activityTypeId, activityGetFormInstanceKey, flowInstanceId);
-                    }
+        //                using (SqlDataReader reader = cmd.ExecuteReader())
+        //                {
+        //                    while (reader.Read())
+        //                    {                                
+        //                        Create(reader.GetGuid(0), environmentId, formId, formVersionId, formReadOnly, activityId, activityTypeId, activityGetFormInstanceKey, flowInstanceId);
+        //                    }
+        //                }
+        //            }
+        //            else
+        //            {                        
+        //                return Create(userId, environmentId, formId, formVersionId, formReadOnly, activityId, activityTypeId, activityGetFormInstanceKey, flowInstanceId);
+        //            }
                     
-                }
-            }
+        //        }
+        //    }
 
-            return Guid.Empty;
-        }
+        //    return Guid.Empty;
+        //}
 
-        public static void Create_old(Guid actionInstanceId)
-        {
-            string activityId;
-            Guid environmentId;
-            int activityTypeId;
-            string activityGetFormInstanceKey;
-            Guid formId;
-            int formVersionId;
-            bool formReadOnly;
-            int flowInstanceId;
+        //public static void Create_old(Guid actionInstanceId)
+        //{
+        //    string activityId;
+        //    Guid environmentId;
+        //    int activityTypeId;
+        //    string activityGetFormInstanceKey;
+        //    Guid formId;
+        //    int formVersionId;
+        //    bool formReadOnly;
+        //    int flowInstanceId;
 
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
-            {
-                cn.Open();
+        //    using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+        //    {
+        //        cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_Activity", cn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Value = actionInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@EnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityGetFormInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@FormId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@FormVersionId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@FormReadOnly", SqlDbType.Bit) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@UserGroupTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+        //        using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_Activity", cn))
+        //        {
+        //            cmd.CommandType = CommandType.StoredProcedure;
+        //            cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Value = actionInstanceId });
+        //            cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@EnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@ActivityTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@ActivityGetFormInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@FormId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@FormVersionId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@FormReadOnly", SqlDbType.Bit) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@UserGroupTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
 
-                    cmd.ExecuteNonQuery();
+        //            cmd.ExecuteNonQuery();
 
-                    activityId = (string)cmd.Parameters["@ActivityId"].Value;
-                    environmentId = (Guid)cmd.Parameters["@EnvironmentId"].Value;
-                    activityTypeId = (int)cmd.Parameters["@ActivityTypeId"].Value;
-                    activityGetFormInstanceKey = (string)cmd.Parameters["@ActivityGetFormInstanceKey"].Value;
-                    formId = (Guid)cmd.Parameters["@FormId"].Value;
-                    formVersionId = (int)cmd.Parameters["@FormVersionId"].Value;
-                    formReadOnly = (bool)cmd.Parameters["@FormReadOnly"].Value;
-                    flowInstanceId = (int)cmd.Parameters["@FlowInstanceId"].Value;
+        //            activityId = (string)cmd.Parameters["@ActivityId"].Value;
+        //            environmentId = (Guid)cmd.Parameters["@EnvironmentId"].Value;
+        //            activityTypeId = (int)cmd.Parameters["@ActivityTypeId"].Value;
+        //            activityGetFormInstanceKey = (string)cmd.Parameters["@ActivityGetFormInstanceKey"].Value;
+        //            formId = (Guid)cmd.Parameters["@FormId"].Value;
+        //            formVersionId = (int)cmd.Parameters["@FormVersionId"].Value;
+        //            formReadOnly = (bool)cmd.Parameters["@FormReadOnly"].Value;
+        //            flowInstanceId = (int)cmd.Parameters["@FlowInstanceId"].Value;
 
-                    if ((int)cmd.Parameters["@UserGroupTypeId"].Value == 1)
-                    {
-                        cmd.Parameters.Clear();
-                        cmd.CommandText = "EXECUTION.usp_Get_UserGroup";
-                        cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
+        //            if ((int)cmd.Parameters["@UserGroupTypeId"].Value == 1)
+        //            {
+        //                cmd.Parameters.Clear();
+        //                cmd.CommandText = "EXECUTION.usp_Get_UserGroup";
+        //                cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
 
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                Create(reader.GetGuid(0), environmentId, formId, formVersionId, formReadOnly, activityId, activityTypeId, activityGetFormInstanceKey, flowInstanceId, actionInstanceId);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Create(Guid.Empty, environmentId, formId, formVersionId, formReadOnly, activityId, activityTypeId, activityGetFormInstanceKey, flowInstanceId, actionInstanceId );
-                    }
+        //                using (SqlDataReader reader = cmd.ExecuteReader())
+        //                {
+        //                    while (reader.Read())
+        //                    {
+        //                        Create(reader.GetGuid(0), environmentId, formId, formVersionId, formReadOnly, activityId, activityTypeId, activityGetFormInstanceKey, flowInstanceId, actionInstanceId);
+        //                    }
+        //                }
+        //            }
+        //            else
+        //            {
+        //                Create(Guid.Empty, environmentId, formId, formVersionId, formReadOnly, activityId, activityTypeId, activityGetFormInstanceKey, flowInstanceId, actionInstanceId );
+        //            }
 
-                }
-            }
-        } 
+        //        }
+        //    }
+        //} 
 
-        private static Guid Create_old(Guid userId, Guid environmentId, Guid formId, int formVersionId, bool formReadOnly, string activityId, int activityTypeId, string activityGetFormInstanceKey, int flowInstanceId, Guid? actionInstanceId = null)
-        {
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
-            {
-                cn.Open();
+        //private static Guid Create_old(Guid userId, Guid environmentId, Guid formId, int formVersionId, bool formReadOnly, string activityId, int activityTypeId, string activityGetFormInstanceKey, int flowInstanceId, Guid? actionInstanceId = null)
+        //{
+        //    using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+        //    {
+        //        cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_ActivityInstance", cn))
-                {
-                    int activityInstanceId;
+        //        using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_ActivityInstance", cn))
+        //        {
+        //            int activityInstanceId;
 
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Value = activityId });
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Value = actionInstanceId.HasValue ? actionInstanceId.Value : Guid.Empty });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+        //            cmd.CommandType = CommandType.StoredProcedure;
+        //            cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Value = activityId });
+        //            cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
+        //            cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Value = actionInstanceId.HasValue ? actionInstanceId.Value : Guid.Empty });
+        //            cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+        //            cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 
-                    cmd.ExecuteNonQuery();
+        //            cmd.ExecuteNonQuery();
 
-                    activityInstanceId = (int)cmd.Parameters["@ActivityInstanceId"].Value;
+        //            activityInstanceId = (int)cmd.Parameters["@ActivityInstanceId"].Value;
 
-                    FormInstanceHelper.Create(environmentId, flowInstanceId, activityInstanceId, activityTypeId, activityGetFormInstanceKey, formId, formVersionId, formReadOnly);
+        //            FormInstanceHelper.Create(environmentId, flowInstanceId, activityInstanceId, activityTypeId, activityGetFormInstanceKey, formId, formVersionId, formReadOnly);
 
-                    if (activityGetFormInstanceKey == "auto")
-                        ActionInstanceHelper.Execute(userId, activityInstanceId);
-                    else
-                        MessageHelper.Create(userId, activityInstanceId);
+        //            if (activityGetFormInstanceKey == "auto")
+        //                ActionInstanceHelper.Execute(userId, activityInstanceId);
+        //            else
+        //                MessageHelper.Create(userId, activityInstanceId);
 
-                    return (Guid)cmd.Parameters["@ActivityInstanceRefId"].Value;
-                }
-            }
-        }
+        //            return (Guid)cmd.Parameters["@ActivityInstanceRefId"].Value;
+        //        }
+        //    }
+        //}
 
         public static void SetComment(Guid userId, Guid activityInstanceRefId, string comment)
         {

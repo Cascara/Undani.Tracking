@@ -185,7 +185,7 @@ namespace Undani.Tracking.Execution.Core
                 }
             }            
 
-            ActivityInstanceHelper.CreateFirst(userId, flowInstanceId);            
+            ActivityInstanceHelper.Create(userId, flowInstanceId);            
 
             return GetSummary(flowInstanceId);
         }
@@ -233,7 +233,7 @@ namespace Undani.Tracking.Execution.Core
                     }
                 }
 
-                ActivityInstanceHelper.CreateFirst(userId, flowInstanceId);
+                ActivityInstanceHelper.Create(userId, flowInstanceId);
             }
 
             return flowInstanceSummary;
