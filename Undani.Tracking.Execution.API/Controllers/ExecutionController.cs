@@ -10,6 +10,19 @@ namespace Undani.Tracking.Execution.API.Controllers
     [Route("Execution")]
     public class ExecutionController : Controller
     {
+        #region ProcedureInstance
+        [Route("ProcedureInstance/")]
+        public ProcedureInstance GetProcedureInstance(Guid uid, Guid procedureRefId)
+        {
+
+        }
+
+        [Route("ProcedureInstance/Create")]
+        public ProcedureInstance CreateProcedureInstance (Guid uid, Guid procedureRefId, string content, Guid environmentId, Guid? procedureInstanceSourceRefId = null)
+        {
+
+        }
+        #endregion
 
         #region FlowInstance
         [Route("FlowInstance")]
