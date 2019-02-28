@@ -70,6 +70,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceName", SqlDbType.VarChar, 250) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowName", SqlDbType.VarChar, 500) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
@@ -80,19 +81,20 @@ namespace Undani.Tracking.Execution.Core
 
                     if (cmd.Parameters["@FlowInstanceRefId"].Value.ToString() != "")
                     {
+                        ExpandoObjectConverter expandoObjectConverter = new ExpandoObjectConverter();
 
                         flowInstanceSummary.RefId = (Guid)cmd.Parameters["@FlowInstanceRefId"].Value;
                         flowInstanceSummary.Name = (string)cmd.Parameters["@FlowName"].Value;
                         flowInstanceSummary.Key = (string)cmd.Parameters["@FlowInstanceKey"].Value;
-                        flowInstanceSummary.Content = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@FlowInstanceContent"].Value, new ExpandoObjectConverter());
+                        flowInstanceSummary.Content = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@FlowInstanceContent"].Value, expandoObjectConverter);
                         flowInstanceSummary.Created = (DateTime)cmd.Parameters["@FlowInstanceCreated"].Value;
 
-                        if (cmd.Parameters["@ProcedureInstanceRefId"].Value != DBNull.Value)
-                        {
-                            flowInstanceSummary.ProcedureInstance.RefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
-                            flowInstanceSummary.ProcedureInstance.Key = (string)cmd.Parameters["@ProcedureInstanceKey"].Value;
-                            flowInstanceSummary.ProcedureInstance.Name = (string)cmd.Parameters["@ProcedureInstanceName"].Value;
-                        }
+                        flowInstanceSummary.ProcedureInstance.RefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
+                        flowInstanceSummary.ProcedureInstance.ProcedureName = (string)cmd.Parameters["@ProcedureInstanceName"].Value;
+                        flowInstanceSummary.ProcedureInstance.Key = (string)cmd.Parameters["@ProcedureInstanceKey"].Value;
+                        flowInstanceSummary.ProcedureInstance.Content = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureInstanceContent"].Value, expandoObjectConverter);
+                        flowInstanceSummary.ProcedureInstance.Created = (DateTime)cmd.Parameters["@ProcedureInstanceCreated"].Value;
+
                     }
                     else
                     {
@@ -139,7 +141,7 @@ namespace Undani.Tracking.Execution.Core
                         {
                             flowInstanceSummary.ProcedureInstance.RefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
                             flowInstanceSummary.ProcedureInstance.Key = (string)cmd.Parameters["@ProcedureInstanceKey"].Value;
-                            flowInstanceSummary.ProcedureInstance.Name = (string)cmd.Parameters["@ProcedureInstanceName"].Value;
+                            //flowInstanceSummary.ProcedureInstance.Name = (string)cmd.Parameters["@ProcedureInstanceName"].Value;
                         }
                     }
                     else
@@ -151,16 +153,11 @@ namespace Undani.Tracking.Execution.Core
 
             return flowInstanceSummary;
         }
-        
-        public static FlowInstanceSummary Create(
-            Guid userId, 
-            Guid flowRefId, 
-            Guid environmentId, 
-            string content,
-            Guid? activityInstanceRefId,
-            string version)
+
+        public static Guid Create(Guid userId, int flowId, int procedureInstanceId, int activityInstanceId, string version = "")
         {
             int flowInstanceId = 0;
+            string activityId = "";
 
             using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
             {
@@ -168,76 +165,23 @@ namespace Undani.Tracking.Execution.Core
 
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_FlowInstance", cn) { CommandType = CommandType.StoredProcedure })
                 {
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
-                    cmd.Parameters.Add(new SqlParameter("@FlowRefId", SqlDbType.UniqueIdentifier) { Value = flowRefId });
+                    cmd.Parameters.Add(new SqlParameter("@FlowId", SqlDbType.Int) { Value = flowId });
                     cmd.Parameters.Add(new SqlParameter("@Version", SqlDbType.VarChar, 50) { Value = version });
-                    cmd.Parameters.Add(new SqlParameter("@EnvironmentId", SqlDbType.UniqueIdentifier) { Value = environmentId });
-                    cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, 2000) { Value = content });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId.HasValue ? activityInstanceRefId.Value : Guid.Empty });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Value = procedureInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Value = activityInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
-                    if (cmd.Parameters["@FlowInstanceId"].Value == DBNull.Value)
-                        throw new Exception("Insufficient information to create the flow");
-
-                    flowInstanceId = (int)cmd.Parameters["@FlowInstanceId"].Value;                    
+                    flowInstanceId = (int)cmd.Parameters["@FlowInstanceId"].Value;
+                    activityId = (string)cmd.Parameters["@ActivityId"].Value;
                 }
-            }            
+            }                      
 
-            ActivityInstanceHelper.Create(userId, flowInstanceId);            
-
-            return GetSummary(flowInstanceId);
+            return ActivityInstanceHelper.Create(userId, activityId, flowInstanceId);
         }
 
-        public static FlowInstanceSummary CreateByFormInstanceId(
-            Guid userId,
-            Guid flowRefId,
-            Guid environmentId,
-            string content,
-            string formInstanceKey,
-            Guid formInstanceId,
-            Guid? activityInstanceRefId,
-            string version)
-        {
-            int flowInstanceId = 0;
-
-            FlowInstanceSummary flowInstanceSummary = GetSummaryByFormInstanceId(formInstanceId);
-
-            if (flowInstanceSummary == null)
-            {
-                using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
-                {
-                    cn.Open();
-
-                    using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_FlowInstanceFormInstanceId", cn) { CommandType = CommandType.StoredProcedure })
-                    {
-                        cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
-                        cmd.Parameters.Add(new SqlParameter("@FlowRefId", SqlDbType.UniqueIdentifier) { Value = flowRefId });
-                        cmd.Parameters.Add(new SqlParameter("@Version", SqlDbType.VarChar, 50) { Value = version });
-                        cmd.Parameters.Add(new SqlParameter("@EnvironmentId", SqlDbType.UniqueIdentifier) { Value = environmentId });
-                        cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, 2000) { Value = content });
-                        cmd.Parameters.Add(new SqlParameter("@FormInstanceKey", SqlDbType.VarChar, 50) { Value = formInstanceKey });
-                        cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Value = formInstanceId });
-                        cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId.HasValue ? activityInstanceRefId.Value : Guid.Empty });
-                        cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-
-                        cmd.ExecuteNonQuery();
-
-                        if (cmd.Parameters["@FlowInstanceId"].Value == DBNull.Value)
-                            throw new Exception("Insufficient information to create the flow");
-
-                        flowInstanceId = (int)cmd.Parameters["@FlowInstanceId"].Value;
-
-                        flowInstanceSummary = GetSummary(flowInstanceId);
-                    }
-                }
-
-                ActivityInstanceHelper.Create(userId, flowInstanceId);
-            }
-
-            return flowInstanceSummary;
-        }
 
         public static void SetUserGroup(Guid userId, Guid flowIntanceRefId, UserGroup[] responsibles)
         {
@@ -425,7 +369,7 @@ namespace Undani.Tracking.Execution.Core
                         {
                             flowInstanceSummary.ProcedureInstance.RefId = reader.GetGuid(5);
                             flowInstanceSummary.ProcedureInstance.Key = reader.GetString(6);
-                            flowInstanceSummary.ProcedureInstance.Name = reader.GetString(7);
+                            //flowInstanceSummary.ProcedureInstance.Name = reader.GetString(7);
                         }
 
                         flowLog.Add(flowInstanceSummary);

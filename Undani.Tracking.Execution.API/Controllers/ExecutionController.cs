@@ -12,15 +12,16 @@ namespace Undani.Tracking.Execution.API.Controllers
     {
         #region ProcedureInstance
         [Route("ProcedureInstance/")]
-        public ProcedureInstance GetProcedureInstance(Guid uid, Guid procedureRefId)
+        public ProcedureInstance GetProcedureInstance(Guid uid, Guid procedureInstanceRefId)
         {
-
+            return ProcedureInstanceHelper.Get(uid, procedureInstanceRefId);
         }
 
         [Route("ProcedureInstance/Create")]
-        public ProcedureInstance CreateProcedureInstance (Guid uid, Guid procedureRefId, string content, Guid environmentId, Guid? procedureInstanceSourceRefId = null)
+        public Guid CreateProcedureInstance(Guid procedureRefId, Guid? activityInstanceRefId = null)
         {
-
+            Guid uid = Guid.Parse("0EE9CBCD-0248-4641-A7F8-72DEA915ACCF");
+            return ProcedureInstanceHelper.Create(uid, GetOwnerId(Request.Host.Host), procedureRefId, activityInstanceRefId);
         }
         #endregion
 
@@ -28,23 +29,22 @@ namespace Undani.Tracking.Execution.API.Controllers
         [Route("FlowInstance")]
         public FlowInstance GetFlowInstance(Guid uid, Guid flowInstanceRefId)
         {
-            FlowInstance result = FlowInstanceHelper.Get(uid, flowInstanceRefId);
-            return result;
-        }
-        
-        [Route("FlowInstance/Create")]
-        public FlowInstanceSummary CreateFlowInstance(Guid uid, Guid flowRefId, Guid environmentId, string content, Guid? activityInstanceParentRefId = null, string version = "")
-        {
-            return FlowInstanceHelper.Create(uid, flowRefId, environmentId, content, activityInstanceParentRefId, version);
+            return FlowInstanceHelper.Get(uid, flowInstanceRefId);
         }
 
-        [Route("FlowInstance/Create/ByFormInstance")]
-        public FlowInstanceSummary CreateFlowInstanceFormInstance(Guid uid, Guid flowRefId, Guid environmentId, string content, string formInstanceKey, Guid formInstanceId, Guid? activityInstanceParentRefId = null, string version = "")
-        {
-            return FlowInstanceHelper.CreateByFormInstanceId(uid, flowRefId, environmentId, content, formInstanceKey, formInstanceId, activityInstanceParentRefId, version);
-        }
+        //[Route("FlowInstance/Create")]
+        //public FlowInstanceSummary CreateFlowInstance(Guid uid, Guid flowRefId, Guid environmentId, string content, Guid? activityInstanceParentRefId = null, string version = "")
+        //{
+        //    return FlowInstanceHelper.Create(uid, flowRefId, environmentId, content, activityInstanceParentRefId, version);
+        //}
 
-        [Route("FlowInstance/SetContentProperty")] 
+        //[Route("FlowInstance/Create/ByFormInstance")]
+        //public FlowInstanceSummary CreateFlowInstanceFormInstance(Guid uid, Guid flowRefId, Guid environmentId, string content, string formInstanceKey, Guid formInstanceId, Guid? activityInstanceParentRefId = null, string version = "")
+        //{
+        //    return FlowInstanceHelper.CreateByFormInstanceId(uid, flowRefId, environmentId, content, formInstanceKey, formInstanceId, activityInstanceParentRefId, version);
+        //}
+
+        [Route("FlowInstance/SetContentProperty")]
         public dynamic SetContentProperty(Guid uid, Guid flowInstanceRefId, string propertyName, string value)
         {
             return FlowInstanceHelper.SetContentProperty(uid, flowInstanceRefId, propertyName, value);
@@ -96,13 +96,13 @@ namespace Undani.Tracking.Execution.API.Controllers
             return MessageHelper.GetOpen(uid, messageId);
         }
 
-        [Route("Message/GetReceived")] 
+        [Route("Message/GetReceived")]
         public List<Message> GetMessagesReceived(Guid uid)
         {
             return MessageHelper.GetReceived(uid);
         }
 
-        [Route("Message/GetDrafts")] 
+        [Route("Message/GetDrafts")]
         public List<Message> GetMessagesDrafts(Guid uid)
         {
             return MessageHelper.GetDrafts(uid);
@@ -110,7 +110,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         #endregion
 
         #region Activity 
-        [Route("ActivityInstance")] 
+        [Route("ActivityInstance")]
         public ActivityInstance GetActivityInstance(Guid uid, Guid activityInstanceRefId)
         {
             return ActivityInstanceHelper.Get(uid, activityInstanceRefId);
@@ -140,7 +140,7 @@ namespace Undani.Tracking.Execution.API.Controllers
 
         #region Action 
         [Route("ActionInstance/Execute")]
-        public void ExecuteActionInstance(Guid uid, Guid actionRefId , Guid activityInstanceRefId)
+        public void ExecuteActionInstance(Guid uid, Guid actionRefId, Guid activityInstanceRefId)
         {
             ActionInstanceHelper.Execute(actionRefId, activityInstanceRefId, uid);
         }
@@ -158,7 +158,12 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
         #endregion
 
-
+        #region Tools   
+        private Guid GetOwnerId(string host)
+        {
+            return Guid.Parse(Configuration.GetValue("Owner:" + host));
+        }
+        #endregion
 
     }
 }

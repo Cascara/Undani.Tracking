@@ -12,7 +12,9 @@ namespace Undani.Tracking.Execution
         public string Key { get; set; }
         public dynamic Content { get; set; }
         public dynamic States { get; set; }
-        public DateTime StartDate { get; set; }
+        public List<ActivityInstanceSummary> ActivityInstances { get; set; }
+        public DateTime Created { get; set; }
+        public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public Guid EnvironmentId { get; set; }
     }

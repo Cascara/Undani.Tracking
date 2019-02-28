@@ -4,17 +4,12 @@ using System.Text;
 
 namespace Undani.Tracking.Execution
 {
-    public class FlowInstanceSummary
+    public class ProcedureInstanceSummary
     {
-        public FlowInstanceSummary()
-        {
-            this.ProcedureInstance = new ProcedureInstanceSummary();
-        }
         public Guid RefId { get; set; }
-        public string Name { get; set; } 
+        public string ProcedureName { get; set; }
         public string Key { get; set; }
         public dynamic Content { get; set; }
         public DateTime Created { get; set; }
-        public ProcedureInstanceSummary ProcedureInstance { get; set; }
     }
 }

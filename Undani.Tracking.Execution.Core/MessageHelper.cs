@@ -34,6 +34,7 @@ namespace Undani.Tracking.Execution.Core
                     }
 
                     openedMessage.UserId = (Guid)cmd.Parameters["@UserId"].Value;
+                    openedMessage.UserName = (string)cmd.Parameters["@UserName"].Value;
                 }
             }
 

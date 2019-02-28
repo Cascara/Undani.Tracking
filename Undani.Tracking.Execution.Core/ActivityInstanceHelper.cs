@@ -94,41 +94,36 @@ namespace Undani.Tracking.Execution.Core
             return activityLog;
         }
 
-        public static Guid Create(Guid userId, int flowInstanceId)
+        public static Guid Create(Guid userId, string activityId, int flowInstanceId)
         {
             using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityFirst", cn) { CommandType = CommandType.StoredProcedure })
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_Activity", cn) { CommandType = CommandType.StoredProcedure })
                 {
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Value = activityId });
                     cmd.Parameters.Add(new SqlParameter("@UserGroupTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@GetFormInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
-                    string activityId = (string)cmd.Parameters["@ActivityId"].Value;
-                    string getFormInstanceKey = (string)cmd.Parameters["@GetFormInstanceKey"].Value;
-
                     if ((int)cmd.Parameters["@UserGroupTypeId"].Value == 1)
                     {
-                        cmd.Parameters.Clear();
                         cmd.CommandText = "EXECUTION.usp_Get_UserGroup";
+                        cmd.Parameters.Clear();
                         cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
 
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                Create(reader.GetGuid(0), activityId, flowInstanceId, Guid.Empty, getFormInstanceKey);
+                                Create(reader.GetGuid(0), activityId, flowInstanceId, Guid.Empty);
                             }
                         }
                     }
                     else
                     {
-                        return Create(userId, activityId, flowInstanceId, Guid.Empty, getFormInstanceKey);
+                        return Create(userId, activityId, flowInstanceId, Guid.Empty);
                     }
                 }
             }
@@ -148,13 +143,11 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@UserGroupTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@GetFormInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     string activityId = (string)cmd.Parameters["@ActivityId"].Value;
                     int flowInstanceId = (int)cmd.Parameters["@FlowInstanceId"].Value;
-                    string getFormInstanceKey = (string)cmd.Parameters["@GetFormInstanceKey"].Value;
 
                     if ((int)cmd.Parameters["@UserGroupTypeId"].Value == 1)
                     {
@@ -166,19 +159,19 @@ namespace Undani.Tracking.Execution.Core
                         {
                             while (reader.Read())
                             {
-                                Create(reader.GetGuid(0), activityId, flowInstanceId, Guid.Empty, getFormInstanceKey);
+                                Create(reader.GetGuid(0), activityId, flowInstanceId, Guid.Empty);
                             }
                         }
                     }
                     else
                     {
-                        Create(Guid.Empty, activityId, flowInstanceId, Guid.Empty, getFormInstanceKey);
+                        Create(Guid.Empty, activityId, flowInstanceId, Guid.Empty);
                     }
                 }
             }
         }
 
-        private static Guid Create(Guid userId, string activityId, int flowInstanceId, Guid actionInstanceId, string getFormInstanceKey)
+        private static Guid Create(Guid userId, string activityId, int flowInstanceId, Guid actionInstanceId)
         {
             using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
             {
@@ -191,12 +184,13 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Value = actionInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@GetFormInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     int activityInstanceId = (int)cmd.Parameters["@ActivityInstanceId"].Value;
 
-                    if (getFormInstanceKey == "auto")
+                    if ((string)cmd.Parameters["@GetFormInstanceKey"].Value == "auto")
                         ActionInstanceHelper.Execute(userId, activityInstanceId);
                     else
                         MessageHelper.Create(userId, activityInstanceId);
