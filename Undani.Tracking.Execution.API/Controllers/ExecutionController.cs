@@ -142,7 +142,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         [Route("ActionInstance/Execute")]
         public void ExecuteActionInstance(Guid uid, Guid actionRefId, Guid activityInstanceRefId)
         {
-            ActionInstanceHelper.Execute(actionRefId, activityInstanceRefId, uid);
+            ActionInstanceHelper.Execute(uid, actionRefId, activityInstanceRefId);
         }
 
         [Route("ActionInstance/Execute/ByFormInstance")]
@@ -151,10 +151,16 @@ namespace Undani.Tracking.Execution.API.Controllers
             ActionInstanceHelper.Execute(uid, formInstanceId);
         }
 
-        [Route("SystemAccionInstance/Finish")] ///TODO: Refactory
-        public void FinishSystemAction(Guid id)
+        [Route("SystemAccionInstance/Finish")]
+        public void FinishSystemAction(Guid systemActionInstanceId)
         {
-            SystemActionInstanceHelper.Finish(id);
+            SystemActionInstanceHelper.Finish(systemActionInstanceId);
+        }
+
+        [Route("SystemAccionInstance/Execute")]
+        public void ExecuteSystemAction(Guid systemActionInstanceId)
+        {
+            SystemActionInstanceHelper.Execute(systemActionInstanceId);
         }
         #endregion
 

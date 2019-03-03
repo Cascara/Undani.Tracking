@@ -139,7 +139,7 @@ namespace Undani.Tracking.Execution.Core
 
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityActionInstance", cn) { CommandType = CommandType.StoredProcedure })
                 {
-                    cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.Int) { Value = actionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Value = actionInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@UserGroupTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });

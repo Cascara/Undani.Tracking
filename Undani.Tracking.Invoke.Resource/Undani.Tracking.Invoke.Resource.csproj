@@ -5,12 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Undani.Tracking.Execution\Undani.Tracking.Execution.csproj" />
-    <ProjectReference Include="..\Undani.Tracking.Invoke\Undani.Tracking.Invoke.csproj" />
     <ProjectReference Include="..\Undani.Tracking\Undani.Tracking.csproj" />
   </ItemGroup>
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.IO;
 
-namespace Undani.Tracking.Execution
+namespace Undani.Tracking
 {
     public static class Configuration
     {
