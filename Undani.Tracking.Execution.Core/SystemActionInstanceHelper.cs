@@ -43,7 +43,7 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("sp_Start_SystemActionInstance", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionInstanceStart", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
@@ -66,7 +66,7 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Finish_SystemActionInstance", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionInstanceFinish", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.InputOutput, Value = systemActionInstanceId });

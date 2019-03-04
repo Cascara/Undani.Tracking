@@ -159,13 +159,13 @@ namespace Undani.Tracking.Execution.Core
                         {
                             while (reader.Read())
                             {
-                                Create(reader.GetGuid(0), activityId, flowInstanceId, Guid.Empty);
+                                Create(reader.GetGuid(0), activityId, flowInstanceId, actionInstanceId);
                             }
                         }
                     }
                     else
                     {
-                        Create(Guid.Empty, activityId, flowInstanceId, Guid.Empty);
+                        Create(Guid.Empty, activityId, flowInstanceId, actionInstanceId);
                     }
                 }
             }
