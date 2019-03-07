@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking", "Undani.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Invoke", "Undani.Tracking.Invoke\Undani.Tracking.Invoke.csproj", "{8C0C11A4-23DA-480B-A221-7B8EEFB9C59E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Undani.Tracking.Invoke.Resource", "Undani.Tracking.Invoke.Resource\Undani.Tracking.Invoke.Resource.csproj", "{B421746A-50E4-49D5-89EC-8E1F78076CB7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Invoke.Resource", "Undani.Tracking.Invoke.Resource\Undani.Tracking.Invoke.Resource.csproj", "{B421746A-50E4-49D5-89EC-8E1F78076CB7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

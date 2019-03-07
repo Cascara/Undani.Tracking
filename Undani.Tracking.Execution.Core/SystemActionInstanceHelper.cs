@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
@@ -6,11 +7,13 @@ using Undani.Tracking.Invoke;
 
 namespace Undani.Tracking.Execution.Core
 {
-    public static class SystemActionInstanceHelper
+    public class SystemActionInstanceHelper : Helper
     {
-        public static void Execute(Guid systemActionInstanceId)
+        public SystemActionInstanceHelper(IConfiguration configuration) : base(configuration) { }
+
+        public void Execute(Guid systemActionInstanceId)
         {
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -36,10 +39,10 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public static bool Start(Guid systemActionInstanceId, string method, string alias, string configuration)
+        public bool Start(Guid systemActionInstanceId, string method, string alias, string configuration)
         {
             bool invokedCorrect = false;
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -57,12 +60,12 @@ namespace Undani.Tracking.Execution.Core
             return invokedCorrect;
         }
 
-        public static void Finish(Guid systemActionInstanceId)
+        public void Finish(Guid systemActionInstanceId)
         {
             if (systemActionInstanceId == Guid.Empty)
                 throw new Exception("The parameter can not be empty");
 
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 

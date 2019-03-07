@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
@@ -6,17 +7,17 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Dynamic;
 using System.Linq;
-using System.Text;
-using Undani.Tracking.Execution.Core.Infra;
 
 namespace Undani.Tracking.Execution.Core
 {
-    public static class FlowInstanceHelper
+    public class FlowInstanceHelper : Helper
     {
-        public static FlowInstance Get(Guid userId, Guid flowInstanceRefId)
+        public FlowInstanceHelper(IConfiguration configuration) : base(configuration) { }
+
+        public FlowInstance Get(Guid userId, Guid flowInstanceRefId)
         {
             FlowInstance flow;
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -56,10 +57,10 @@ namespace Undani.Tracking.Execution.Core
             return flow;
         }
 
-        public static FlowInstanceSummary GetSummary(int flowInstanceId)
+        public FlowInstanceSummary GetSummary(int flowInstanceId)
         {
             FlowInstanceSummary flowInstanceSummary = new FlowInstanceSummary();
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -106,10 +107,10 @@ namespace Undani.Tracking.Execution.Core
             return flowInstanceSummary;
         }
 
-        public static FlowInstanceSummary GetSummaryByFormInstanceId(Guid formInstanceId)
+        public FlowInstanceSummary GetSummaryByFormInstanceId(Guid formInstanceId)
         {
             FlowInstanceSummary flowInstanceSummary = new FlowInstanceSummary();
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -154,12 +155,12 @@ namespace Undani.Tracking.Execution.Core
             return flowInstanceSummary;
         }
 
-        public static Guid Create(Guid userId, int flowId, int procedureInstanceId, int activityInstanceId, string version = "")
+        public Guid Create(Guid userId, int flowId, int procedureInstanceId, int activityInstanceId, string version = "")
         {
             int flowInstanceId = 0;
             string activityId = "";
 
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -183,9 +184,9 @@ namespace Undani.Tracking.Execution.Core
         }
 
 
-        public static void SetUserGroup(Guid userId, Guid flowIntanceRefId, UserGroup[] responsibles)
+        public void SetUserGroup(Guid userId, Guid flowIntanceRefId, UserGroup[] responsibles)
         {
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -218,9 +219,9 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public static void SetUserGroupFormInstance(Guid userId, Guid formIntanceId, UserGroup[] responsibles)
+        public void SetUserGroupFormInstance(Guid userId, Guid formIntanceId, UserGroup[] responsibles)
         {
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -253,10 +254,10 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public static dynamic SetContentProperty(Guid userId, Guid flowInstanceRefId, string propertyName, string value)
+        public dynamic SetContentProperty(Guid userId, Guid flowInstanceRefId, string propertyName, string value)
         {
             string content;
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -278,10 +279,10 @@ namespace Undani.Tracking.Execution.Core
             return JsonConvert.DeserializeObject<ExpandoObject>(content, new ExpandoObjectConverter());
         }
 
-        public static dynamic SetContentPropertyFormInstance(Guid userId, Guid formInstanceId, string propertyName, string value)
+        public dynamic SetContentPropertyFormInstance(Guid userId, Guid formInstanceId, string propertyName, string value)
         {
             string content;
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -303,9 +304,9 @@ namespace Undani.Tracking.Execution.Core
             return JsonConvert.DeserializeObject<ExpandoObject>(content, new ExpandoObjectConverter());
         }
 
-        public static void SetState(Guid userId, Guid activityInstanceRefId, string key, string state)
+        public void SetState(Guid userId, Guid activityInstanceRefId, string key, string state)
         {
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -321,9 +322,9 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public static void SetStateFormInstance(Guid userId, Guid formInstanceId, string key, string state)
+        public void SetStateFormInstance(Guid userId, Guid formInstanceId, string key, string state)
         {
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -339,10 +340,10 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public static PagedList<FlowInstanceSummary> GetLog(Guid userId, int? pageLimit = null, int? page = null)
+        public PagedList<FlowInstanceSummary> GetLog(Guid userId, int? pageLimit = null, int? page = null)
         {
             List<FlowInstanceSummary> flowLog = new List<FlowInstanceSummary>();
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
                 

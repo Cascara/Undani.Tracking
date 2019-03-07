@@ -1,15 +1,18 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 
 namespace Undani.Tracking.Execution.Core
 {
-    public static class UserHelper
+    public class UserHelper : Helper
     {
-        public static string Set(Guid? id)
+        public UserHelper(IConfiguration configuration) : base(configuration) { }
+
+        public string Set(Guid? id)
         {
             string userName;
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 

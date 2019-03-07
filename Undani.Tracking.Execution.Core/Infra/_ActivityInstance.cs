@@ -15,7 +15,8 @@ namespace Undani.Tracking.Execution.Core.Infra
         public Guid? ActionRefId { get; set; }
         public Guid EnvironmentId { get; set; }
         public Guid? FormId { get; set; }
-        public int FormVersionId { get; set; }
+        public int FormVersion { get; set; }
+        public bool FormReadOnly { get; set; }
         public Guid? FormParentInstanceId { get; set; }
         public Guid? FormInstanceId { get; set; }
     }

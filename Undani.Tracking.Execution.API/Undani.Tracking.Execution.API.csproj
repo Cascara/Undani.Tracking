@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <UserSecretsId>34eb81e5-abaf-4f0f-b2a3-5eaa2520c762</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +26,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Undani.Tracking.Execution.Core\Undani.Tracking.Execution.Core.csproj" />
     <ProjectReference Include="..\Undani.Tracking.Execution\Undani.Tracking.Execution.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Undani.JWT.NetCore">
+      <HintPath>..\..\DLL\Undani.JWT.NetCore.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

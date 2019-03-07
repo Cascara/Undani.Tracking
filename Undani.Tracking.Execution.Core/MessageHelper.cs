@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Converters;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,13 +9,15 @@ using System.Text;
 
 namespace Undani.Tracking.Execution.Core
 {
-    public static class MessageHelper
+    public class MessageHelper : Helper
     {
-        public static OpenedMessage GetOpen(Guid userId, Guid messageId)
+        public MessageHelper(IConfiguration configuration) : base(configuration) { }
+
+        public OpenedMessage GetOpen(Guid userId, Guid messageId)
         {
 
             OpenedMessage openedMessage = new OpenedMessage();
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
                 
@@ -41,9 +44,9 @@ namespace Undani.Tracking.Execution.Core
             return openedMessage;
         }
 
-        public static void Create(Guid userId, int activityInstanceId)
+        public void Create(Guid userId, int activityInstanceId)
         {
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -56,11 +59,11 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public static List<Message> GetReceived(Guid userId)
+        public List<Message> GetReceived(Guid userId)
         {
             List<Message> messages = new List<Message>();
 
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -98,10 +101,10 @@ namespace Undani.Tracking.Execution.Core
         /// </summary>
         /// <param name="userId">User name</param>
         /// <returns>List of messages</returns>
-        public static List<Message> GetDrafts(Guid userId)
+        public List<Message> GetDrafts(Guid userId)
         {
             List<Message> messages = new List<Message>();
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 

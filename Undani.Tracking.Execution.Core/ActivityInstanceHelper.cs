@@ -10,16 +10,19 @@ using System.Text;
 using System.Threading.Tasks;
 using Undani.Tracking.Execution.Core.Infra;
 using Newtonsoft.Json;
+using Undani.Tracking.Execution.Core.Resource;
+using Microsoft.Extensions.Configuration;
 
 namespace Undani.Tracking.Execution.Core
 {
-    public static class ActivityInstanceHelper
+    public class ActivityInstanceHelper : Helper
     {
+        public ActivityInstanceHelper(IConfiguration configuration) : base(configuration) { }
 
-        public static ActivityInstance Get(Guid userId, Guid activityInstanceRefId)
+        public ActivityInstance Get(Guid userId, Guid activityInstanceRefId)
         {
             ActivityInstance activity;
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -43,8 +46,8 @@ namespace Undani.Tracking.Execution.Core
                                 Name = (string)dr["ActivityName"],
                                 ActionButtonsDisabled = (bool)dr["ActionsDisabled"],
                                 Start = (DateTime)dr["StartDate"],
-                                FormInstanceId = (Guid)dr["FormInstanceId"],
-                                Flow = FlowInstanceHelper.GetSummary((int)dr["FlowInstanceId"])
+                                FormInstanceId = SetFormInstance((Guid)dr["FormInstanceId"], (int)dr["Id"]),
+                                FlowInstanceSummary = FlowInstanceHelper.GetSummary((int)dr["FlowInstanceId"])
                             };
 
                             if (dr["EndDate"] != DBNull.Value)
@@ -61,10 +64,65 @@ namespace Undani.Tracking.Execution.Core
             return activity;
         }
 
-        public static List<ActivityInstanceSummary> GetSummaryLog(Guid userId, Guid? refId, int flowInstanceId = 0)
+        private Guid SetFormInstance(Guid formInstanceId, int activityInstanceId)
+        {
+            if (formInstanceId == Guid.Empty)
+            {
+                var _activityInstance = new _ActivityInstance();
+
+                using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+                {
+                    cn.Open();
+
+                    using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityInstanceFormInstance", cn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Value = activityInstanceId });
+                        cmd.Parameters.Add(new SqlParameter("@EnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new SqlParameter("@FormId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new SqlParameter("@FormVersion", SqlDbType.Int) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new SqlParameter("@FormReadOnly", SqlDbType.Bit) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new SqlParameter("@FormInstanceParentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new SqlParameter("@ActivityTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+
+                        cmd.ExecuteNonQuery();
+
+                        if ((int)cmd.Parameters["@ActivityTypeId"].Value == 1)
+                        {
+                            _activityInstance.EnvironmentId = (Guid)cmd.Parameters["@EnvironmentId"].Value;
+                            _activityInstance.FormId = (Guid)cmd.Parameters["@FormId"].Value;
+                            _activityInstance.FormVersion = (int)cmd.Parameters["@FormVersion"].Value;
+                            _activityInstance.FormReadOnly = (bool)cmd.Parameters["@FormReadOnly"].Value;
+                            _activityInstance.FormParentInstanceId = (Guid)cmd.Parameters["@FormInstanceParentId"].Value;
+
+                            _activityInstance.FormInstanceId = FormRequest.GetInstance(_activityInstance);
+
+                            cmd.CommandText = "EXECUTION.usp_Set_ActivityInstanceFormInstanceId";
+                            cmd.Parameters.Clear();
+                            cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Value = activityInstanceId });
+                            cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Value = _activityInstance.FormInstanceId.Value });
+
+                            cmd.ExecuteNonQuery();
+
+                            return _activityInstance.FormInstanceId.Value;
+                        }
+                        else
+                        {
+                            return Guid.Empty;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                return formInstanceId;
+            }
+        }
+
+        public List<ActivityInstanceSummary> GetSummaryLog(Guid userId, Guid? refId, int flowInstanceId = 0)
         {
             List<ActivityInstanceSummary> activityLog = new List<ActivityInstanceSummary>();
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -94,9 +152,9 @@ namespace Undani.Tracking.Execution.Core
             return activityLog;
         }
 
-        public static Guid Create(Guid userId, string activityId, int flowInstanceId)
+        public Guid Create(Guid userId, string activityId, int flowInstanceId)
         {
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -131,9 +189,9 @@ namespace Undani.Tracking.Execution.Core
             return Guid.Empty;
         }
 
-        public static void Create(Guid actionInstanceId)
+        public void Create(Guid actionInstanceId)
         {
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -171,9 +229,9 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        private static Guid Create(Guid userId, string activityId, int flowInstanceId, Guid actionInstanceId)
+        private Guid Create(Guid userId, string activityId, int flowInstanceId, Guid actionInstanceId)
         {
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -200,9 +258,9 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public static void SetComment(Guid userId, Guid activityInstanceRefId, string comment)
+        public void SetComment(Guid userId, Guid activityInstanceRefId, string comment)
         {
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -217,10 +275,10 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public static List<Comment> GetComments(Guid userId, Guid activityInstanceRefId)
+        public List<Comment> GetComments(Guid userId, Guid activityInstanceRefId)
         {
             List<Comment> comments = new List<Comment>();
-            string scn = Configuration.GetValue("ConnectionString:Tracking");
+            string scn = Configuration["CnDbTracking"];
             using (SqlConnection cn = new SqlConnection(scn))
             {
                 cn.Open();

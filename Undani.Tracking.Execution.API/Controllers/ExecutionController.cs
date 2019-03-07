@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Undani.JWT;
 using Undani.Tracking.Execution.Core;
 using Undani.Tracking.Execution.Core.Infra;
 
@@ -10,166 +13,211 @@ namespace Undani.Tracking.Execution.API.Controllers
     [Route("Execution")]
     public class ExecutionController : Controller
     {
+        private IConfiguration _configuration;
+
+        internal ExecutionController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+               
         #region ProcedureInstance
         [Route("ProcedureInstance/")]
-        public ProcedureInstance GetProcedureInstance(Guid uid, Guid procedureInstanceRefId)
+        public ProcedureInstance GetProcedureInstance(Guid procedureInstanceRefId)
         {
-            return ProcedureInstanceHelper.Get(uid, procedureInstanceRefId);
+            var user = GetUser(Request);
+            return new ProcedureInstanceHelper(_configuration).Get(user.UserId, procedureInstanceRefId);
         }
 
         [Route("ProcedureInstance/Create")]
         public Guid CreateProcedureInstance(Guid procedureRefId, Guid? activityInstanceRefId = null)
         {
-            Guid uid = Guid.Parse("0EE9CBCD-0248-4641-A7F8-72DEA915ACCF");
-            return ProcedureInstanceHelper.Create(uid, GetOwnerId(Request.Host.Host), procedureRefId, activityInstanceRefId);
+            var user = GetUser(Request);
+            return new ProcedureInstanceHelper(_configuration).Create(user.UserId, user.OwnerId, procedureRefId, activityInstanceRefId);
         }
         #endregion
 
         #region FlowInstance
         [Route("FlowInstance")]
-        public FlowInstance GetFlowInstance(Guid uid, Guid flowInstanceRefId)
+        public FlowInstance GetFlowInstance(Guid flowInstanceRefId)
         {
-            return FlowInstanceHelper.Get(uid, flowInstanceRefId);
+            var user = GetUser(Request);
+            return new FlowInstanceHelper(_configuration).Get(user.UserId, flowInstanceRefId);
         }
-
-        //[Route("FlowInstance/Create")]
-        //public FlowInstanceSummary CreateFlowInstance(Guid uid, Guid flowRefId, Guid environmentId, string content, Guid? activityInstanceParentRefId = null, string version = "")
-        //{
-        //    return FlowInstanceHelper.Create(uid, flowRefId, environmentId, content, activityInstanceParentRefId, version);
-        //}
-
-        //[Route("FlowInstance/Create/ByFormInstance")]
-        //public FlowInstanceSummary CreateFlowInstanceFormInstance(Guid uid, Guid flowRefId, Guid environmentId, string content, string formInstanceKey, Guid formInstanceId, Guid? activityInstanceParentRefId = null, string version = "")
-        //{
-        //    return FlowInstanceHelper.CreateByFormInstanceId(uid, flowRefId, environmentId, content, formInstanceKey, formInstanceId, activityInstanceParentRefId, version);
-        //}
-
+        
         [Route("FlowInstance/SetContentProperty")]
-        public dynamic SetContentProperty(Guid uid, Guid flowInstanceRefId, string propertyName, string value)
+        public dynamic SetContentProperty(Guid flowInstanceRefId, string propertyName, string value)
         {
-            return FlowInstanceHelper.SetContentProperty(uid, flowInstanceRefId, propertyName, value);
+            var user = GetUser(Request);
+            return new FlowInstanceHelper(_configuration).SetContentProperty(user.UserId, flowInstanceRefId, propertyName, value);
         }
 
         [Route("FlowInstance/SetContentProperty/ByFormInstance")]
-        public dynamic SetContentPropertyFormInstance(Guid uid, Guid formInstanceId, string propertyName, string value)
+        public dynamic SetContentPropertyFormInstance(Guid formInstanceId, string propertyName, string value)
         {
-            return FlowInstanceHelper.SetContentPropertyFormInstance(uid, formInstanceId, propertyName, value);
+            var user = GetUser(Request);
+            return new FlowInstanceHelper(_configuration).SetContentPropertyFormInstance(user.UserId, formInstanceId, propertyName, value);
         }
 
         [HttpPost]
         [Route("FlowInstance/SetUserGroup")]
-        public void SetUserGroup(Guid uid, Guid flowInstanceRefId, [FromBody] UserGroup[] users)
+        public void SetUserGroup(Guid flowInstanceRefId, [FromBody] UserGroup[] users)
         {
-            FlowInstanceHelper.SetUserGroup(uid, flowInstanceRefId, users);
+            var user = GetUser(Request);
+            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration);
+            flowInstanceHelper.SetUserGroup(user.UserId, flowInstanceRefId, users);
         }
 
         [HttpPost]
         [Route("FlowInstance/SetUserGroup/ByFormInstance")]
-        public void SetUserGroupFormInstance(Guid uid, Guid formInstanceId, [FromBody] UserGroup[] users)
+        public void SetUserGroupFormInstance(Guid formInstanceId, [FromBody] UserGroup[] users)
         {
-            FlowInstanceHelper.SetUserGroupFormInstance(uid, formInstanceId, users);
+            var user = GetUser(Request);
+            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration);
+            flowInstanceHelper.SetUserGroupFormInstance(user.UserId, formInstanceId, users);
         }
 
         [Route("FlowInstance/SetState")]
-        public void SetState(Guid uid, Guid activityInstanceRefId, string key, string state)
+        public void SetState(Guid activityInstanceRefId, string key, string state)
         {
-            FlowInstanceHelper.SetState(uid, activityInstanceRefId, key, state);
+            var user = GetUser(Request);
+            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration);
+            flowInstanceHelper.SetState(user.UserId, activityInstanceRefId, key, state);
         }
 
         [Route("FlowInstance/SetState/ByFormInstance")]
-        public void SetStateFormInstance(Guid uid, Guid formInstanceId, string key, string state)
+        public void SetStateFormInstance(Guid formInstanceId, string key, string state)
         {
-            FlowInstanceHelper.SetStateFormInstance(uid, formInstanceId, key, state);
+            var user = GetUser(Request);
+            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration);
+            flowInstanceHelper.SetStateFormInstance(user.UserId, formInstanceId, key, state);
         }
 
         [Route("FlowInstance/GetLog")]
-        public PagedList<FlowInstanceSummary> GetFlowLog(Guid uid, int? pageLimit = null, int? page = null)
+        public PagedList<FlowInstanceSummary> GetFlowLog(int? pageLimit = null, int? page = null)
         {
-            return FlowInstanceHelper.GetLog(uid, pageLimit, page);
+            var user = GetUser(Request);
+            return new FlowInstanceHelper(_configuration).GetLog(user.UserId, pageLimit, page);
         }
         #endregion
 
         #region Message  
         [Route("Message/GetOpen")]
-        public OpenedMessage GetMessageOpen(Guid uid, Guid messageId)
+        public OpenedMessage GetMessageOpen(Guid messageId)
         {
-            return MessageHelper.GetOpen(uid, messageId);
+            var user = GetUser(Request);
+            return new MessageHelper(_configuration).GetOpen(user.UserId, messageId);
         }
 
         [Route("Message/GetReceived")]
-        public List<Message> GetMessagesReceived(Guid uid)
+        public List<Message> GetMessagesReceived()
         {
-            return MessageHelper.GetReceived(uid);
+            var user = GetUser(Request);
+            return new MessageHelper(_configuration).GetReceived(user.UserId);
         }
 
         [Route("Message/GetDrafts")]
-        public List<Message> GetMessagesDrafts(Guid uid)
+        public List<Message> GetMessagesDrafts()
         {
-            return MessageHelper.GetDrafts(uid);
+            var user = GetUser(Request);
+            return new MessageHelper(_configuration).GetDrafts(user.UserId);
         }
         #endregion
 
         #region Activity 
         [Route("ActivityInstance")]
-        public ActivityInstance GetActivityInstance(Guid uid, Guid activityInstanceRefId)
+        public ActivityInstance GetActivityInstance(Guid activityInstanceRefId)
         {
-            return ActivityInstanceHelper.Get(uid, activityInstanceRefId);
+            var user = GetUser(Request);
+            return new ActivityInstanceHelper(_configuration).Get(user.UserId, activityInstanceRefId);
         }
 
         [Route("ActivityInstance/GetLog")]
-        public List<ActivityInstanceSummary> GetActivityInstanceLog(Guid uid, Guid activityInstanceRefId)
+        public List<ActivityInstanceSummary> GetActivityInstanceLog(Guid activityInstanceRefId)
         {
-            List<ActivityInstanceSummary> activities = ActivityInstanceHelper.GetSummaryLog(uid, activityInstanceRefId);
-            return activities;
+            var user = GetUser(Request);
+            return new ActivityInstanceHelper(_configuration).GetSummaryLog(user.UserId, activityInstanceRefId); ;
         }
 
         [Route("ActivityInstance/SetComment")]
-        public string SetComment(Guid uid, Guid activityInstanceRefId, string comment)
+        public string SetComment(Guid activityInstanceRefId, string comment)
         {
-            ActivityInstanceHelper.SetComment(uid, activityInstanceRefId, comment);
-            return comment;
+            var user = GetUser(Request);            
+            return new ActivityInstanceHelper(_configuration).SetComment(user.UserId, activityInstanceRefId, comment);
         }
 
         [Route("ActivityInstance/GetComments")]
-        public List<Comment> GetComments(Guid uid, Guid activityInstanceRefId)
+        public List<Comment> GetComments(Guid activityInstanceRefId)
         {
-            List<Comment> comments = ActivityInstanceHelper.GetComments(uid, activityInstanceRefId);
-            return comments;
+            var user = GetUser(Request);
+            return new ActivityInstanceHelper(_configuration).GetComments(user.UserId, activityInstanceRefId); ;
         }
         #endregion
 
         #region Action 
         [Route("ActionInstance/Execute")]
-        public void ExecuteActionInstance(Guid uid, Guid actionRefId, Guid activityInstanceRefId)
+        public void ExecuteActionInstance(Guid actionRefId, Guid activityInstanceRefId)
         {
-            ActionInstanceHelper.Execute(uid, actionRefId, activityInstanceRefId);
+            var user = GetUser(Request);
+            ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(_configuration);
+            actionInstanceHelper.Execute(user.UserId, actionRefId, activityInstanceRefId);
         }
 
         [Route("ActionInstance/Execute/ByFormInstance")]
-        public void ExecuteActionInstanceFormInstance(Guid uid, Guid formInstanceId)
+        public void ExecuteActionInstanceFormInstance(Guid formInstanceId)
         {
-            ActionInstanceHelper.Execute(uid, formInstanceId);
+            var user = GetUser(Request);
+            ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(_configuration);
+            actionInstanceHelper.Execute(user.UserId, formInstanceId);
         }
 
         [Route("SystemAccionInstance/Finish")]
         public void FinishSystemAction(Guid systemActionInstanceId)
         {
-            SystemActionInstanceHelper.Finish(systemActionInstanceId);
+            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(_configuration);
+            systemActionInstanceHelper.Finish(systemActionInstanceId);
         }
 
         [Route("SystemAccionInstance/Execute")]
         public void ExecuteSystemAction(Guid systemActionInstanceId)
         {
-            SystemActionInstanceHelper.Execute(systemActionInstanceId);
+            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(_configuration);
+            systemActionInstanceHelper.Execute(systemActionInstanceId);
         }
         #endregion
 
         #region Tools   
-        private Guid GetOwnerId(string host)
+        private _User GetUser(HttpRequest request)
         {
-            return Guid.Parse(Configuration.GetValue("Owner:" + host));
+            Payload payload = new Payload();
+            if (!request.Headers.ContainsKey("Authorization"))
+                throw new OperationCanceledException("Invalid access.");
+
+            var authHeader = request.Headers["Authorization"][0];
+            if (authHeader.StartsWith("Bearer "))
+            {
+                var token = authHeader.Substring("Bearer ".Length);
+
+                try
+                {
+                    payload = JWToken.TokenDecode(token);
+                }
+                catch (Exception e)
+                {
+                    throw new OperationCanceledException("Invalid access.");
+                }
+            }
+
+            if(payload.Owners)
+
+            return  new _User() { UserId = Guid.Parse(payload.UserId), OwnerId = Guid.Parse(_configuration.GetValue("Owner:" + host)) };
         }
         #endregion
 
+    }
+
+    internal class _User
+    {
+        public Guid UserId { get; set; }
+        public Guid OwnerId { get; set; }
     }
 }

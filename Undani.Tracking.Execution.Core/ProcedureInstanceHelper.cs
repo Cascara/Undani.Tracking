@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
@@ -9,14 +10,16 @@ using System.Text;
 
 namespace Undani.Tracking.Execution.Core
 {
-    public static class ProcedureInstanceHelper
+    public class ProcedureInstanceHelper : Helper
     {
-        public static Guid Create(Guid userId, Guid ownerId, Guid procedureRefId, Guid? activityInstanceRefId)
+        public ProcedureInstanceHelper(IConfiguration configuration) : base(configuration) { }
+
+        public Guid Create(Guid userId, Guid ownerId, Guid procedureRefId, Guid? activityInstanceRefId)
         {
             int procedureInstanceId = 0;
             int flowId = 0;
             int activityInstanceId = 0;
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -39,15 +42,13 @@ namespace Undani.Tracking.Execution.Core
                 }
             }
 
-            
-
             return FlowInstanceHelper.Create(userId, flowId, procedureInstanceId, activityInstanceId);
         }
 
-        public static ProcedureInstance Get(Guid procedureInstanceRefId, Guid userId)
+        public ProcedureInstance Get(Guid procedureInstanceRefId, Guid userId)
         {
             ProcedureInstance procedureInstance;
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 

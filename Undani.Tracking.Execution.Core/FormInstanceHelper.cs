@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -7,19 +8,21 @@ using System.Text;
 
 namespace Undani.Tracking.Execution.Core
 {
-    public static class FormInstanceHelper
+    public class FormInstanceHelper : Helper
     {
-        public static void Create(Guid environmentId, int flowInstanceId, int activityInstanceId, int activityTypeId, string activityGetFormInstanceKey, Guid formId, int formVersionId, bool formReadOnly)
+        public FormInstanceHelper(IConfiguration configuration) : base(configuration) { }
+
+        public void Create(Guid environmentId, int flowInstanceId, int activityInstanceId, int activityTypeId, string activityGetFormInstanceKey, Guid formId, int formVersionId, bool formReadOnly)
         {
             Create(environmentId, flowInstanceId, activityInstanceId, activityTypeId, activityGetFormInstanceKey, formId, formVersionId, Guid.Empty, formReadOnly);
         }
 
-        public static void Create(Guid environmentId, int flowInstanceId, int activityInstanceId, int activityTypeId, string activityGetFormInstanceKey, Guid formId, int formVersionId, Guid formParentInstanceId, bool formReadOnly)
+        public void Create(Guid environmentId, int flowInstanceId, int activityInstanceId, int activityTypeId, string activityGetFormInstanceKey, Guid formId, int formVersionId, Guid formParentInstanceId, bool formReadOnly)
         {
             Guid formInstanceId = Guid.Empty;
             if (activityTypeId == 1)
             {
-                SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking"));
+                SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]);
                 cn.Open();
 
                 if (activityGetFormInstanceKey == "")

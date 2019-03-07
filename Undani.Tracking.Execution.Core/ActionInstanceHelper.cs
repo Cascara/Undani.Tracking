@@ -1,21 +1,24 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
 namespace Undani.Tracking.Execution.Core
 {
-    public static class ActionInstanceHelper
+    public class ActionInstanceHelper : Helper
     {
+        public ActionInstanceHelper(IConfiguration configuration) : base(configuration) { }
+
         /// <summary>
         /// It allows to get action from a especific activity
         /// </summary>
         /// <param name="activityId">Unique identifier of activity</param>
         /// <returns>List of actions</returns>
-        internal static List<ActionButton> GetActions(string activityId)
+        internal List<ActionButton> GetActions(string activityId)
         {
             List<ActionButton> actions = new List<ActionButton>();
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -46,11 +49,11 @@ namespace Undani.Tracking.Execution.Core
             return actions;
         }
 
-        public static void Execute(Guid userId, int activityInstanceId)
+        public void Execute(Guid userId, int activityInstanceId)
         {
             string actionId;
 
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -71,11 +74,11 @@ namespace Undani.Tracking.Execution.Core
         }
 
 
-        public static void Execute(Guid userId, Guid formInstanceId)
+        public void Execute(Guid userId, Guid formInstanceId)
         {
             string actionId;
             int activityInstanceId;
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -98,12 +101,12 @@ namespace Undani.Tracking.Execution.Core
             Create(actionId, activityInstanceId);
         }
 
-        public static void Execute(Guid userId, Guid actionRefId, Guid activityInstanceRefId)
+        public void Execute(Guid userId, Guid actionRefId, Guid activityInstanceRefId)
         {
             string actionId;
             int activityInstanceId;
 
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -126,11 +129,11 @@ namespace Undani.Tracking.Execution.Core
             Create(actionId, activityInstanceId);
         }
 
-        public static void Execute(Guid userId, Guid actionRefId, int activityInstanceId)
+        public void Execute(Guid userId, Guid actionRefId, int activityInstanceId)
         {
             string actionId;
 
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -151,11 +154,11 @@ namespace Undani.Tracking.Execution.Core
             Create(actionId, activityInstanceId);
         }
 
-        private static void Create(string actionId, int activityInstanceId)
+        private void Create(string actionId, int activityInstanceId)
         {
             Guid actionInstanceId;
 
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))   
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))   
             {
                 cn.Open();
 
@@ -185,7 +188,7 @@ namespace Undani.Tracking.Execution.Core
             
         }
 
-        public static void Finish(Guid actionInstanceId)
+        public void Finish(Guid actionInstanceId)
         {            
             ActivityInstanceHelper.Create(actionInstanceId);
         }
