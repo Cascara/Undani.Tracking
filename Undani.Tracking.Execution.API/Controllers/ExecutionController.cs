@@ -24,15 +24,15 @@ namespace Undani.Tracking.Execution.API.Controllers
         [Route("ProcedureInstance/")]
         public ProcedureInstance GetProcedureInstance(Guid procedureInstanceRefId)
         {
-            var user = GetUser(Request);
-            return new ProcedureInstanceHelper(_configuration).Get(user.UserId, procedureInstanceRefId);
+            Guid userId = GetUser(Request);
+            return new ProcedureInstanceHelper(_configuration).Get(userId, procedureInstanceRefId);
         }
 
         [Route("ProcedureInstance/Create")]
         public Guid CreateProcedureInstance(Guid procedureRefId, Guid? activityInstanceRefId = null)
         {
-            var user = GetUser(Request);
-            return new ProcedureInstanceHelper(_configuration).Create(user.UserId, user.OwnerId, procedureRefId, activityInstanceRefId);
+            Guid userId = GetUser(Request);
+            return new ProcedureInstanceHelper(_configuration).Create(userId, procedureRefId, activityInstanceRefId);
         }
         #endregion
 
@@ -40,63 +40,63 @@ namespace Undani.Tracking.Execution.API.Controllers
         [Route("FlowInstance")]
         public FlowInstance GetFlowInstance(Guid flowInstanceRefId)
         {
-            var user = GetUser(Request);
-            return new FlowInstanceHelper(_configuration).Get(user.UserId, flowInstanceRefId);
+            Guid userId = GetUser(Request);
+            return new FlowInstanceHelper(_configuration).Get(userId, flowInstanceRefId);
         }
         
         [Route("FlowInstance/SetContentProperty")]
         public dynamic SetContentProperty(Guid flowInstanceRefId, string propertyName, string value)
         {
-            var user = GetUser(Request);
-            return new FlowInstanceHelper(_configuration).SetContentProperty(user.UserId, flowInstanceRefId, propertyName, value);
+            Guid userId = GetUser(Request);
+            return new FlowInstanceHelper(_configuration).SetContentProperty(userId, flowInstanceRefId, propertyName, value);
         }
 
         [Route("FlowInstance/SetContentProperty/ByFormInstance")]
         public dynamic SetContentPropertyFormInstance(Guid formInstanceId, string propertyName, string value)
         {
-            var user = GetUser(Request);
-            return new FlowInstanceHelper(_configuration).SetContentPropertyFormInstance(user.UserId, formInstanceId, propertyName, value);
+            Guid userId = GetUser(Request);
+            return new FlowInstanceHelper(_configuration).SetContentPropertyFormInstance(userId, formInstanceId, propertyName, value);
         }
 
         [HttpPost]
         [Route("FlowInstance/SetUserGroup")]
         public void SetUserGroup(Guid flowInstanceRefId, [FromBody] UserGroup[] users)
         {
-            var user = GetUser(Request);
+            Guid userId = GetUser(Request);
             FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration);
-            flowInstanceHelper.SetUserGroup(user.UserId, flowInstanceRefId, users);
+            flowInstanceHelper.SetUserGroup(userId, flowInstanceRefId, users);
         }
 
         [HttpPost]
         [Route("FlowInstance/SetUserGroup/ByFormInstance")]
         public void SetUserGroupFormInstance(Guid formInstanceId, [FromBody] UserGroup[] users)
         {
-            var user = GetUser(Request);
+            Guid userId = GetUser(Request);
             FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration);
-            flowInstanceHelper.SetUserGroupFormInstance(user.UserId, formInstanceId, users);
+            flowInstanceHelper.SetUserGroupFormInstance(userId, formInstanceId, users);
         }
 
         [Route("FlowInstance/SetState")]
         public void SetState(Guid activityInstanceRefId, string key, string state)
         {
-            var user = GetUser(Request);
+            Guid userId = GetUser(Request);
             FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration);
-            flowInstanceHelper.SetState(user.UserId, activityInstanceRefId, key, state);
+            flowInstanceHelper.SetState(userId, activityInstanceRefId, key, state);
         }
 
         [Route("FlowInstance/SetState/ByFormInstance")]
         public void SetStateFormInstance(Guid formInstanceId, string key, string state)
         {
-            var user = GetUser(Request);
+            Guid userId = GetUser(Request);
             FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration);
-            flowInstanceHelper.SetStateFormInstance(user.UserId, formInstanceId, key, state);
+            flowInstanceHelper.SetStateFormInstance(userId, formInstanceId, key, state);
         }
 
         [Route("FlowInstance/GetLog")]
         public PagedList<FlowInstanceSummary> GetFlowLog(int? pageLimit = null, int? page = null)
         {
-            var user = GetUser(Request);
-            return new FlowInstanceHelper(_configuration).GetLog(user.UserId, pageLimit, page);
+            Guid userId = GetUser(Request);
+            return new FlowInstanceHelper(_configuration).GetLog(userId, pageLimit, page);
         }
         #endregion
 
@@ -104,22 +104,22 @@ namespace Undani.Tracking.Execution.API.Controllers
         [Route("Message/GetOpen")]
         public OpenedMessage GetMessageOpen(Guid messageId)
         {
-            var user = GetUser(Request);
-            return new MessageHelper(_configuration).GetOpen(user.UserId, messageId);
+            Guid userId = GetUser(Request);
+            return new MessageHelper(_configuration).GetOpen(userId, messageId);
         }
 
         [Route("Message/GetReceived")]
         public List<Message> GetMessagesReceived()
         {
-            var user = GetUser(Request);
-            return new MessageHelper(_configuration).GetReceived(user.UserId);
+            Guid userId = GetUser(Request);
+            return new MessageHelper(_configuration).GetReceived(userId);
         }
 
         [Route("Message/GetDrafts")]
         public List<Message> GetMessagesDrafts()
         {
-            var user = GetUser(Request);
-            return new MessageHelper(_configuration).GetDrafts(user.UserId);
+            Guid userId = GetUser(Request);
+            return new MessageHelper(_configuration).GetDrafts(userId);
         }
         #endregion
 
@@ -127,29 +127,31 @@ namespace Undani.Tracking.Execution.API.Controllers
         [Route("ActivityInstance")]
         public ActivityInstance GetActivityInstance(Guid activityInstanceRefId)
         {
-            var user = GetUser(Request);
-            return new ActivityInstanceHelper(_configuration).Get(user.UserId, activityInstanceRefId);
+            Guid userId = GetUser(Request);
+            return new ActivityInstanceHelper(_configuration).Get(userId, activityInstanceRefId);
         }
 
         [Route("ActivityInstance/GetLog")]
         public List<ActivityInstanceSummary> GetActivityInstanceLog(Guid activityInstanceRefId)
         {
-            var user = GetUser(Request);
-            return new ActivityInstanceHelper(_configuration).GetSummaryLog(user.UserId, activityInstanceRefId); ;
+            Guid userId = GetUser(Request);
+            return new ActivityInstanceHelper(_configuration).GetSummaryLog(userId, activityInstanceRefId); ;
         }
 
         [Route("ActivityInstance/SetComment")]
         public string SetComment(Guid activityInstanceRefId, string comment)
         {
-            var user = GetUser(Request);            
-            return new ActivityInstanceHelper(_configuration).SetComment(user.UserId, activityInstanceRefId, comment);
+            Guid userId = GetUser(Request);
+            ActivityInstanceHelper activityInstanceHelper = new ActivityInstanceHelper(_configuration);
+            activityInstanceHelper.SetComment(userId, activityInstanceRefId, comment);
+            return comment;
         }
 
         [Route("ActivityInstance/GetComments")]
         public List<Comment> GetComments(Guid activityInstanceRefId)
         {
-            var user = GetUser(Request);
-            return new ActivityInstanceHelper(_configuration).GetComments(user.UserId, activityInstanceRefId); ;
+            Guid userId = GetUser(Request);
+            return new ActivityInstanceHelper(_configuration).GetComments(userId, activityInstanceRefId); ;
         }
         #endregion
 
@@ -157,17 +159,17 @@ namespace Undani.Tracking.Execution.API.Controllers
         [Route("ActionInstance/Execute")]
         public void ExecuteActionInstance(Guid actionRefId, Guid activityInstanceRefId)
         {
-            var user = GetUser(Request);
+            Guid userId = GetUser(Request);
             ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(_configuration);
-            actionInstanceHelper.Execute(user.UserId, actionRefId, activityInstanceRefId);
+            actionInstanceHelper.Execute(userId, actionRefId, activityInstanceRefId);
         }
 
         [Route("ActionInstance/Execute/ByFormInstance")]
         public void ExecuteActionInstanceFormInstance(Guid formInstanceId)
         {
-            var user = GetUser(Request);
+            Guid userId = GetUser(Request);
             ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(_configuration);
-            actionInstanceHelper.Execute(user.UserId, formInstanceId);
+            actionInstanceHelper.Execute(userId, formInstanceId);
         }
 
         [Route("SystemAccionInstance/Finish")]
@@ -186,7 +188,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         #endregion
 
         #region Tools   
-        private _User GetUser(HttpRequest request)
+        private Guid GetUser(HttpRequest request)
         {
             Payload payload = new Payload();
             if (!request.Headers.ContainsKey("Authorization"))
@@ -207,17 +209,9 @@ namespace Undani.Tracking.Execution.API.Controllers
                 }
             }
 
-            if(payload.Owners)
-
-            return  new _User() { UserId = Guid.Parse(payload.UserId), OwnerId = Guid.Parse(_configuration.GetValue("Owner:" + host)) };
+            return  Guid.Parse(payload.UserId);
         }
         #endregion
 
-    }
-
-    internal class _User
-    {
-        public Guid UserId { get; set; }
-        public Guid OwnerId { get; set; }
     }
 }

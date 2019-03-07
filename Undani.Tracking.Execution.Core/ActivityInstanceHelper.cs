@@ -47,13 +47,13 @@ namespace Undani.Tracking.Execution.Core
                                 ActionButtonsDisabled = (bool)dr["ActionsDisabled"],
                                 Start = (DateTime)dr["StartDate"],
                                 FormInstanceId = SetFormInstance((Guid)dr["FormInstanceId"], (int)dr["Id"]),
-                                FlowInstanceSummary = FlowInstanceHelper.GetSummary((int)dr["FlowInstanceId"])
+                                FlowInstanceSummary = new FlowInstanceHelper(Configuration).GetSummary((int)dr["FlowInstanceId"])
                             };
 
                             if (dr["EndDate"] != DBNull.Value)
                                 activity.End = (DateTime)dr["EndDate"];
                             else if ((Guid)dr["UserId"] == userId)
-                                activity.ActionButtons = ActionInstanceHelper.GetActions((string)dr["ActivityId"]);
+                                activity.ActionButtons = new ActionInstanceHelper(Configuration).GetActions((string)dr["ActivityId"]);
                         }
                         else
                             throw new Exception("Could not get the activity");
@@ -95,7 +95,7 @@ namespace Undani.Tracking.Execution.Core
                             _activityInstance.FormReadOnly = (bool)cmd.Parameters["@FormReadOnly"].Value;
                             _activityInstance.FormParentInstanceId = (Guid)cmd.Parameters["@FormInstanceParentId"].Value;
 
-                            _activityInstance.FormInstanceId = FormRequest.GetInstance(_activityInstance);
+                            _activityInstance.FormInstanceId = new FormCall(Configuration).GetInstance(_activityInstance);
 
                             cmd.CommandText = "EXECUTION.usp_Set_ActivityInstanceFormInstanceId";
                             cmd.Parameters.Clear();
@@ -249,10 +249,16 @@ namespace Undani.Tracking.Execution.Core
                     int activityInstanceId = (int)cmd.Parameters["@ActivityInstanceId"].Value;
 
                     if ((string)cmd.Parameters["@GetFormInstanceKey"].Value == "auto")
-                        ActionInstanceHelper.Execute(userId, activityInstanceId);
+                    {
+                        ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration);
+                        actionInstanceHelper.Execute(userId, activityInstanceId);
+                    }
                     else
-                        MessageHelper.Create(userId, activityInstanceId);
-
+                    {
+                        MessageHelper messageHelper = new MessageHelper(Configuration);
+                        messageHelper.Create(userId, activityInstanceId);
+                    }
+                        
                     return (Guid)cmd.Parameters["@ActivityInstanceRefId"].Value;
                 }
             }

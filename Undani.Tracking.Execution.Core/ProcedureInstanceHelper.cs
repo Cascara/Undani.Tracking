@@ -14,7 +14,7 @@ namespace Undani.Tracking.Execution.Core
     {
         public ProcedureInstanceHelper(IConfiguration configuration) : base(configuration) { }
 
-        public Guid Create(Guid userId, Guid ownerId, Guid procedureRefId, Guid? activityInstanceRefId)
+        public Guid Create(Guid userId, Guid procedureRefId, Guid? activityInstanceRefId)
         {
             int procedureInstanceId = 0;
             int flowId = 0;
@@ -27,7 +27,6 @@ namespace Undani.Tracking.Execution.Core
                 {
 
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
-                    cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = ownerId });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureRefId", SqlDbType.UniqueIdentifier) { Value = procedureRefId });
                     cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId.HasValue ? activityInstanceRefId.Value : Guid.Empty });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
@@ -42,7 +41,7 @@ namespace Undani.Tracking.Execution.Core
                 }
             }
 
-            return FlowInstanceHelper.Create(userId, flowId, procedureInstanceId, activityInstanceId);
+            return new FlowInstanceHelper(Configuration).Create(userId, flowId, procedureInstanceId, activityInstanceId);
         }
 
         public ProcedureInstance Get(Guid procedureInstanceRefId, Guid userId)
@@ -75,7 +74,7 @@ namespace Undani.Tracking.Execution.Core
                                 Key = (string)dr["Key"],
                                 Content = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["Content"], expandoConverter),
                                 States = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["States"], expandoConverter),
-                                ActivityInstances = ActivityInstanceHelper.GetSummaryLog(userId, null, (int)dr["Id"]),
+                                ActivityInstances = new ActivityInstanceHelper(Configuration).GetSummaryLog(userId, null, (int)dr["Id"]),
                                 StartDate = (DateTime)dr["SartDate"],
                                 EndDate = (DateTime)dr["SartDate"],
                                 EnvironmentId = (Guid)dr["EnvironmentId"]

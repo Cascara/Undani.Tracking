@@ -45,7 +45,7 @@ namespace Undani.Tracking.Execution.Core
 
                     if (url != string.Empty)
                     {
-                        url = Configuration.GetValue("Url:ApiForm") + "/Execution/Form/createInstance?environmentId=" + environmentId.ToString() + url;
+                        url = Configuration["ApiForm"] + "/Execution/Form/createInstance?environmentId=" + environmentId.ToString() + url;
 
                         HttpResponseMessage response = null;
                         using (var client = new HttpClient())

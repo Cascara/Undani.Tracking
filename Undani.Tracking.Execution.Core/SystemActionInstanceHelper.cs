@@ -53,7 +53,7 @@ namespace Undani.Tracking.Execution.Core
 
                     cmd.ExecuteNonQuery();
 
-                    invokedCorrect = SystemActionInvoke.Invoke(systemActionInstanceId, method, alias, configuration);
+                    invokedCorrect = new SystemActionInvoke(Configuration).Invoke(systemActionInstanceId, method, alias, configuration);
                 }
             }
 
@@ -80,7 +80,11 @@ namespace Undani.Tracking.Execution.Core
                     if (cmd.Parameters["@SystemActionInstanceId"].Value != DBNull.Value)
                         Execute((Guid)cmd.Parameters["@SystemActionInstanceId"].Value);
                     else
-                        ActionInstanceHelper.Finish((Guid)cmd.Parameters["@ActionInstanceId"].Value);
+                    {
+                        ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration);
+                        actionInstanceHelper.Finish((Guid)cmd.Parameters["@ActionInstanceId"].Value);
+                    }
+                        
                 }
             }
         }

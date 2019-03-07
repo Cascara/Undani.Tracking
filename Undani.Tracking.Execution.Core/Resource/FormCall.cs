@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -9,9 +10,11 @@ using Undani.Tracking.Execution.Core.Infra;
 
 namespace Undani.Tracking.Execution.Core.Resource
 {
-    internal static class FormRequest
+    internal class FormCall : Call
     {
-        public static Guid GetInstance(_ActivityInstance _activityInstance)
+        public FormCall(IConfiguration configuration) : base(configuration) { }
+
+        public Guid GetInstance(_ActivityInstance _activityInstance)
         {
             string url = "";
 
@@ -30,7 +33,7 @@ namespace Undani.Tracking.Execution.Core.Resource
                     url += "&readOnly=false";
             }
 
-            url = Configuration.GetValue("Url:ApiForm") + "/Execution/" + url;
+            url = Configuration["ApiForm"] + "/Execution/" + url;
 
             HttpResponseMessage response = null;
             Guid formInstanceId;

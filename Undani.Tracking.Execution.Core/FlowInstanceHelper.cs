@@ -45,7 +45,7 @@ namespace Undani.Tracking.Execution.Core
                                 EnvironmentId = (Guid)dr["EnvironmentId"],
                                 Created = (DateTime)dr["Created"],
                                 States = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["States"], expandoConverter),
-                                ActivityInstances = ActivityInstanceHelper.GetSummaryLog(userId, null, (int)dr["Id"])
+                                ActivityInstances = new ActivityInstanceHelper(Configuration).GetSummaryLog(userId, null, (int)dr["Id"])
                             };
                         }
                         else
@@ -180,7 +180,7 @@ namespace Undani.Tracking.Execution.Core
                 }
             }                      
 
-            return ActivityInstanceHelper.Create(userId, activityId, flowInstanceId);
+            return new ActivityInstanceHelper(Configuration).Create(userId, activityId, flowInstanceId);
         }
 
 

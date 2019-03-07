@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
@@ -10,13 +11,15 @@ using System.Net.Http;
 using System.Text;
 namespace Undani.Tracking.Invoke.Resource
 {
-    public static class FormRequest
+    public class FormCall : Call
     {
-        public static dynamic GetInstanceObject(Guid systemActionInstanceId)
+        public FormCall(IConfiguration configuration) : base(configuration) { }
+
+        public dynamic GetInstanceObject(Guid systemActionInstanceId)
         {
             Guid formInstanceId;
             Guid ownerId;
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
@@ -34,7 +37,7 @@ namespace Undani.Tracking.Invoke.Resource
                 }
             }
 
-            string url = Configuration.GetValue("Url:ApiForm") + "/Execution/GetJsonInstance?instanceId=" + formInstanceId;
+            string url = Configuration["ApiForm"] + "/Execution/GetJsonInstance?instanceId=" + formInstanceId;
 
             dynamic oJson;
             using (var client = new HttpClient())

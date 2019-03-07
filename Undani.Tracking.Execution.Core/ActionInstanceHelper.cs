@@ -176,7 +176,8 @@ namespace Undani.Tracking.Execution.Core
 
                     if (cmd.Parameters["@SystemActionInstanceId"].Value != DBNull.Value)
                     {
-                        SystemActionInstanceHelper.Execute((Guid)cmd.Parameters["@SystemActionInstanceId"].Value);
+                        SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration);
+                        systemActionInstanceHelper.Execute((Guid)cmd.Parameters["@SystemActionInstanceId"].Value);
                     }
                     else
                     {
@@ -189,8 +190,9 @@ namespace Undani.Tracking.Execution.Core
         }
 
         public void Finish(Guid actionInstanceId)
-        {            
-            ActivityInstanceHelper.Create(actionInstanceId);
+        {
+            ActivityInstanceHelper activityInstanceHelper = new ActivityInstanceHelper(Configuration);
+            activityInstanceHelper.Create(actionInstanceId);
         }
     }
 }

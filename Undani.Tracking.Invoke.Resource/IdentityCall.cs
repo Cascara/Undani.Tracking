@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -7,9 +8,11 @@ using Undani.Tracking.Invoke.Resource.Infra;
 
 namespace Undani.Tracking.Invoke.Resource
 {
-    public static class IdentityRequest
+    public class IdentityCall : Call
     {
-        public static _User CreateUser(string configuration, dynamic user)
+        public IdentityCall(IConfiguration configuration) : base(configuration) { }
+
+        public _User CreateUser(string configuration, dynamic user)
         {
             configuration = configuration.Replace("[Email]", user.Integration.Carta.Usuario);
             configuration = configuration.Replace("[Password]", user.Integration.Carta.Confirmar);
@@ -23,7 +26,7 @@ namespace Undani.Tracking.Invoke.Resource
             {
                 HttpResponseMessage response;
 
-                string url = Configuration.GetValue("Url:WebIdentity") + "/api/AccountService/registry";
+                string url = Configuration["WebIdentity"] + "/api/AccountService/registry";
                 StringContent contentJson = new StringContent(configuration, Encoding.UTF8, "application/json");
                 response = client.PostAsync(url, contentJson).Result;
 

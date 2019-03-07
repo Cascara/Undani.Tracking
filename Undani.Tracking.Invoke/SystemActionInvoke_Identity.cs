@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -9,9 +10,9 @@ using Undani.Tracking.Invoke.Resource.Infra;
 
 namespace Undani.Tracking.Invoke
 {
-    public static partial class SystemActionInvoke
+    public partial class SystemActionInvoke
     {
-        public static bool Identity(Guid systemActionInstanceId, string alias, string configuration)
+        public bool Identity(Guid systemActionInstanceId, string alias, string configuration)
         {
             bool start = false;
             switch (alias)
@@ -27,37 +28,37 @@ namespace Undani.Tracking.Invoke
             return start;
         }
 
-        private static bool CreateUser(Guid systemActionInstanceId, string alias, string configuration)
+        private bool CreateUser(Guid systemActionInstanceId, string alias, string configuration)
         {
             bool start = false;
 
-            dynamic obj = FormRequest.GetInstanceObject(systemActionInstanceId);
+            dynamic obj = new FormCall(Configuration).GetInstanceObject(systemActionInstanceId);
 
-            _User _user = IdentityRequest.CreateUser(configuration, obj);
+            _User _user = new IdentityCall(Configuration).CreateUser(configuration, obj);
 
-            using (SqlConnection cn = new SqlConnection(Configuration.GetValue("ConnectionString:Tracking")))
-            {
-                cn.Open();
+            //using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            //{
+            //    cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_MessageOpen", cn))
-                {
+            //    using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_MessageOpen", cn))
+            //    {
 
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId, Direction = ParameterDirection.InputOutput });
-                    cmd.Parameters.Add(new SqlParameter("@UserName", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@MessageId", SqlDbType.UniqueIdentifier) { Value = messageId });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+            //        cmd.CommandType = CommandType.StoredProcedure;
+            //        cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId, Direction = ParameterDirection.InputOutput });
+            //        cmd.Parameters.Add(new SqlParameter("@UserName", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+            //        cmd.Parameters.Add(new SqlParameter("@MessageId", SqlDbType.UniqueIdentifier) { Value = messageId });
+            //        cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 
-                    cmd.ExecuteNonQuery();
-                    if (cmd.Parameters["@ActivityInstanceRefId"].Value.ToString() != "")
-                    {
-                        openedMessage.ActivityIntanceRefId = (Guid)cmd.Parameters["@ActivityInstanceRefId"].Value;
-                    }
+            //        cmd.ExecuteNonQuery();
+            //        if (cmd.Parameters["@ActivityInstanceRefId"].Value.ToString() != "")
+            //        {
+            //            openedMessage.ActivityIntanceRefId = (Guid)cmd.Parameters["@ActivityInstanceRefId"].Value;
+            //        }
 
-                    openedMessage.UserId = (Guid)cmd.Parameters["@UserId"].Value;
-                    openedMessage.UserName = (string)cmd.Parameters["@UserName"].Value;
-                }
-            }
+            //        openedMessage.UserId = (Guid)cmd.Parameters["@UserId"].Value;
+            //        openedMessage.UserName = (string)cmd.Parameters["@UserName"].Value;
+            //    }
+            //}
 
             if (_user.SubjectId != Guid.Empty)
                 start = true;
