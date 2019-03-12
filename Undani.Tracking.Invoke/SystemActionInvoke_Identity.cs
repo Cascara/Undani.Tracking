@@ -6,7 +6,8 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using Undani.Tracking.Invoke.Resource;
-using Undani.Tracking.Invoke.Resource.Infra;
+using Undani.Tracking.Invoke.Infra;
+using System.Data;
 
 namespace Undani.Tracking.Invoke
 {
@@ -32,33 +33,28 @@ namespace Undani.Tracking.Invoke
         {
             bool start = false;
 
-            dynamic obj = new FormCall(Configuration).GetInstanceObject(systemActionInstanceId);
+            dynamic obj = new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token);
 
             _User _user = new IdentityCall(Configuration).CreateUser(configuration, obj);
 
-            //using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
-            //{
-            //    cn.Open();
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
 
-            //    using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_MessageOpen", cn))
-            //    {
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_User", cn))
+                {
 
-            //        cmd.CommandType = CommandType.StoredProcedure;
-            //        cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId, Direction = ParameterDirection.InputOutput });
-            //        cmd.Parameters.Add(new SqlParameter("@UserName", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
-            //        cmd.Parameters.Add(new SqlParameter("@MessageId", SqlDbType.UniqueIdentifier) { Value = messageId });
-            //        cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = _user.SubjectId });
+                    cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = obj.OwnerId });
+                    cmd.Parameters.Add(new SqlParameter("@UserName", SqlDbType.VarChar, 256) { Value = _user.UserName });
+                    cmd.Parameters.Add(new SqlParameter("@GivenName", SqlDbType.VarChar, 100) { Value = _user.GivenName });
+                    cmd.Parameters.Add(new SqlParameter("@FamilyName", SqlDbType.VarChar, 100) { Value = _user.FamilyName });
+                    cmd.Parameters.Add(new SqlParameter("@EMail", SqlDbType.VarChar, 256) { Value = _user.Email });
 
-            //        cmd.ExecuteNonQuery();
-            //        if (cmd.Parameters["@ActivityInstanceRefId"].Value.ToString() != "")
-            //        {
-            //            openedMessage.ActivityIntanceRefId = (Guid)cmd.Parameters["@ActivityInstanceRefId"].Value;
-            //        }
-
-            //        openedMessage.UserId = (Guid)cmd.Parameters["@UserId"].Value;
-            //        openedMessage.UserName = (string)cmd.Parameters["@UserName"].Value;
-            //    }
-            //}
+                    cmd.ExecuteNonQuery();
+                }
+            }
 
             if (_user.SubjectId != Guid.Empty)
                 start = true;

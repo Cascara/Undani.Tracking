@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Undani.Tracking.Invoke.Resource\Undani.Tracking.Invoke.Resource.csproj" />
     <ProjectReference Include="..\Undani.Tracking\Undani.Tracking.csproj" />
   </ItemGroup>
 

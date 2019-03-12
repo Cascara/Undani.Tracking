@@ -9,7 +9,7 @@ namespace Undani.Tracking.Execution.Core
 {
     public class SystemActionInstanceHelper : Helper
     {
-        public SystemActionInstanceHelper(IConfiguration configuration) : base(configuration) { }
+        public SystemActionInstanceHelper(IConfiguration configuration, Guid userId, string token = "") : base(configuration, userId, token) { }
 
         public void Execute(Guid systemActionInstanceId)
         {
@@ -53,7 +53,7 @@ namespace Undani.Tracking.Execution.Core
 
                     cmd.ExecuteNonQuery();
 
-                    invokedCorrect = new SystemActionInvoke(Configuration).Invoke(systemActionInstanceId, method, alias, configuration);
+                    invokedCorrect = new SystemActionInvoke(Configuration, UserId, Token).Invoke(systemActionInstanceId, method, alias, configuration);
                 }
             }
 
@@ -72,8 +72,10 @@ namespace Undani.Tracking.Execution.Core
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionInstanceFinish", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.InputOutput, Value = systemActionInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+
 
                     cmd.ExecuteNonQuery();
 
@@ -81,7 +83,7 @@ namespace Undani.Tracking.Execution.Core
                         Execute((Guid)cmd.Parameters["@SystemActionInstanceId"].Value);
                     else
                     {
-                        ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration);
+                        ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, UserId, Token);
                         actionInstanceHelper.Finish((Guid)cmd.Parameters["@ActionInstanceId"].Value);
                     }
                         

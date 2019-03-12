@@ -10,7 +10,7 @@ namespace Undani.Tracking.Execution.Core
 {
     public class FormInstanceHelper : Helper
     {
-        public FormInstanceHelper(IConfiguration configuration) : base(configuration) { }
+        public FormInstanceHelper(IConfiguration configuration, Guid userId, string token = "") : base(configuration, userId, token) { }
 
         public void Create(Guid environmentId, int flowInstanceId, int activityInstanceId, int activityTypeId, string activityGetFormInstanceKey, Guid formId, int formVersionId, bool formReadOnly)
         {

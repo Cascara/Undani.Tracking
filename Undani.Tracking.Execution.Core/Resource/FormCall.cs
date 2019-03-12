@@ -14,7 +14,7 @@ namespace Undani.Tracking.Execution.Core.Resource
     {
         public FormCall(IConfiguration configuration) : base(configuration) { }
 
-        public Guid GetInstance(_ActivityInstance _activityInstance)
+        public Guid GetInstance(_ActivityInstance _activityInstance, string token)
         {
             string url = "";
 
@@ -39,7 +39,9 @@ namespace Undani.Tracking.Execution.Core.Resource
             Guid formInstanceId;
             using (var client = new HttpClient())
             {
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
                 StringContent content = new StringContent("", Encoding.UTF8, "text/plain");
+
                 response = client.PostAsync(url, content).Result;
 
                 if (response.StatusCode != HttpStatusCode.OK)

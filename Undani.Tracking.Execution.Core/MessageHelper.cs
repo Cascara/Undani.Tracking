@@ -5,15 +5,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Dynamic;
-using System.Text;
 
 namespace Undani.Tracking.Execution.Core
 {
     public class MessageHelper : Helper
     {
-        public MessageHelper(IConfiguration configuration) : base(configuration) { }
+        public MessageHelper(IConfiguration configuration, Guid userId, string token = "") : base(configuration, userId, token) { }
 
-        public OpenedMessage GetOpen(Guid userId, Guid messageId)
+        public OpenedMessage GetOpen(Guid messageId)
         {
 
             OpenedMessage openedMessage = new OpenedMessage();
@@ -25,7 +24,7 @@ namespace Undani.Tracking.Execution.Core
                 {
 
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId, Direction = ParameterDirection.InputOutput });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId, Direction = ParameterDirection.InputOutput });
                     cmd.Parameters.Add(new SqlParameter("@UserName", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@MessageId", SqlDbType.UniqueIdentifier) { Value = messageId });
                     cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
@@ -44,7 +43,7 @@ namespace Undani.Tracking.Execution.Core
             return openedMessage;
         }
 
-        public void Create(Guid userId, int activityInstanceId)
+        public void Create(int activityInstanceId)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -52,14 +51,14 @@ namespace Undani.Tracking.Execution.Core
 
                 SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_Messages", cn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                 cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Value = activityInstanceId });
 
                 cmd.ExecuteNonQuery();
             }
         }
 
-        public List<Message> GetReceived(Guid userId)
+        public List<Message> GetReceived()
         {
             List<Message> messages = new List<Message>();
 
@@ -69,7 +68,7 @@ namespace Undani.Tracking.Execution.Core
 
                 SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_MessageReceived", cn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -101,7 +100,7 @@ namespace Undani.Tracking.Execution.Core
         /// </summary>
         /// <param name="userId">User name</param>
         /// <returns>List of messages</returns>
-        public List<Message> GetDrafts(Guid userId)
+        public List<Message> GetDrafts()
         {
             List<Message> messages = new List<Message>();
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
@@ -110,7 +109,7 @@ namespace Undani.Tracking.Execution.Core
 
                 SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_MessageDraft", cn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {

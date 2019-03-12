@@ -12,9 +12,9 @@ namespace Undani.Tracking.Execution.Core
 {
     public class FlowInstanceHelper : Helper
     {
-        public FlowInstanceHelper(IConfiguration configuration) : base(configuration) { }
+        public FlowInstanceHelper(IConfiguration configuration, Guid userId, string token = "") : base(configuration, userId, token) { }
 
-        public FlowInstance Get(Guid userId, Guid flowInstanceRefId)
+        public FlowInstance Get(Guid flowInstanceRefId)
         {
             FlowInstance flow;
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
@@ -25,7 +25,7 @@ namespace Undani.Tracking.Execution.Core
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Value = flowInstanceRefId });
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
 
                     using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                     {
@@ -45,7 +45,7 @@ namespace Undani.Tracking.Execution.Core
                                 EnvironmentId = (Guid)dr["EnvironmentId"],
                                 Created = (DateTime)dr["Created"],
                                 States = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["States"], expandoConverter),
-                                ActivityInstances = new ActivityInstanceHelper(Configuration).GetSummaryLog(userId, null, (int)dr["Id"])
+                                ActivityInstances = new ActivityInstanceHelper(Configuration, UserId, Token).GetSummaryLog(null, (int)dr["Id"])
                             };
                         }
                         else
@@ -73,6 +73,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceName", SqlDbType.VarChar, 250) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceCreated", SqlDbType.DateTime) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceEnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowName", SqlDbType.VarChar, 500) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
@@ -91,11 +92,12 @@ namespace Undani.Tracking.Execution.Core
                         flowInstanceSummary.Content = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@FlowInstanceContent"].Value, expandoObjectConverter);
                         flowInstanceSummary.Created = (DateTime)cmd.Parameters["@FlowInstanceCreated"].Value;
 
-                        flowInstanceSummary.ProcedureInstance.RefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
-                        flowInstanceSummary.ProcedureInstance.ProcedureName = (string)cmd.Parameters["@ProcedureInstanceName"].Value;
-                        flowInstanceSummary.ProcedureInstance.Key = (string)cmd.Parameters["@ProcedureInstanceKey"].Value;
-                        flowInstanceSummary.ProcedureInstance.Content = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureInstanceContent"].Value, expandoObjectConverter);
-                        flowInstanceSummary.ProcedureInstance.Created = (DateTime)cmd.Parameters["@ProcedureInstanceCreated"].Value;
+                        flowInstanceSummary.ProcedureInstanceSummary.RefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
+                        flowInstanceSummary.ProcedureInstanceSummary.ProcedureName = (string)cmd.Parameters["@ProcedureInstanceName"].Value;
+                        flowInstanceSummary.ProcedureInstanceSummary.Key = (string)cmd.Parameters["@ProcedureInstanceKey"].Value;
+                        flowInstanceSummary.ProcedureInstanceSummary.Content = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureInstanceContent"].Value, expandoObjectConverter);
+                        flowInstanceSummary.ProcedureInstanceSummary.Created = (DateTime)cmd.Parameters["@ProcedureInstanceCreated"].Value;
+                        flowInstanceSummary.ProcedureInstanceSummary.EnvironmentId = (Guid)cmd.Parameters["@ProcedureInstanceEnvironmentId"].Value;
                     }
                     else
                     {
@@ -140,8 +142,8 @@ namespace Undani.Tracking.Execution.Core
 
                         if (cmd.Parameters["@ProcedureInstanceRefId"].Value != DBNull.Value)
                         {
-                            flowInstanceSummary.ProcedureInstance.RefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
-                            flowInstanceSummary.ProcedureInstance.Key = (string)cmd.Parameters["@ProcedureInstanceKey"].Value;
+                            flowInstanceSummary.ProcedureInstanceSummary.RefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
+                            flowInstanceSummary.ProcedureInstanceSummary.Key = (string)cmd.Parameters["@ProcedureInstanceKey"].Value;
                             //flowInstanceSummary.ProcedureInstance.Name = (string)cmd.Parameters["@ProcedureInstanceName"].Value;
                         }
                     }
@@ -155,7 +157,7 @@ namespace Undani.Tracking.Execution.Core
             return flowInstanceSummary;
         }
 
-        public Guid Create(Guid userId, int flowId, int procedureInstanceId, int activityInstanceId, string version = "")
+        public Guid Create(int flowId, int procedureInstanceId, int activityInstanceId, string version = "")
         {
             int flowInstanceId = 0;
             string activityId = "";
@@ -180,11 +182,11 @@ namespace Undani.Tracking.Execution.Core
                 }
             }                      
 
-            return new ActivityInstanceHelper(Configuration).Create(userId, activityId, flowInstanceId);
+            return new ActivityInstanceHelper(Configuration, UserId, Token).Create(activityId, flowInstanceId);
         }
 
 
-        public void SetUserGroup(Guid userId, Guid flowIntanceRefId, UserGroup[] responsibles)
+        public void SetUserGroup(Guid flowIntanceRefId, UserGroup[] responsibles)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -196,7 +198,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.CommandText = "EXECUTION.usp_Delete_UserGroup";
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId } );
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId } );
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Value = flowIntanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
 
@@ -219,7 +221,7 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public void SetUserGroupFormInstance(Guid userId, Guid formIntanceId, UserGroup[] responsibles)
+        public void SetUserGroupFormInstance(Guid formIntanceId, UserGroup[] responsibles)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -231,7 +233,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.CommandText = "EXECUTION.usp_Delete_UserGroupFormInstanceId";
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Value = formIntanceId });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
 
@@ -254,7 +256,7 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public dynamic SetContentProperty(Guid userId, Guid flowInstanceRefId, string propertyName, string value)
+        public dynamic SetContentProperty(Guid flowInstanceRefId, string propertyName, string value)
         {
             string content;
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
@@ -264,7 +266,7 @@ namespace Undani.Tracking.Execution.Core
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_ContentProperty", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Value = flowInstanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50) { Value = propertyName });
                     cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 250) { Value = value });
@@ -279,7 +281,7 @@ namespace Undani.Tracking.Execution.Core
             return JsonConvert.DeserializeObject<ExpandoObject>(content, new ExpandoObjectConverter());
         }
 
-        public dynamic SetContentPropertyFormInstance(Guid userId, Guid formInstanceId, string propertyName, string value)
+        public dynamic SetContentPropertyFormInstance(Guid formInstanceId, string propertyName, string value)
         {
             string content;
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
@@ -289,7 +291,7 @@ namespace Undani.Tracking.Execution.Core
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_ContentPropertyFormInstanceId", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Value = formInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50) { Value = propertyName });
                     cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 250) { Value = value });
@@ -304,7 +306,7 @@ namespace Undani.Tracking.Execution.Core
             return JsonConvert.DeserializeObject<ExpandoObject>(content, new ExpandoObjectConverter());
         }
 
-        public void SetState(Guid userId, Guid activityInstanceRefId, string key, string state)
+        public void SetState(Guid activityInstanceRefId, string key, string state)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -313,7 +315,7 @@ namespace Undani.Tracking.Execution.Core
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_StateFlowInstance", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
                     cmd.Parameters.Add(new SqlParameter("@State", SqlDbType.VarChar, 50) { Value = state });
@@ -322,7 +324,7 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public void SetStateFormInstance(Guid userId, Guid formInstanceId, string key, string state)
+        public void SetStateFormInstance(Guid formInstanceId, string key, string state)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -331,7 +333,7 @@ namespace Undani.Tracking.Execution.Core
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_StateFlowInstanceFormInstanceId", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Value = formInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
                     cmd.Parameters.Add(new SqlParameter("@State", SqlDbType.VarChar, 50) { Value = state });
@@ -340,7 +342,7 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public PagedList<FlowInstanceSummary> GetLog(Guid userId, int? pageLimit = null, int? page = null)
+        public PagedList<FlowInstanceSummary> GetLog(int? pageLimit = null, int? page = null)
         {
             List<FlowInstanceSummary> flowLog = new List<FlowInstanceSummary>();
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
@@ -348,7 +350,7 @@ namespace Undani.Tracking.Execution.Core
                 cn.Open();
                 
                 SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_FlowInstanceSummaryLog", cn);
-                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                 cmd.CommandType = CommandType.StoredProcedure;
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -368,8 +370,8 @@ namespace Undani.Tracking.Execution.Core
 
                         if (!reader.IsDBNull(5))
                         {
-                            flowInstanceSummary.ProcedureInstance.RefId = reader.GetGuid(5);
-                            flowInstanceSummary.ProcedureInstance.Key = reader.GetString(6);
+                            flowInstanceSummary.ProcedureInstanceSummary.RefId = reader.GetGuid(5);
+                            flowInstanceSummary.ProcedureInstanceSummary.Key = reader.GetString(6);
                             //flowInstanceSummary.ProcedureInstance.Name = reader.GetString(7);
                         }
 

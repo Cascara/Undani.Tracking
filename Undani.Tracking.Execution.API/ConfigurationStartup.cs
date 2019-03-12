@@ -14,7 +14,10 @@ namespace Undani.Tracking.Execution.API
         {
             builder.ConfigureAppConfiguration(config =>
             {
-                var dict = Undani.Configuration.Load("5F14190F-3493-4A18-AB6E-22F3639263C2", "BA1D83FD-3334-4D5E-B696-6D1D45F56CE9");
+                var dict = Undani.Configuration.Load(
+                    Environment.GetEnvironmentVariable("CONFIGURATION_ENVIRONMENT"),
+                    Environment.GetEnvironmentVariable("CONFIGURATION_SYSTEM")
+                    );
 
                 config.AddInMemoryCollection(dict);
             });

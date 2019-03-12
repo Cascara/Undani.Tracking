@@ -7,7 +7,7 @@ namespace Undani.Tracking.Execution.Core
 {
     public class UserHelper : Helper
     {
-        public UserHelper(IConfiguration configuration) : base(configuration) { }
+        public UserHelper(IConfiguration configuration, Guid userId, string token = "") : base(configuration, userId, token) { }
 
         public string Set(Guid? id)
         {

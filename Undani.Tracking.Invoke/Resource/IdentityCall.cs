@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using Undani.Tracking.Invoke.Resource.Infra;
+using Undani.Tracking.Invoke.Infra;
 
 namespace Undani.Tracking.Invoke.Resource
 {
-    public class IdentityCall : Call
+    internal class IdentityCall : Call
     {
         public IdentityCall(IConfiguration configuration) : base(configuration) { }
 
@@ -33,7 +33,10 @@ namespace Undani.Tracking.Invoke.Resource
                 if (response.StatusCode != HttpStatusCode.OK)
                     throw new Exception("It was not possible to add the traceability page in box");
 
-                return Newtonsoft.Json.JsonConvert.DeserializeObject<_User>(response.Content.ReadAsStringAsync().Result);
+                _User _user = Newtonsoft.Json.JsonConvert.DeserializeObject<_User>(response.Content.ReadAsStringAsync().Result);
+                _user.OwnerId = ownerId;
+
+                return _user;
             }
         }
     }

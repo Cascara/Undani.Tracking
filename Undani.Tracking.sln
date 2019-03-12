@@ -23,8 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking", "Undani.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Invoke", "Undani.Tracking.Invoke\Undani.Tracking.Invoke.csproj", "{8C0C11A4-23DA-480B-A221-7B8EEFB9C59E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Invoke.Resource", "Undani.Tracking.Invoke.Resource\Undani.Tracking.Invoke.Resource.csproj", "{B421746A-50E4-49D5-89EC-8E1F78076CB7}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,10 +61,6 @@ Global
 		{8C0C11A4-23DA-480B-A221-7B8EEFB9C59E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C0C11A4-23DA-480B-A221-7B8EEFB9C59E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C0C11A4-23DA-480B-A221-7B8EEFB9C59E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B421746A-50E4-49D5-89EC-8E1F78076CB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B421746A-50E4-49D5-89EC-8E1F78076CB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B421746A-50E4-49D5-89EC-8E1F78076CB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B421746A-50E4-49D5-89EC-8E1F78076CB7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -17,9 +17,30 @@ namespace Undani.Tracking.Execution.Core
 {
     public class ActivityInstanceHelper : Helper
     {
-        public ActivityInstanceHelper(IConfiguration configuration) : base(configuration) { }
+        public ActivityInstanceHelper(IConfiguration configuration, Guid userId, string token = "") : base(configuration, userId, token) { }
 
-        public ActivityInstance Get(Guid userId, Guid activityInstanceRefId)
+        public string IsAnonymous(Guid activityInstanceRefId)
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityInstanceIsAnonymous", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId });
+                    cmd.Parameters.Add(new SqlParameter("@IsAnonymous", SqlDbType.Bit) { Direction = ParameterDirection.Output });
+                    cmd.ExecuteNonQuery();
+
+                    if ((bool)cmd.Parameters["@IsAnonymous"].Value)
+                        return Token;
+                    else
+                        return "";
+                }
+            }
+        }
+
+        public ActivityInstance Get(Guid activityInstanceRefId)
         {
             ActivityInstance activity;
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
@@ -29,7 +50,7 @@ namespace Undani.Tracking.Execution.Core
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityInstance", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId });
 
                     using (SqlDataAdapter da = new SqlDataAdapter(cmd))
@@ -47,13 +68,13 @@ namespace Undani.Tracking.Execution.Core
                                 ActionButtonsDisabled = (bool)dr["ActionsDisabled"],
                                 Start = (DateTime)dr["StartDate"],
                                 FormInstanceId = SetFormInstance((Guid)dr["FormInstanceId"], (int)dr["Id"]),
-                                FlowInstanceSummary = new FlowInstanceHelper(Configuration).GetSummary((int)dr["FlowInstanceId"])
+                                FlowInstanceSummary = new FlowInstanceHelper(Configuration, UserId, Token).GetSummary((int)dr["FlowInstanceId"])
                             };
 
                             if (dr["EndDate"] != DBNull.Value)
                                 activity.End = (DateTime)dr["EndDate"];
-                            else if ((Guid)dr["UserId"] == userId)
-                                activity.ActionButtons = new ActionInstanceHelper(Configuration).GetActions((string)dr["ActivityId"]);
+                            else if ((Guid)dr["UserId"] == UserId)
+                                activity.ActionButtons = new ActionInstanceHelper(Configuration, UserId, Token).GetActions((string)dr["ActivityId"]);
                         }
                         else
                             throw new Exception("Could not get the activity");
@@ -95,7 +116,7 @@ namespace Undani.Tracking.Execution.Core
                             _activityInstance.FormReadOnly = (bool)cmd.Parameters["@FormReadOnly"].Value;
                             _activityInstance.FormParentInstanceId = (Guid)cmd.Parameters["@FormInstanceParentId"].Value;
 
-                            _activityInstance.FormInstanceId = new FormCall(Configuration).GetInstance(_activityInstance);
+                            _activityInstance.FormInstanceId = new FormCall(Configuration).GetInstance(_activityInstance, Token);
 
                             cmd.CommandText = "EXECUTION.usp_Set_ActivityInstanceFormInstanceId";
                             cmd.Parameters.Clear();
@@ -119,7 +140,7 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public List<ActivityInstanceSummary> GetSummaryLog(Guid userId, Guid? refId, int flowInstanceId = 0)
+        public List<ActivityInstanceSummary> GetSummaryLog(Guid? refId, int flowInstanceId = 0)
         {
             List<ActivityInstanceSummary> activityLog = new List<ActivityInstanceSummary>();
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
@@ -130,7 +151,7 @@ namespace Undani.Tracking.Execution.Core
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = refId.HasValue ? refId.Value : Guid.Empty });
                 cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
-                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -152,7 +173,7 @@ namespace Undani.Tracking.Execution.Core
             return activityLog;
         }
 
-        public Guid Create(Guid userId, string activityId, int flowInstanceId)
+        public Guid Create(string activityId, int flowInstanceId)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -181,7 +202,7 @@ namespace Undani.Tracking.Execution.Core
                     }
                     else
                     {
-                        return Create(userId, activityId, flowInstanceId, Guid.Empty);
+                        return Create(UserId, activityId, flowInstanceId, Guid.Empty);
                     }
                 }
             }
@@ -250,13 +271,13 @@ namespace Undani.Tracking.Execution.Core
 
                     if ((string)cmd.Parameters["@GetFormInstanceKey"].Value == "auto")
                     {
-                        ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration);
+                        ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, UserId, Token);
                         actionInstanceHelper.Execute(userId, activityInstanceId);
                     }
                     else
                     {
-                        MessageHelper messageHelper = new MessageHelper(Configuration);
-                        messageHelper.Create(userId, activityInstanceId);
+                        MessageHelper messageHelper = new MessageHelper(Configuration, UserId, Token);
+                        messageHelper.Create(activityInstanceId);
                     }
                         
                     return (Guid)cmd.Parameters["@ActivityInstanceRefId"].Value;
@@ -264,7 +285,7 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public void SetComment(Guid userId, Guid activityInstanceRefId, string comment)
+        public void SetComment(Guid activityInstanceRefId, string comment)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -273,7 +294,7 @@ namespace Undani.Tracking.Execution.Core
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_Comment", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@Comment", SqlDbType.VarChar, 255) { Value = comment });
                     cmd.ExecuteNonQuery();
@@ -281,7 +302,7 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public List<Comment> GetComments(Guid userId, Guid activityInstanceRefId)
+        public List<Comment> GetComments(Guid activityInstanceRefId)
         {
             List<Comment> comments = new List<Comment>();
             string scn = Configuration["CnDbTracking"];
@@ -291,7 +312,7 @@ namespace Undani.Tracking.Execution.Core
 
                 SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_Comments", cn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                 cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId });
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
