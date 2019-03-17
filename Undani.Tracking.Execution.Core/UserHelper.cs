@@ -9,14 +9,14 @@ namespace Undani.Tracking.Execution.Core
     {
         public UserHelper(IConfiguration configuration, Guid userId, string token = "") : base(configuration, userId, token) { }
 
-        public string Set(Guid? id)
+        public string Get(Guid? id)
         {
             string userName;
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.sp_Set_UserAccess", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.sp_Get_User", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.UniqueIdentifier) { Value = id.HasValue ? id.Value : Guid.Empty });

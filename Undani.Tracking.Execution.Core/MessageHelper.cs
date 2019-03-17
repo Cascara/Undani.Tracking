@@ -95,12 +95,33 @@ namespace Undani.Tracking.Execution.Core
             return messages;
         }
 
+        public int GetReceivedCount()
+        {
+            int messagesCount = 0;
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_MessageReceivedCount", cn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                cmd.Parameters.Add(new SqlParameter("@Count", SqlDbType.Int) { Direction = ParameterDirection.Output });
+
+                cmd.ExecuteNonQuery();
+
+                messagesCount = (int)cmd.Parameters["@Count"].Value;
+            }
+
+            return messagesCount;
+        }
+
         /// <summary>
         /// It allows get a collection of activities draft messages from user name
         /// </summary>
         /// <param name="userId">User name</param>
         /// <returns>List of messages</returns>
-        public List<Message> GetDrafts()
+        public List<Message> GetDrafts(int? pageLimit = null, int? page = null)
         {
             List<Message> messages = new List<Message>();
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))

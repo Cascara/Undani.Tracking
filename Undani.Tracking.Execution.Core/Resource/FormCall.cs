@@ -39,7 +39,7 @@ namespace Undani.Tracking.Execution.Core.Resource
             Guid formInstanceId;
             using (var client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+                client.DefaultRequestHeaders.Add("Authorization", token);
                 StringContent content = new StringContent("", Encoding.UTF8, "text/plain");
 
                 response = client.PostAsync(url, content).Result;

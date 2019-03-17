@@ -36,7 +36,8 @@ namespace Undani.Tracking.Execution.Core
             {
                 if (_userId == Guid.Empty)
                 {
-                    _token = new IdentityCall(_configuration).GetAnonymousToken();
+                    string token = new IdentityCall(_configuration).GetAnonymousToken();
+                    _token = "Bearer " + token;
                 }
                 return _token;
             }

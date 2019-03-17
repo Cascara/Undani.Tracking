@@ -122,8 +122,15 @@ namespace Undani.Tracking.Execution.API.Controllers
             return new MessageHelper(_configuration, user.UserId, user.Token).GetReceived();
         }
 
+        [Route("Message/GetReceivedCount")]
+        public int GetMessagesReceivedCount()
+        {
+            _User user = GetUser(Request);
+            return new MessageHelper(_configuration, user.UserId, user.Token).GetReceivedCount();
+        }
+
         [Route("Message/GetDrafts")]
-        public List<Message> GetMessagesDrafts()
+        public List<Message> GetMessagesDrafts(int? pageLimit = null, int? page = null)
         {
             _User user = GetUser(Request);
             return new MessageHelper(_configuration, user.UserId, user.Token).GetDrafts();
