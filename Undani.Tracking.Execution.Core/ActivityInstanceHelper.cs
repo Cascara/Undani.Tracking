@@ -68,6 +68,7 @@ namespace Undani.Tracking.Execution.Core
                                 ActionButtonsDisabled = (bool)dr["ActionsDisabled"],
                                 Start = (DateTime)dr["StartDate"],
                                 FormInstanceId = SetFormInstance((Guid)dr["FormInstanceId"], (int)dr["Id"]),
+                                FormReadOnly = (bool)dr["ActivityFormReadOnly"],
                                 FlowInstanceSummary = new FlowInstanceHelper(Configuration, UserId, Token).GetSummary((int)dr["FlowInstanceId"])
                             };
 

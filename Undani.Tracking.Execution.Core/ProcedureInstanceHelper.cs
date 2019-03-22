@@ -88,5 +88,39 @@ namespace Undani.Tracking.Execution.Core
 
             return procedureInstance;
         }
+
+        public List<ProcedureInstanceSummary> GetInProcess(Guid userId)
+        {
+            List<ProcedureInstanceSummary> procedures = new List<ProcedureInstanceSummary>();
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceInProcess", cn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+
+                    ExpandoObjectConverter expandoConverter = new ExpandoObjectConverter();
+                    while (reader.Read())
+                    {
+                        procedures.Add(new ProcedureInstanceSummary()
+                        {
+                            RefId = reader.GetGuid(0),
+                            ProcedureName = reader.GetString(1),
+                            Key = reader.GetString(2),
+                            Content = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(3), expandoConverter),
+                            Created = reader.GetDateTime(4),
+                            PrincipalState = reader.GetString(5)
+                        });
+                    }
+                }
+            }
+
+            return procedures;
+        }
     }
 }

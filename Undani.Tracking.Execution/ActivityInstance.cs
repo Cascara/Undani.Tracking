@@ -15,6 +15,7 @@ namespace Undani.Tracking.Execution
         public DateTime Start { get; set; }
         public DateTime? End { get; set; }
         public Guid FormInstanceId { get; set; }
+        public bool FormReadOnly { get; set; }
         public List<ActionButton> ActionButtons { get; set; }
         public FlowInstanceSummary FlowInstanceSummary { get; set; }
     }

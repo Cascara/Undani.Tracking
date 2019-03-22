@@ -22,7 +22,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
                
         #region ProcedureInstance
-        [Route("ProcedureInstance/")]
+        [Route("ProcedureInstance")]
         public ProcedureInstance GetProcedureInstance(Guid procedureInstanceRefId)
         {
             _User user = GetUser(Request);
@@ -40,6 +40,13 @@ namespace Undani.Tracking.Execution.API.Controllers
         public Guid CreateAnonymousProcedureInstance(Guid procedureRefId, Guid? activityInstanceRefId = null)
         {
             return new ProcedureInstanceHelper(_configuration, Guid.Empty).Create(procedureRefId, activityInstanceRefId);
+        }
+
+        [Route("ProcedureInstance/GetInProcess")]
+        public List<ProcedureInstanceSummary> GetProcedureInstanceInProcess()
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(_configuration, user.UserId, user.Token).GetInProcess(user.UserId);
         }
         #endregion
 
@@ -195,14 +202,6 @@ namespace Undani.Tracking.Execution.API.Controllers
         {
             ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(_configuration, Guid.Empty);
             actionInstanceHelper.Execute(actionRefId, activityInstanceRefId);
-        }
-
-        [Route("ActionInstance/Execute/ByFormInstance")]
-        public void ExecuteActionInstanceFormInstance(Guid formInstanceId)
-        {
-            _User user = GetUser(Request);
-            ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(_configuration, user.UserId, user.Token);
-            actionInstanceHelper.Execute(formInstanceId);
         }
 
         [Route("SystemAccionInstance/Finish")]

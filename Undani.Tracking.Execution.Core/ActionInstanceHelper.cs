@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using Undani.Tracking.Execution.Core.Resource;
 
 namespace Undani.Tracking.Execution.Core
 {
@@ -73,34 +74,6 @@ namespace Undani.Tracking.Execution.Core
             Create(actionId, activityInstanceId);
         }
 
-
-        public void Execute(Guid formInstanceId)
-        {
-            string actionId;
-            int activityInstanceId;
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
-            {
-                cn.Open();
-
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActionFormInstanceId", cn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
-                    cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Value = formInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActionId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
-
-                    cmd.ExecuteNonQuery();
-
-                    actionId = (string)cmd.Parameters["@ActionId"].Value;
-                    activityInstanceId = (int)cmd.Parameters["@ActivityInstanceId"].Value;
-                }
-
-            }
-
-            Create(actionId, activityInstanceId);
-        }
-
         public void Execute(Guid actionRefId, Guid activityInstanceRefId)
         {
             string actionId;
@@ -157,6 +130,7 @@ namespace Undani.Tracking.Execution.Core
         private void Create(string actionId, int activityInstanceId)
         {
             Guid actionInstanceId;
+            Guid formInstanceId;
 
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))   
             {
@@ -169,10 +143,18 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Value = activityInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     actionInstanceId = (Guid)cmd.Parameters["@ActionInstanceId"].Value;
+                    formInstanceId = (Guid)cmd.Parameters["@FormInstanceId"].Value;
+
+                    if (formInstanceId != Guid.Empty)
+                    {
+                        FormCall formCall = new FormCall(Configuration);
+                        formCall.SetReadOnly(formInstanceId, Token);
+                    }
 
                     if (cmd.Parameters["@SystemActionInstanceId"].Value != DBNull.Value)
                     {
@@ -184,9 +166,7 @@ namespace Undani.Tracking.Execution.Core
                         Finish(actionInstanceId);
                     }
                 }
-            }
-
-            
+            }            
         }
 
         public void Finish(Guid actionInstanceId)

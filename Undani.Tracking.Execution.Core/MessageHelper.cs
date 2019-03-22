@@ -83,10 +83,12 @@ namespace Undani.Tracking.Execution.Core
                             FlowName = reader.GetString(2),
                             FlowInstanceKey = reader.GetString(3),
                             FlowInstanceContent = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(4), expandoConverter),
-                            States = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(5), expandoConverter),
-                            Start = reader.GetDateTime(6),
-                            Viewed = reader.GetBoolean(7),
-                            ActivityUserGroupTypeId = reader.GetInt32(8)
+                            ProcedureInstanceKey = reader.GetString(5),
+                            StatesFlowInstance = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(6), expandoConverter),
+                            StatesProcedureInstance = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(7), expandoConverter),
+                            Start = reader.GetDateTime(8),
+                            Viewed = reader.GetBoolean(9),
+                            ActivityUserGroupTypeId = reader.GetInt32(10)
                         });
                     }
                 }
@@ -144,7 +146,7 @@ namespace Undani.Tracking.Execution.Core
                             FlowName = reader.GetString(2),
                             FlowInstanceKey = reader.GetString(3),
                             FlowInstanceContent = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(4), expandoConverter),
-                            States = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(5), expandoConverter),
+                            StatesFlowInstance = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(5), expandoConverter),
                             Start = reader.GetDateTime(6)
                         });
                     }

@@ -12,5 +12,6 @@ namespace Undani.Tracking.Execution
         public dynamic Content { get; set; }
         public DateTime Created { get; set; }
         public Guid EnvironmentId { get; set; }
+        public string PrincipalState { get; set; }
     }
 }

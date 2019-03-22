@@ -25,7 +25,7 @@ namespace Undani.Tracking.Execution.Core.Resource
                 if (_activityInstance.FormId != Guid.Empty)
                     url += "InheritInstance?formId=" + _activityInstance.FormId.Value.ToString() + "&parentInstanceId=" + _activityInstance.FormParentInstanceId.Value.ToString();
                 else
-                    url += "CloneInstance?parentInstanceId=" + _activityInstance.FormParentInstanceId.Value.ToString();
+                    url += "CloneInstance?instanceId=" + _activityInstance.FormParentInstanceId.Value.ToString();
 
                 if (_activityInstance.FormReadOnly)
                     url += "&readOnly=true";
@@ -55,6 +55,25 @@ namespace Undani.Tracking.Execution.Core.Resource
 
             return formInstanceId;
 
+        }
+
+        public void SetReadOnly(Guid formInstanceId, string token)
+        {
+            string url = Configuration["ApiForm"] + "/Execution/UpdateReadOnly?instaceId=" + formInstanceId.ToString();
+
+            HttpResponseMessage response = null;
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", token);
+                StringContent content = new StringContent("", Encoding.UTF8, "text/plain");
+
+                response = client.PostAsync(url, content).Result;
+
+                if (response.StatusCode != HttpStatusCode.OK)
+                    throw new Exception("There are not enough parameters to obtain the instance of a form");
+
+                string result = response.Content.ReadAsStringAsync().Result;
+            }
         }
 
     }
