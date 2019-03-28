@@ -65,6 +65,7 @@ namespace Undani.Tracking.Execution.Core
                             {
                                 RefId = activityInstanceRefId,
                                 Name = (string)dr["ActivityName"],
+                                CoustomViewer = (string)dr["ActivityCoustomViewer"],
                                 ActionButtonsDisabled = (bool)dr["ActionsDisabled"],
                                 Start = (DateTime)dr["StartDate"],
                                 FormInstanceId = SetFormInstance((Guid)dr["FormInstanceId"], (int)dr["Id"]),

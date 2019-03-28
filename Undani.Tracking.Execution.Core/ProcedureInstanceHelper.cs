@@ -122,5 +122,61 @@ namespace Undani.Tracking.Execution.Core
 
             return procedures;
         }
+
+        public int GetInProcessCount(Guid userId)
+        {
+            int inProcessCount = 0;
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceInProcessCount", cn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                cmd.Parameters.Add(new SqlParameter("@Count", SqlDbType.Int) { Direction = ParameterDirection.Output });
+
+                cmd.ExecuteNonQuery();
+
+                inProcessCount = (int)cmd.Parameters["@Count"].Value;
+            }
+
+            return inProcessCount;
+        }
+
+        public List<ActivityInstanceSummary> GetLog(Guid procedureInstanceRefId)
+        {
+            List<ActivityInstanceSummary> activityLog = new List<ActivityInstanceSummary>();
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceLog", cn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Value = procedureInstanceRefId });
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    ExpandoObjectConverter expandoConverter = new ExpandoObjectConverter();
+                    while (reader.Read())
+                    {
+                        activityLog.Add(new ActivityInstanceSummary()
+                        {
+                            RefId = reader.GetGuid(0),
+                            ActivityName = reader.GetString(1),
+                            UserName = reader.GetString(2),
+                            Start = reader.GetDateTime(3),
+                            End = reader.IsDBNull(4) ? new DateTime() : reader.GetDateTime(4),
+                            Days = reader.GetString(5),
+                            Hours = reader.GetString(6),
+                            Reference = reader.GetString(7)
+                        });
+                    }
+                }
+            }
+
+            return activityLog;
+        }
     }
 }

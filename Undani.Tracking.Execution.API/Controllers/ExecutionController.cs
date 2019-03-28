@@ -48,6 +48,20 @@ namespace Undani.Tracking.Execution.API.Controllers
             _User user = GetUser(Request);
             return new ProcedureInstanceHelper(_configuration, user.UserId, user.Token).GetInProcess(user.UserId);
         }
+
+        [Route("ProcedureInstance/GetInProcessCount")]
+        public int GetProcedureInstanceInProcessCount()
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(_configuration, user.UserId, user.Token).GetInProcessCount(user.UserId);
+        }
+
+        [Route("ProcedureInstance/GeLog")]
+        public List<ActivityInstanceSummary> GetProcedureInstanceLog(Guid procedureInstanceRefId)
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(_configuration, user.UserId, user.Token).GetLog(procedureInstanceRefId);
+        }
         #endregion
 
         #region FlowInstance

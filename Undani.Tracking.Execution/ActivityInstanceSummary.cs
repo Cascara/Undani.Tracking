@@ -11,5 +11,8 @@ namespace Undani.Tracking.Execution
         public string UserName { get; set; }
         public DateTime Start { get; set; }
         public DateTime? End { get; set; }
+        public string Days { get; set; }
+        public string Hours { get; set; }
+        public string Reference { get; set; }
     }
 }

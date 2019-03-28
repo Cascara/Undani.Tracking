@@ -25,6 +25,10 @@ namespace Undani.Tracking.Invoke
                     start = SetProcedureInstanceStartDate(systemActionInstanceId);
                     break;
 
+                case "ProcedureInstanceEndDate":
+                    start = SetProcedureInstanceEndDate(systemActionInstanceId, configuration);
+                    break;
+
                 default:
                     throw new Exception("The method is not implemented");
             }
@@ -51,6 +55,39 @@ namespace Undani.Tracking.Invoke
             }               
 
             return start;
+        }
+
+        private bool SetProcedureInstanceEndDate(Guid systemActionInstanceId, string configuration)
+        {
+            bool start = false;
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionTimeProcedureInstanceEndDate", cn))
+                {
+
+                    dynamic stateProcedure = JsonConvert.DeserializeObject<ExpandoObject>(configuration, new ExpandoObjectConverter());
+
+                    string[] states = stateProcedure.States.Split(',');
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = stateProcedure.Key });
+                    cmd.Parameters.Add(new SqlParameter("@State", SqlDbType.VarChar, 50));
+
+                    foreach (string state in states)
+                    {
+                        cmd.Parameters["@State"].Value = state;
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    start = true;
+                }
+
+                return start;
+            }
         }
     }
 }
