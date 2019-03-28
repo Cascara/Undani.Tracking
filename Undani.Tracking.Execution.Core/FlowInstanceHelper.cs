@@ -72,7 +72,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceName", SqlDbType.VarChar, 250) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceCreated", SqlDbType.DateTime) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceStartDate", SqlDbType.DateTime) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceEnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowName", SqlDbType.VarChar, 500) { Direction = ParameterDirection.Output });
@@ -93,10 +93,10 @@ namespace Undani.Tracking.Execution.Core
                         flowInstanceSummary.Created = (DateTime)cmd.Parameters["@FlowInstanceCreated"].Value;
 
                         flowInstanceSummary.ProcedureInstanceSummary.RefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
-                        flowInstanceSummary.ProcedureInstanceSummary.ProcedureName = (string)cmd.Parameters["@ProcedureInstanceName"].Value;
+                        flowInstanceSummary.ProcedureInstanceSummary.Name = (string)cmd.Parameters["@ProcedureInstanceName"].Value;
                         flowInstanceSummary.ProcedureInstanceSummary.Key = (string)cmd.Parameters["@ProcedureInstanceKey"].Value;
                         flowInstanceSummary.ProcedureInstanceSummary.Content = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureInstanceContent"].Value, expandoObjectConverter);
-                        flowInstanceSummary.ProcedureInstanceSummary.Created = (DateTime)cmd.Parameters["@ProcedureInstanceCreated"].Value;
+                        flowInstanceSummary.ProcedureInstanceSummary.Start = (DateTime)cmd.Parameters["@ProcedureInstanceStartDate"].Value;
                         flowInstanceSummary.ProcedureInstanceSummary.EnvironmentId = (Guid)cmd.Parameters["@ProcedureInstanceEnvironmentId"].Value;
                     }
                     else

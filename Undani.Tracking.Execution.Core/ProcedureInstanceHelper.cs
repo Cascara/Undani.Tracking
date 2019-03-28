@@ -110,7 +110,7 @@ namespace Undani.Tracking.Execution.Core
                         procedures.Add(new ProcedureInstanceSummary()
                         {
                             RefId = reader.GetGuid(0),
-                            ProcedureName = reader.GetString(1),
+                            Name = reader.GetString(1),
                             Key = reader.GetString(2),
                             Content = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(3), expandoConverter),
                             Created = reader.GetDateTime(4),
