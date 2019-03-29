@@ -96,7 +96,8 @@ namespace Undani.Tracking.Execution.Core
                         flowInstanceSummary.ProcedureInstanceSummary.Name = (string)cmd.Parameters["@ProcedureInstanceName"].Value;
                         flowInstanceSummary.ProcedureInstanceSummary.Key = (string)cmd.Parameters["@ProcedureInstanceKey"].Value;
                         flowInstanceSummary.ProcedureInstanceSummary.Content = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureInstanceContent"].Value, expandoObjectConverter);
-                        flowInstanceSummary.ProcedureInstanceSummary.Start = (DateTime)cmd.Parameters["@ProcedureInstanceStartDate"].Value;
+                        if(cmd.Parameters["@ProcedureInstanceStartDate"].Value != DBNull.Value)
+                            flowInstanceSummary.ProcedureInstanceSummary.Start = (DateTime)cmd.Parameters["@ProcedureInstanceStartDate"].Value;
                         flowInstanceSummary.ProcedureInstanceSummary.EnvironmentId = (Guid)cmd.Parameters["@ProcedureInstanceEnvironmentId"].Value;
                     }
                     else

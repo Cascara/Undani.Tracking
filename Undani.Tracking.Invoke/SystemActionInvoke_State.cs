@@ -21,12 +21,12 @@ namespace Undani.Tracking.Invoke
             bool start = false;
             switch (alias)
             {
-                case "FlowInstance":
-                    start = SetStateFlowInstance(systemActionInstanceId, configuration);
+                case "StateFlowInstance":
+                    start = StateFlowInstance(systemActionInstanceId, configuration);
                     break;
 
-                case "ProcedureInstance":
-                    start = SetStateProcedureInstance(systemActionInstanceId, configuration);
+                case "StateProcedureInstance":
+                    start = StateProcedureInstance(systemActionInstanceId, configuration);
                     break;
 
                 default:
@@ -36,7 +36,7 @@ namespace Undani.Tracking.Invoke
             return start;
         }
 
-        private bool SetStateFlowInstance(Guid systemActionInstanceId, string configuration)
+        private bool StateFlowInstance(Guid systemActionInstanceId, string configuration)
         {
             bool start = false;
 
@@ -44,7 +44,7 @@ namespace Undani.Tracking.Invoke
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionStateFlowInstance", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_StateFlowInstance", cn))
                 {
                     dynamic stateFlowInstance = JsonConvert.DeserializeObject<ExpandoObject>(configuration, new ExpandoObjectConverter());
 
@@ -61,7 +61,7 @@ namespace Undani.Tracking.Invoke
             return start;
         }
 
-        private bool SetStateProcedureInstance(Guid systemActionInstanceId, string configuration)
+        private bool StateProcedureInstance(Guid systemActionInstanceId, string configuration)
         {
             bool start = false;
 
@@ -69,7 +69,7 @@ namespace Undani.Tracking.Invoke
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionStateProcedureInstance", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_StateProcedureInstance", cn))
                 {
                     dynamic stateProcedureInstance = JsonConvert.DeserializeObject<ExpandoObject>(configuration, new ExpandoObjectConverter());
 

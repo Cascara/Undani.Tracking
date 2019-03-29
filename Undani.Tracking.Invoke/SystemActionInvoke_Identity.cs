@@ -8,6 +8,9 @@ using System.Text;
 using Undani.Tracking.Invoke.Resource;
 using Undani.Tracking.Invoke.Infra;
 using System.Data;
+using Newtonsoft.Json;
+using System.Dynamic;
+using Newtonsoft.Json.Converters;
 
 namespace Undani.Tracking.Invoke
 {
@@ -33,9 +36,32 @@ namespace Undani.Tracking.Invoke
         {
             bool start = false;
 
-            dynamic obj = new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token);
+            string json = new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token);
 
-            _User _user = new IdentityCall(Configuration).CreateUser(configuration, obj);
+            dynamic oJson = JsonConvert.DeserializeObject<ExpandoObject>(json, new ExpandoObjectConverter());
+
+            Guid ownerId;
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_OwnerSystemActionInstance", cn))
+                {
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+
+                    cmd.ExecuteNonQuery();
+
+                    ownerId = (Guid)cmd.Parameters["@OwnerId"].Value;
+
+                    IDictionary<string, object> dJson = oJson;
+                    dJson.Add("OwnerId", ownerId);
+                }
+            }
+
+            _User _user = new IdentityCall(Configuration).CreateUser(configuration, oJson);
 
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -46,7 +72,7 @@ namespace Undani.Tracking.Invoke
 
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = _user.SubjectId });
-                    cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = obj.OwnerId });
+                    cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = ownerId });
                     cmd.Parameters.Add(new SqlParameter("@UserName", SqlDbType.VarChar, 256) { Value = _user.UserName });
                     cmd.Parameters.Add(new SqlParameter("@GivenName", SqlDbType.VarChar, 100) { Value = _user.GivenName });
                     cmd.Parameters.Add(new SqlParameter("@FamilyName", SqlDbType.VarChar, 100) { Value = _user.FamilyName });

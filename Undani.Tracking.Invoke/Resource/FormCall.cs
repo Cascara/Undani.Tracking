@@ -15,10 +15,10 @@ namespace Undani.Tracking.Invoke.Resource
     {
         public FormCall(IConfiguration configuration) : base(configuration) { }
 
-        public dynamic GetInstanceObject(Guid systemActionInstanceId, string token)
+        public string GetInstanceObject(Guid systemActionInstanceId, string token)
         {
             Guid formInstanceId;
-            Guid ownerId;
+            string json = "";
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
@@ -28,18 +28,15 @@ namespace Undani.Tracking.Invoke.Resource
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     formInstanceId = (Guid)cmd.Parameters["@FormInstanceId"].Value;
-                    ownerId = (Guid)cmd.Parameters["@OwnerId"].Value;
                 }
             }
 
             string url = Configuration["ApiForm"] + "/Execution/GetJsonInstance?instanceId=" + formInstanceId;
 
-            dynamic oJson;
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
@@ -49,15 +46,11 @@ namespace Undani.Tracking.Invoke.Resource
                 if (response.StatusCode != HttpStatusCode.OK)
                     throw new Exception("There was an error when trying to consume the resource apiform");
 
-                string json = response.Content.ReadAsStringAsync().Result;
+                json = response.Content.ReadAsStringAsync().Result;
 
-                oJson = JsonConvert.DeserializeObject<ExpandoObject>(json, new ExpandoObjectConverter());
-
-                IDictionary<string, object> dJson = oJson;
-                dJson.Add("OwnerId", ownerId);
             }
 
-            return oJson;
+            return json;
         }
     }
 }

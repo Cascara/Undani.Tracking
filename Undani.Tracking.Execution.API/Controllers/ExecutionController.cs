@@ -56,7 +56,14 @@ namespace Undani.Tracking.Execution.API.Controllers
             return new ProcedureInstanceHelper(_configuration, user.UserId, user.Token).GetInProcessCount(user.UserId);
         }
 
-        [Route("ProcedureInstance/GeLog")]
+        [Route("ProcedureInstance/GetResolved")]
+        public List<ProcedureInstanceSummary> GetProcedureInstanceResolved()
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(_configuration, user.UserId, user.Token).GetResolved(user.UserId);
+        }
+
+        [Route("ProcedureInstance/GetLog")]
         public List<ActivityInstanceSummary> GetProcedureInstanceLog(Guid procedureInstanceRefId)
         {
             _User user = GetUser(Request);
@@ -217,7 +224,9 @@ namespace Undani.Tracking.Execution.API.Controllers
             ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(_configuration, Guid.Empty);
             actionInstanceHelper.Execute(actionRefId, activityInstanceRefId);
         }
+        #endregion
 
+        #region SystemAction
         [Route("SystemAccionInstance/Finish")]
         public void FinishSystemAction(Guid systemActionInstanceId)
         {
@@ -236,6 +245,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         [Route("SystemAccionInstance/Execute")]
         public void ExecuteSystemAction(Guid systemActionInstanceId)
         {
+            //_User user = GetUser(Request);
             SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(_configuration, Guid.Empty);
             systemActionInstanceHelper.Execute(systemActionInstanceId);
         }

@@ -11,22 +11,23 @@ using System.Data;
 using System.Dynamic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 
 namespace Undani.Tracking.Invoke
 {
     public partial class SystemActionInvoke
     {
-        public bool Time(Guid systemActionInstanceId, string alias, string configuration)
+        public bool Tracking(Guid systemActionInstanceId, string alias, string configuration)
         {
             bool start = false;
             switch (alias)
             {
                 case "ProcedureInstanceStartDate":
-                    start = SetProcedureInstanceStartDate(systemActionInstanceId);
+                    start = ProcedureInstanceStartDate(systemActionInstanceId);
                     break;
 
                 case "ProcedureInstanceEndDate":
-                    start = SetProcedureInstanceEndDate(systemActionInstanceId, configuration);
+                    start = ProcedureInstanceEndDate(systemActionInstanceId, configuration);
                     break;
 
                 default:
@@ -36,7 +37,7 @@ namespace Undani.Tracking.Invoke
             return start;
         }
 
-        private bool SetProcedureInstanceStartDate(Guid systemActionInstanceId)
+        private bool ProcedureInstanceStartDate(Guid systemActionInstanceId)
         {
             bool start = false;
 
@@ -44,7 +45,7 @@ namespace Undani.Tracking.Invoke
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionTimeProcedureInstanceStartDate", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceStartDate", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
@@ -57,7 +58,7 @@ namespace Undani.Tracking.Invoke
             return start;
         }
 
-        private bool SetProcedureInstanceEndDate(Guid systemActionInstanceId, string configuration)
+        private bool ProcedureInstanceEndDate(Guid systemActionInstanceId, string configuration)
         {
             bool start = false;
 
@@ -65,16 +66,19 @@ namespace Undani.Tracking.Invoke
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionTimeProcedureInstanceEndDate", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceEndDate", cn))
                 {
+                    JObject oJson = JObject.Parse(configuration);
 
-                    dynamic stateProcedure = JsonConvert.DeserializeObject<ExpandoObject>(configuration, new ExpandoObjectConverter());
+                    JToken token = JToken.FromObject(oJson);
 
-                    string[] states = stateProcedure.States.Split(',');
+                    string key = token["Key"].ToString();
+
+                    string[] states = token["States"].ToString().Split(',');
 
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = stateProcedure.Key });
+                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
                     cmd.Parameters.Add(new SqlParameter("@State", SqlDbType.VarChar, 50));
 
                     foreach (string state in states)
