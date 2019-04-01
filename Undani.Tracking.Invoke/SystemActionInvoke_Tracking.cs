@@ -30,6 +30,10 @@ namespace Undani.Tracking.Invoke
                     start = ProcedureInstanceEndDate(systemActionInstanceId, configuration);
                     break;
 
+                case "FlowInstanceStartDate":
+                    start = FlowInstanceStartDate(systemActionInstanceId);
+                    break;
+
                 default:
                     throw new Exception("The method is not implemented");
             }
@@ -92,6 +96,27 @@ namespace Undani.Tracking.Invoke
 
                 return start;
             }
+        }
+
+        private bool FlowInstanceStartDate(Guid systemActionInstanceId)
+        {
+            bool start = false;
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_FlowInstanceStartDate", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+
+                    cmd.ExecuteNonQuery();
+                    start = true;
+                }
+            }
+
+            return start;
         }
     }
 }
