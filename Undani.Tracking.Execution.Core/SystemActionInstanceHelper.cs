@@ -3,7 +3,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
-using Undani.Tracking.Invoke;
+using Undani.Tracking.Core.Invoke;
 
 namespace Undani.Tracking.Execution.Core
 {

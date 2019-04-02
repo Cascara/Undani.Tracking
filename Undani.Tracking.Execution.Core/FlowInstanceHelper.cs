@@ -158,7 +158,7 @@ namespace Undani.Tracking.Execution.Core
             return flowInstanceSummary;
         }
 
-        public Guid Create(int flowId, int procedureInstanceId, int activityInstanceId, string version = "")
+        public Guid Create(int flowId, int procedureInstanceId, Guid? systemActionInstanceId, string version = "")
         {
             int flowInstanceId = 0;
             string activityId = "";
@@ -172,7 +172,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@FlowId", SqlDbType.Int) { Value = flowId });
                     cmd.Parameters.Add(new SqlParameter("@Version", SqlDbType.VarChar, 50) { Value = version });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Value = procedureInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Value = activityInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId ?? Guid.Empty });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
 

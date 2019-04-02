@@ -9,7 +9,7 @@ using System.Dynamic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-namespace Undani.Tracking.Invoke.Resource
+namespace Undani.Tracking.Core.Invoke.Resource
 {
     internal class FormCall : Call
     {

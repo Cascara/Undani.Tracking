@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <None Remove="ve-715A.tmp" />
+    <None Remove="ve-869C.tmp" />
   </ItemGroup>
 
   <ItemGroup>
@@ -14,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Undani.Tracking.Execution\Undani.Tracking.Execution.csproj" />
-    <ProjectReference Include="..\Undani.Tracking.Invoke\Undani.Tracking.Invoke.csproj" />
     <ProjectReference Include="..\Undani.Tracking\Undani.Tracking.csproj" />
   </ItemGroup>
 

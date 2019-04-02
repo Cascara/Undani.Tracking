@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Undani.Tracking.Invoke.Infra
+namespace Undani.Tracking.Core.Invoke.Infra
 {
     public class _User
     {

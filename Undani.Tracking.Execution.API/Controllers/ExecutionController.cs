@@ -30,16 +30,16 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
 
         [Route("ProcedureInstance/Create")]
-        public Guid CreateProcedureInstance(Guid procedureRefId, Guid? activityInstanceRefId = null)
+        public Guid CreateProcedureInstance(Guid procedureRefId)
         {
             _User user = GetUser(Request);
-            return new ProcedureInstanceHelper(_configuration, user.UserId, user.Token).Create(procedureRefId, activityInstanceRefId);
+            return new ProcedureInstanceHelper(_configuration, user.UserId, user.Token).Create(procedureRefId);
         }
 
         [Route("ProcedureInstance/Create/Anonymous")]
-        public Guid CreateAnonymousProcedureInstance(Guid procedureRefId, Guid? activityInstanceRefId = null)
+        public Guid CreateAnonymousProcedureInstance(Guid procedureRefId)
         {
-            return new ProcedureInstanceHelper(_configuration, Guid.Empty).Create(procedureRefId, activityInstanceRefId);
+            return new ProcedureInstanceHelper(_configuration, Guid.Empty).Create(procedureRefId);
         }
 
         [Route("ProcedureInstance/GetInProcess")]
@@ -193,7 +193,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
 
         [Route("ActivityInstance/SetComment")]
-        public string SetComment(Guid activityInstanceRefId, string comment)
+        public string SetActivityInstanceComment(Guid activityInstanceRefId, string comment)
         {
             _User user = GetUser(Request);
             ActivityInstanceHelper activityInstanceHelper = new ActivityInstanceHelper(_configuration, user.UserId, user.Token);
@@ -202,10 +202,10 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
 
         [Route("ActivityInstance/GetComments")]
-        public List<Comment> GetComments(Guid activityInstanceRefId)
+        public List<Comment> GetActivityInstanceComments(Guid activityInstanceRefId)
         {
             _User user = GetUser(Request);
-            return new ActivityInstanceHelper(_configuration, user.UserId, user.Token).GetComments(activityInstanceRefId); ;
+            return new ActivityInstanceHelper(_configuration, user.UserId, user.Token).GetComments(activityInstanceRefId);
         }
         #endregion
 

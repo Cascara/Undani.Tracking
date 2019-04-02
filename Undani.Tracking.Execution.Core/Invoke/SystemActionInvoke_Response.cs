@@ -5,15 +5,15 @@ using System.Data.SqlClient;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using Undani.Tracking.Invoke.Resource;
-using Undani.Tracking.Invoke.Infra;
+using Undani.Tracking.Core.Invoke.Resource;
+using Undani.Tracking.Core.Invoke.Infra;
 using System.Data;
 using System.Dynamic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
-namespace Undani.Tracking.Invoke
+namespace Undani.Tracking.Core.Invoke
 {
     public partial class SystemActionInvoke
     {

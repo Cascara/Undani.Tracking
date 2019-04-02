@@ -6,7 +6,7 @@ using System.Data.SqlClient;
 using System.Reflection;
 using System.Text;
 
-namespace Undani.Tracking.Invoke
+namespace Undani.Tracking.Core.Invoke
 {
     public partial class SystemActionInvoke
     {

@@ -21,8 +21,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Configurati
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking", "Undani.Tracking\Undani.Tracking.csproj", "{A5DE225D-EE07-4E22-912B-C456A97FE319}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Invoke", "Undani.Tracking.Invoke\Undani.Tracking.Invoke.csproj", "{8C0C11A4-23DA-480B-A221-7B8EEFB9C59E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,10 +55,6 @@ Global
 		{A5DE225D-EE07-4E22-912B-C456A97FE319}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5DE225D-EE07-4E22-912B-C456A97FE319}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5DE225D-EE07-4E22-912B-C456A97FE319}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C0C11A4-23DA-480B-A221-7B8EEFB9C59E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C0C11A4-23DA-480B-A221-7B8EEFB9C59E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C0C11A4-23DA-480B-A221-7B8EEFB9C59E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C0C11A4-23DA-480B-A221-7B8EEFB9C59E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

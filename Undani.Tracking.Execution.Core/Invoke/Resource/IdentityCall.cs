@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using Undani.Tracking.Invoke.Infra;
+using Undani.Tracking.Core.Invoke.Infra;
 
-namespace Undani.Tracking.Invoke.Resource
+namespace Undani.Tracking.Core.Invoke.Resource
 {
     internal class IdentityCall : Call
     {

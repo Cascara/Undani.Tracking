@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Undani.Tracking.Invoke.Resource
+namespace Undani.Tracking.Core.Invoke.Resource
 {
     public abstract class Call
     {

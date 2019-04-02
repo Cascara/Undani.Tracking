@@ -14,11 +14,10 @@ namespace Undani.Tracking.Execution.Core
     {
         public ProcedureInstanceHelper(IConfiguration configuration, Guid userId, string token = "") : base(configuration, userId, token) { }
 
-        public Guid Create(Guid procedureRefId, Guid? activityInstanceRefId)
+        public Guid Create(Guid procedureRefId, Guid? systemActionInstanceId = null)
         {
             int procedureInstanceId = 0;
             int flowId = 0;
-            int activityInstanceId = 0;
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
@@ -28,20 +27,18 @@ namespace Undani.Tracking.Execution.Core
 
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureRefId", SqlDbType.UniqueIdentifier) { Value = procedureRefId });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId.HasValue ? activityInstanceRefId.Value : Guid.Empty });
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId ?? Guid.Empty });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     procedureInstanceId = (int)cmd.Parameters["@ProcedureInstanceId"].Value;
                     flowId = (int)cmd.Parameters["@FlowId"].Value;
-                    activityInstanceId = (int)cmd.Parameters["@ActivityInstanceId"].Value;
                 }
             }
 
-            return new FlowInstanceHelper(Configuration, UserId, Token).Create(flowId, procedureInstanceId, activityInstanceId);
+            return new FlowInstanceHelper(Configuration, UserId, Token).Create(flowId, procedureInstanceId, systemActionInstanceId);
         }
 
         public ProcedureInstance Get(Guid procedureInstanceRefId)
@@ -169,7 +166,8 @@ namespace Undani.Tracking.Execution.Core
                             Key = reader.GetString(2),
                             Content = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(3), expandoConverter),
                             Start = reader.GetDateTime(4),
-                            PrincipalState = reader.GetString(5)
+                            End = reader.GetDateTime(5),
+                            PrincipalState = reader.GetString(6)
                         });
                     }
                 }
