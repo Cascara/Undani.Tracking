@@ -210,5 +210,56 @@ namespace Undani.Tracking.Execution.Core
 
             return activityLog;
         }
+
+        public List<Comment> GetComments(Guid procedureInstanceRefId)
+        {
+            List<Comment> comments = new List<Comment>();
+            string scn = Configuration["CnDbTracking"];
+            using (SqlConnection cn = new SqlConnection(scn))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceComments", cn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Value = procedureInstanceRefId });
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+
+                    while (reader.Read())
+                    {
+                        comments.Add(new Comment()
+                        {
+                            Id = reader.GetGuid(0),
+                            UserName = reader.GetString(1),
+                            Text = reader.GetString(2),
+                            Created = reader.GetDateTime(3),
+                            IsMe = reader.GetBoolean(4)
+                        });
+                    }
+                }
+            }
+
+            return comments;
+        }
+
+        public void SetComment(Guid activityInstanceRefId, string comment)
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_ProcedureInstanceComment", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId });
+                    cmd.Parameters.Add(new SqlParameter("@Comment", SqlDbType.VarChar, 255) { Value = comment });
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
     }
 }

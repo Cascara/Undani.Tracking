@@ -26,6 +26,10 @@ namespace Undani.Tracking.Core.Invoke
                     start = FlowInstanceResponse(systemActionInstanceId, configuration);
                     break;
 
+                case "FlowInstanceResponseToPDF":
+                    start = FlowInstanceResponseToPDF(systemActionInstanceId, configuration);
+                    break;
+
                 default:
                     throw new Exception("The method is not implemented");
             }
@@ -71,6 +75,52 @@ namespace Undani.Tracking.Core.Invoke
                     start = true;
                 }
             }               
+
+            return start;
+        }
+
+        private bool FlowInstanceResponseToPDF(Guid systemActionInstanceId, string configuration)
+        {
+            bool start = false;
+
+            Guid ownerId;
+            string response;
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_FlowInstanceResponseToPDF", cn))
+                {
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@Response", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+
+                    cmd.ExecuteNonQuery();
+
+                    ownerId = (Guid)cmd.Parameters["@OwnerId"].Value;
+                    response = (string)cmd.Parameters["@Response"].Value;
+                }
+            }
+
+            configuration = configuration.Replace("[SystemActionId]", systemActionInstanceId.ToString());
+            configuration = configuration.Replace("[OwnerId]", ownerId.ToString());
+            configuration = configuration.Replace("[DocumentsToConvert]", response);
+            
+            using (var client = new HttpClient())
+            {
+                HttpResponseMessage httpResponse;
+
+                string url = Configuration["ApiUndaniBus"] + "/api/message/send";
+                StringContent contentJson = new StringContent(configuration, Encoding.UTF8, "application/json");
+                httpResponse = client.PostAsync(url, contentJson).Result;
+
+                if (httpResponse.StatusCode != HttpStatusCode.OK)
+                    throw new Exception("It was not possible to contact undani bus");
+
+                string result = httpResponse.Content.ReadAsStringAsync().Result;
+            }
 
             return start;
         }

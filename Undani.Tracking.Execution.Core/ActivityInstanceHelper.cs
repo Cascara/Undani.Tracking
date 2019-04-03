@@ -287,23 +287,6 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public void SetComment(Guid activityInstanceRefId, string comment)
-        {
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
-            {
-                cn.Open();
-
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_Comment", cn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId });
-                    cmd.Parameters.Add(new SqlParameter("@Comment", SqlDbType.VarChar, 255) { Value = comment });
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
         public List<Comment> GetComments(Guid activityInstanceRefId)
         {
             List<Comment> comments = new List<Comment>();
@@ -335,6 +318,23 @@ namespace Undani.Tracking.Execution.Core
             }
 
             return comments;
+        }
+
+        public void SetComment(Guid activityInstanceRefId, string comment)
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_Comment", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId });
+                    cmd.Parameters.Add(new SqlParameter("@Comment", SqlDbType.VarChar, 255) { Value = comment });
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
 
     }
