@@ -11,7 +11,6 @@ namespace Undani.Tracking.Execution.Core
         private IConfiguration _configuration;
         private Guid _userId;
         private string _token;
-        private IConfiguration configuration;
 
         public Helper(IConfiguration configuration, Guid userId, string token = "")
         {

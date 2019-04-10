@@ -5,8 +5,8 @@ using System.Data.SqlClient;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using Undani.Tracking.Core.Invoke.Resource;
-using Undani.Tracking.Core.Invoke.Infra;
+using Undani.Tracking.Execution.Core.Invoke.Resource;
+using Undani.Tracking.Execution.Core.Invoke.Infra;
 using System.Data;
 using System.Dynamic;
 using Newtonsoft.Json;
@@ -112,7 +112,7 @@ namespace Undani.Tracking.Core.Invoke
             {
                 HttpResponseMessage httpResponse;
 
-                string url = Configuration["ApiUndaniBus"] + "/api/message/send";
+                string url = Configuration["ApiBus"] + "/api/message/send";
                 StringContent contentJson = new StringContent(configuration, Encoding.UTF8, "application/json");
                 httpResponse = client.PostAsync(url, contentJson).Result;
 

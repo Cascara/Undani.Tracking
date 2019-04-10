@@ -7,7 +7,7 @@ namespace Undani.Tracking.Execution.API.Infra
 {
     public class _User
     {
-        public Guid UserId { get; set; }
+        public Guid Id { get; set; }
         public string Token { get; set; }
     }
 }

@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using Undani.Tracking.Core.Invoke.Infra;
+using Undani.Tracking.Execution.Core.Invoke.Infra;
 
-namespace Undani.Tracking.Core.Invoke.Resource
+namespace Undani.Tracking.Execution.Core.Invoke.Resource
 {
     internal class IdentityCall : Call
     {
@@ -35,6 +35,7 @@ namespace Undani.Tracking.Core.Invoke.Resource
 
                 _User _user = Newtonsoft.Json.JsonConvert.DeserializeObject<_User>(response.Content.ReadAsStringAsync().Result);
                 _user.OwnerId = ownerId;
+                _user.RFC = user.Integration.Datos.RFC;
 
                 return _user;
             }

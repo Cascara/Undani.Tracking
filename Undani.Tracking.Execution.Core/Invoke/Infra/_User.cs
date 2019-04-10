@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Undani.Tracking.Core.Invoke.Infra
+namespace Undani.Tracking.Execution.Core.Invoke.Infra
 {
     public class _User
     {
@@ -13,6 +13,7 @@ namespace Undani.Tracking.Core.Invoke.Infra
         public string GivenName { get; set; }
         public string Name { get; set; }
         public string FamilyName { get; set; }
+        public string RFC { get; set; }
         public Guid OwnerId { get; set; }
     }
 }

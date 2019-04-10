@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -9,25 +10,30 @@ namespace Undani.Tracking.Execution.Core
     {
         public UserHelper(IConfiguration configuration, Guid userId, string token = "") : base(configuration, userId, token) { }
 
-        public string Get(Guid? id)
+        public List<string> GetOwnerRoles(Guid ownerId)
         {
-            string userName;
+            List<string> roles = new List<string>();
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.sp_Get_User", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_UserOwnerRole", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.UniqueIdentifier) { Value = id.HasValue ? id.Value : Guid.Empty });
-                    cmd.Parameters.Add(new SqlParameter("@UserName", SqlDbType.VarChar, 56) { Direction = ParameterDirection.Output });
-                    cmd.ExecuteNonQuery();
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                    cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = ownerId });
 
-                    userName = (string)cmd.Parameters["@UserName"].Value;
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            roles.Add(reader.GetString(0));
+                        }
+                    }
                 }
             }
 
-            return userName;
+            return roles;
         }
     }
 }

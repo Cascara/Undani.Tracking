@@ -5,8 +5,8 @@ using System.Data.SqlClient;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using Undani.Tracking.Core.Invoke.Resource;
-using Undani.Tracking.Core.Invoke.Infra;
+using Undani.Tracking.Execution.Core.Invoke.Resource;
+using Undani.Tracking.Execution.Core.Invoke.Infra;
 using System.Data;
 using Newtonsoft.Json;
 using System.Dynamic;
@@ -63,27 +63,32 @@ namespace Undani.Tracking.Core.Invoke
 
             _User _user = new IdentityCall(Configuration).CreateUser(configuration, oJson);
 
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
-            {
-                cn.Open();
-
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_User", cn))
-                {
-
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = _user.SubjectId });
-                    cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = ownerId });
-                    cmd.Parameters.Add(new SqlParameter("@UserName", SqlDbType.VarChar, 256) { Value = _user.UserName });
-                    cmd.Parameters.Add(new SqlParameter("@GivenName", SqlDbType.VarChar, 100) { Value = _user.GivenName });
-                    cmd.Parameters.Add(new SqlParameter("@FamilyName", SqlDbType.VarChar, 100) { Value = _user.FamilyName });
-                    cmd.Parameters.Add(new SqlParameter("@EMail", SqlDbType.VarChar, 256) { Value = _user.Email });
-
-                    cmd.ExecuteNonQuery();
-                }
-            }
-
             if (_user.SubjectId != Guid.Empty)
+            {
+                using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+                {
+                    cn.Open();
+
+                    using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_User", cn))
+                    {
+
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = _user.SubjectId });
+                        cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = ownerId });
+                        cmd.Parameters.Add(new SqlParameter("@UserName", SqlDbType.VarChar, 256) { Value = _user.UserName });
+                        cmd.Parameters.Add(new SqlParameter("@GivenName", SqlDbType.VarChar, 100) { Value = _user.GivenName });
+                        cmd.Parameters.Add(new SqlParameter("@FamilyName", SqlDbType.VarChar, 100) { Value = _user.FamilyName });
+                        cmd.Parameters.Add(new SqlParameter("@EMail", SqlDbType.VarChar, 256) { Value = _user.Email });
+                        cmd.Parameters.Add(new SqlParameter("@RFC", SqlDbType.VarChar, 13) { Value = _user.RFC });
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+
+
                 start = true;
+            }
 
             return start;
         }
