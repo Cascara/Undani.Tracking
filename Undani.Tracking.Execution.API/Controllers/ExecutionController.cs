@@ -201,13 +201,6 @@ namespace Undani.Tracking.Execution.API.Controllers
             return new ActivityInstanceHelper(_configuration, Guid.Empty).IsAnonymous(activityInstanceRefId);
         }
 
-        [Route("ActivityInstance/GetLog")]
-        public List<ActivityInstanceSummary> GetActivityInstanceLog(Guid activityInstanceRefId)
-        {
-            _User user = GetUser(Request);
-            return new ActivityInstanceHelper(_configuration, user.Id, user.Token).GetSummaryLog(activityInstanceRefId);
-        }
-
         [Route("ActivityInstance/GetComments")]
         public List<Comment> GetActivityInstanceComments(Guid activityInstanceRefId)
         {

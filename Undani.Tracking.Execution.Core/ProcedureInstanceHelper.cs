@@ -71,11 +71,13 @@ namespace Undani.Tracking.Execution.Core
                                 Key = (string)dr["Key"],
                                 Content = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["Content"], expandoConverter),
                                 States = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["States"], expandoConverter),
-                                ActivityInstances = new ActivityInstanceHelper(Configuration, UserId, Token).GetSummaryLog(null, (int)dr["Id"]),
-                                StartDate = (DateTime)dr["SartDate"],
-                                EndDate = (DateTime)dr["SartDate"],
+                                ActivityInstances = new ActivityInstanceHelper(Configuration, UserId, Token).GetLogProcedureInstance((int)dr["Id"]),
+                                StartDate = (DateTime)dr["StartDate"],
                                 EnvironmentId = (Guid)dr["EnvironmentId"]
                             };
+
+                            if (dr["EndDate"] != DBNull.Value)
+                                procedureInstance.EndDate = (DateTime)dr["EndDate"];
                         }
                         else
                             throw new Exception("Could not get the activity");
@@ -190,7 +192,6 @@ namespace Undani.Tracking.Execution.Core
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    ExpandoObjectConverter expandoConverter = new ExpandoObjectConverter();
                     while (reader.Read())
                     {
                         activityLog.Add(new ActivityInstanceSummary()

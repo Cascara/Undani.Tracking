@@ -142,22 +142,19 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public List<ActivityInstanceSummary> GetSummaryLog(Guid? refId, int flowInstanceId = 0)
+        public List<ActivityInstanceSummary> GetLogFlowInstance(int flowInstanceId)
         {
             List<ActivityInstanceSummary> activityLog = new List<ActivityInstanceSummary>();
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
-                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityInstanceSummaryLog", cn);
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityInstanceFlowInstanceLog", cn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = refId.HasValue ? refId.Value : Guid.Empty });
                 cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
-                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    ExpandoObjectConverter expandoConverter = new ExpandoObjectConverter();
                     while (reader.Read())
                     {
                         activityLog.Add(new ActivityInstanceSummary()
@@ -166,7 +163,43 @@ namespace Undani.Tracking.Execution.Core
                             ActivityName = reader.GetString(1),
                             UserName = reader.GetString(2),
                             Start = reader.GetDateTime(3),
-                            End = reader.IsDBNull(4) ? new DateTime() : reader.GetDateTime(4)
+                            End = reader.IsDBNull(4) ? new DateTime() : reader.GetDateTime(4),
+                            Days = reader.GetString(5),
+                            Hours = reader.GetString(6),
+                            Reference = reader.GetString(7)
+                        });
+                    }
+                }
+            }
+
+            return activityLog;
+        }
+
+        public List<ActivityInstanceSummary> GetLogProcedureInstance(int procedureInstanceId)
+        {
+            List<ActivityInstanceSummary> activityLog = new List<ActivityInstanceSummary>();
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityInstanceProcedureInstanceLog", cn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Value = procedureInstanceId });
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        activityLog.Add(new ActivityInstanceSummary()
+                        {
+                            RefId = reader.GetGuid(0),
+                            ActivityName = reader.GetString(1),
+                            UserName = reader.GetString(2),
+                            Start = reader.GetDateTime(3),
+                            End = reader.IsDBNull(4) ? new DateTime() : reader.GetDateTime(4),
+                            Days = reader.GetString(5),
+                            Hours = reader.GetString(6),
+                            Reference = reader.GetString(7)
                         });
                     }
                 }
