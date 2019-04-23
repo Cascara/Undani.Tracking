@@ -270,7 +270,7 @@ namespace Undani.Tracking.Execution.API.Controllers
 
         [Route("User/Create")]
         [HttpPost]
-        public void GetCreateUser(Guid userId, Guid ownerId, string userName, string givenName, string familyName, string email, string rfc, string content)
+        public void GetCreateUser(Guid userId, Guid ownerId, string userName, string givenName, string rfc, [FromForm] string content, string familyName = "", string email = "")
         {
             _User user = GetUser(Request);
             UserHelper userHelper = new UserHelper(_configuration, user.Id, user.Token);
