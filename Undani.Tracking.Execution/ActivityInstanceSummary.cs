@@ -8,6 +8,7 @@ namespace Undani.Tracking.Execution
     {
         public Guid RefId { get; set; }
         public string ActivityName { get; set; }
+        public string CoustomViewer { get; set; }
         public string UserName { get; set; }
         public DateTime Start { get; set; }
         public DateTime? End { get; set; }

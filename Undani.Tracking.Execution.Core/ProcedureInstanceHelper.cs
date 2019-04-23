@@ -72,9 +72,11 @@ namespace Undani.Tracking.Execution.Core
                                 Content = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["Content"], expandoConverter),
                                 States = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["States"], expandoConverter),
                                 ActivityInstances = new ActivityInstanceHelper(Configuration, UserId, Token).GetLogProcedureInstance((int)dr["Id"]),
-                                StartDate = (DateTime)dr["StartDate"],
                                 EnvironmentId = (Guid)dr["EnvironmentId"]
                             };
+
+                            if (dr["StartDate"] != DBNull.Value)
+                                procedureInstance.EndDate = (DateTime)dr["StartDate"];
 
                             if (dr["EndDate"] != DBNull.Value)
                                 procedureInstance.EndDate = (DateTime)dr["EndDate"];
@@ -198,12 +200,13 @@ namespace Undani.Tracking.Execution.Core
                         {
                             RefId = reader.GetGuid(0),
                             ActivityName = reader.GetString(1),
-                            UserName = reader.GetString(2),
-                            Start = reader.GetDateTime(3),
-                            End = reader.IsDBNull(4) ? new DateTime() : reader.GetDateTime(4),
-                            Days = reader.GetString(5),
-                            Hours = reader.GetString(6),
-                            Reference = reader.GetString(7)
+                            CoustomViewer = reader.GetString(2),
+                            UserName = reader.GetString(3),
+                            Start = reader.GetDateTime(4),
+                            End = reader.IsDBNull(5) ? new DateTime() : reader.GetDateTime(5),
+                            Days = reader.GetString(6),
+                            Hours = reader.GetString(7),
+                            Reference = reader.GetString(8)
                         });
                     }
                 }

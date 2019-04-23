@@ -267,6 +267,16 @@ namespace Undani.Tracking.Execution.API.Controllers
             _User user = GetUser(Request);            
             return new UserHelper(_configuration, user.Id, user.Token).GetOwnerRoles(ownerId); ;
         }
+
+        [Route("User/Create")]
+        [HttpPost]
+        public void GetCreateUser(Guid userId, Guid ownerId, string userName, string givenName, string familyName, string email, string rfc, string content)
+        {
+            _User user = GetUser(Request);
+            UserHelper userHelper = new UserHelper(_configuration, user.Id, user.Token);
+            userHelper.Create(userId, ownerId, userName, givenName, familyName, email, rfc, content);
+        }
+
         #endregion
 
         #region Tools   
