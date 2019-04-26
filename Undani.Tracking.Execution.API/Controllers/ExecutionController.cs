@@ -14,11 +14,11 @@ namespace Undani.Tracking.Execution.API.Controllers
     [Route("Execution")]
     public class ExecutionController : Controller
     {
-        private IConfiguration _configuration;
+        public IConfiguration Configuration { get; }
 
         public ExecutionController(IConfiguration configuration)
         {
-            _configuration = configuration;
+            Configuration = configuration;
         }
                
         #region ProcedureInstance
@@ -26,62 +26,62 @@ namespace Undani.Tracking.Execution.API.Controllers
         public ProcedureInstance GetProcedureInstance(Guid procedureInstanceRefId)
         {
             _User user = GetUser(Request);
-            return new ProcedureInstanceHelper(_configuration, user.Id, user.Token).Get(procedureInstanceRefId);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).Get(procedureInstanceRefId);
         }
 
         [Route("ProcedureInstance/Create")]
-        public Guid CreateProcedureInstance(Guid procedureRefId)
+        public ProcedureInstanceCreated CreateProcedureInstance(Guid procedureRefId)
         {
             _User user = GetUser(Request);
-            return new ProcedureInstanceHelper(_configuration, user.Id, user.Token).Create(procedureRefId);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).Create(procedureRefId);
         }
 
         [Route("ProcedureInstance/Create/Anonymous")]
-        public Guid CreateAnonymousProcedureInstance(Guid procedureRefId)
+        public ProcedureInstanceCreated CreateAnonymousProcedureInstance(Guid procedureRefId)
         {
-            return new ProcedureInstanceHelper(_configuration, Guid.Empty).Create(procedureRefId);
+            return new ProcedureInstanceHelper(Configuration, Guid.Empty).Create(procedureRefId);
         }
 
         [Route("ProcedureInstance/GetInProcess")]
         public List<ProcedureInstanceSummary> GetProcedureInstanceInProcess()
         {
             _User user = GetUser(Request);
-            return new ProcedureInstanceHelper(_configuration, user.Id, user.Token).GetInProcess(user.Id);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetInProcess();
         }
 
         [Route("ProcedureInstance/GetInProcessCount")]
         public int GetProcedureInstanceInProcessCount()
         {
             _User user = GetUser(Request);
-            return new ProcedureInstanceHelper(_configuration, user.Id, user.Token).GetInProcessCount(user.Id);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetInProcessCount();
         }
 
         [Route("ProcedureInstance/GetResolved")]
         public List<ProcedureInstanceSummary> GetProcedureInstanceResolved()
         {
             _User user = GetUser(Request);
-            return new ProcedureInstanceHelper(_configuration, user.Id, user.Token).GetResolved(user.Id);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetResolved();
         }
 
         [Route("ProcedureInstance/GetLog")]
         public List<ActivityInstanceSummary> GetProcedureInstanceLog(Guid procedureInstanceRefId)
         {
             _User user = GetUser(Request);
-            return new ProcedureInstanceHelper(_configuration, user.Id, user.Token).GetLog(procedureInstanceRefId);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetLog(procedureInstanceRefId);
         }
 
         [Route("ProcedureInstance/GetComments")]
         public List<Comment> GetProcedureInstanceComments(Guid procedureInstanceRefId)
         {
             _User user = GetUser(Request);
-            return new ProcedureInstanceHelper(_configuration, user.Id, user.Token).GetComments(procedureInstanceRefId);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetComments(procedureInstanceRefId);
         }
 
         [Route("ProcedureInstance/SetComment")]
         public string SetProcedureInstanceComment(Guid activityInstanceRefId, string comment)
         {
             _User user = GetUser(Request);
-            ProcedureInstanceHelper procedureInstanceHelper = new ProcedureInstanceHelper(_configuration, user.Id, user.Token);
+            ProcedureInstanceHelper procedureInstanceHelper = new ProcedureInstanceHelper(Configuration, user.Id, user.Token);
             procedureInstanceHelper.SetComment(activityInstanceRefId, comment);
             return comment;
         }
@@ -92,21 +92,21 @@ namespace Undani.Tracking.Execution.API.Controllers
         public FlowInstance GetFlowInstance(Guid flowInstanceRefId)
         {
             _User user = GetUser(Request);
-            return new FlowInstanceHelper(_configuration, user.Id, user.Token).Get(flowInstanceRefId);
+            return new FlowInstanceHelper(Configuration, user.Id, user.Token).Get(flowInstanceRefId);
         }
         
         [Route("FlowInstance/SetContentProperty")]
         public dynamic SetContentProperty(Guid flowInstanceRefId, string propertyName, string value)
         {
             _User user = GetUser(Request);
-            return new FlowInstanceHelper(_configuration, user.Id, user.Token).SetContentProperty(flowInstanceRefId, propertyName, value);
+            return new FlowInstanceHelper(Configuration, user.Id, user.Token).SetContentProperty(flowInstanceRefId, propertyName, value);
         }
 
         [Route("FlowInstance/SetContentProperty/ByFormInstance")]
         public dynamic SetContentPropertyFormInstance(Guid formInstanceId, string propertyName, string value)
         {
             _User user = GetUser(Request);
-            return new FlowInstanceHelper(_configuration, user.Id, user.Token).SetContentPropertyFormInstance(formInstanceId, propertyName, value);
+            return new FlowInstanceHelper(Configuration, user.Id, user.Token).SetContentPropertyFormInstance(formInstanceId, propertyName, value);
         }
 
         [HttpPost]
@@ -114,7 +114,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         public void SetUserGroup(Guid flowInstanceRefId, [FromBody] UserGroup[] users)
         {
             _User user = GetUser(Request);
-            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration, user.Id, user.Token);
+            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, user.Id, user.Token);
             flowInstanceHelper.SetUserGroup(flowInstanceRefId, users);
         }
 
@@ -123,7 +123,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         public void SetUserGroupFormInstance(Guid formInstanceId, [FromBody] UserGroup[] users)
         {
             _User user = GetUser(Request);
-            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration, user.Id, user.Token);
+            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, user.Id, user.Token);
             flowInstanceHelper.SetUserGroupFormInstance(formInstanceId, users);
         }
 
@@ -131,7 +131,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         public void SetState(Guid activityInstanceRefId, string key, string state)
         {
             _User user = GetUser(Request);
-            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration, user.Id, user.Token);
+            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, user.Id, user.Token);
             flowInstanceHelper.SetState(activityInstanceRefId, key, state);
         }
 
@@ -139,7 +139,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         public void SetStateFormInstance(Guid formInstanceId, string key, string state)
         {
             _User user = GetUser(Request);
-            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(_configuration, user.Id, user.Token);
+            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, user.Id, user.Token);
             flowInstanceHelper.SetStateFormInstance(formInstanceId, key, state);
         }
 
@@ -147,7 +147,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         public PagedList<FlowInstanceSummary> GetFlowLog(int? pageLimit = null, int? page = null)
         {
             _User user = GetUser(Request);
-            return new FlowInstanceHelper(_configuration, user.Id, user.Token).GetLog(pageLimit, page);
+            return new FlowInstanceHelper(Configuration, user.Id, user.Token).GetLog(pageLimit, page);
         }
         #endregion
 
@@ -156,28 +156,28 @@ namespace Undani.Tracking.Execution.API.Controllers
         public OpenedMessage GetMessageOpen(Guid messageId)
         {
             _User user = GetUser(Request);
-            return new MessageHelper(_configuration, user.Id, user.Token).GetOpen(messageId);
+            return new MessageHelper(Configuration, user.Id, user.Token).GetOpen(messageId);
         }
 
         [Route("Message/GetReceived")]
         public List<Message> GetMessagesReceived()
         {
             _User user = GetUser(Request);
-            return new MessageHelper(_configuration, user.Id, user.Token).GetReceived();
+            return new MessageHelper(Configuration, user.Id, user.Token).GetReceived();
         }
 
         [Route("Message/GetReceivedCount")]
         public int GetMessagesReceivedCount()
         {
             _User user = GetUser(Request);
-            return new MessageHelper(_configuration, user.Id, user.Token).GetReceivedCount();
+            return new MessageHelper(Configuration, user.Id, user.Token).GetReceivedCount();
         }
 
         [Route("Message/GetDrafts")]
-        public List<Message> GetMessagesDrafts(int? pageLimit = null, int? page = null)
+        public List<Message> GetMessagesDrafts()
         {
             _User user = GetUser(Request);
-            return new MessageHelper(_configuration, user.Id, user.Token).GetDrafts();
+            return new MessageHelper(Configuration, user.Id, user.Token).GetDrafts();
         }
         #endregion
 
@@ -186,33 +186,33 @@ namespace Undani.Tracking.Execution.API.Controllers
         public ActivityInstance GetActivityInstance(Guid activityInstanceRefId)
         {
             _User user = GetUser(Request);
-            return new ActivityInstanceHelper(_configuration, user.Id, user.Token).Get(activityInstanceRefId);
+            return new ActivityInstanceHelper(Configuration, user.Id, user.Token).Get(activityInstanceRefId);
         }
 
         [Route("ActivityInstance/Anonymous")]
         public ActivityInstance GetAnonymousActivityInstance(Guid activityInstanceRefId)
         {
-            return new ActivityInstanceHelper(_configuration, Guid.Empty).Get(activityInstanceRefId);
+            return new ActivityInstanceHelper(Configuration, Guid.Empty).Get(activityInstanceRefId);
         }
 
         [Route("ActivityInstance/IsAnonymous")]
         public string GetIsAnonymousActivityInstance(Guid activityInstanceRefId)
         {
-            return new ActivityInstanceHelper(_configuration, Guid.Empty).IsAnonymous(activityInstanceRefId);
+            return new ActivityInstanceHelper(Configuration, Guid.Empty).IsAnonymous(activityInstanceRefId);
         }
 
         [Route("ActivityInstance/GetComments")]
         public List<Comment> GetActivityInstanceComments(Guid activityInstanceRefId)
         {
             _User user = GetUser(Request);
-            return new ActivityInstanceHelper(_configuration, user.Id, user.Token).GetComments(activityInstanceRefId);
+            return new ActivityInstanceHelper(Configuration, user.Id, user.Token).GetComments(activityInstanceRefId);
         }
 
         [Route("ActivityInstance/SetComment")]
         public string SetActivityInstanceComment(Guid activityInstanceRefId, string comment)
         {
             _User user = GetUser(Request);
-            ActivityInstanceHelper activityInstanceHelper = new ActivityInstanceHelper(_configuration, user.Id, user.Token);
+            ActivityInstanceHelper activityInstanceHelper = new ActivityInstanceHelper(Configuration, user.Id, user.Token);
             activityInstanceHelper.SetComment(activityInstanceRefId, comment);
             return comment;
         }
@@ -223,14 +223,14 @@ namespace Undani.Tracking.Execution.API.Controllers
         public void ExecuteActionInstance(Guid actionRefId, Guid activityInstanceRefId)
         {
             _User user = GetUser(Request);
-            ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(_configuration, user.Id, user.Token);
+            ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, user.Id, user.Token);
             actionInstanceHelper.Execute(actionRefId, activityInstanceRefId);
         }
 
         [Route("ActionInstance/Execute/Anonymous")]
         public void ExecuteAnonymousActionInstance(Guid actionRefId, Guid activityInstanceRefId)
         {
-            ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(_configuration, Guid.Empty);
+            ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, Guid.Empty);
             actionInstanceHelper.Execute(actionRefId, activityInstanceRefId);
         }
         #endregion
@@ -240,14 +240,14 @@ namespace Undani.Tracking.Execution.API.Controllers
         public void FinishSystemAction(Guid systemActionInstanceId)
         {
             _User user = GetUser(Request);
-            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(_configuration, user.Id, user.Token);
+            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, user.Id, user.Token);
             systemActionInstanceHelper.Finish(systemActionInstanceId);
         }
 
         [Route("SystemAccionInstance/Finish/Anonymous")]
         public void FinishAnonymousSystemAction(Guid systemActionInstanceId)
         {
-            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(_configuration, Guid.Empty);
+            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
             systemActionInstanceHelper.Finish(systemActionInstanceId);
         }
 
@@ -255,7 +255,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         public void ExecuteSystemAction(Guid systemActionInstanceId)
         {
             //_User user = GetUser(Request);
-            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(_configuration, Guid.Empty);
+            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
             systemActionInstanceHelper.Execute(systemActionInstanceId);
         }
         #endregion
@@ -265,7 +265,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         public List<string> GetUserOwnerRoles(Guid ownerId)
         {
             _User user = GetUser(Request);            
-            return new UserHelper(_configuration, user.Id, user.Token).GetOwnerRoles(ownerId); ;
+            return new UserHelper(Configuration, user.Id, user.Token).GetOwnerRoles(ownerId); ;
         }
 
         [Route("User/Create")]
@@ -273,7 +273,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         public void GetCreateUser(Guid userId, Guid ownerId, string userName, string givenName, string rfc, [FromForm] string content, string familyName = "", string email = "")
         {
             _User user = GetUser(Request);
-            UserHelper userHelper = new UserHelper(_configuration, user.Id, user.Token);
+            UserHelper userHelper = new UserHelper(Configuration, user.Id, user.Token);
             userHelper.Create(userId, ownerId, userName, givenName, familyName, email, rfc, content);
         }
 
@@ -283,7 +283,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         private _User GetUser(HttpRequest request)
         {
             _User user = new _User();
-            Payload payload = new Payload();
+
             if (!request.Headers.ContainsKey("Authorization"))
                 throw new Exception("The access is invalid");
 
@@ -294,10 +294,10 @@ namespace Undani.Tracking.Execution.API.Controllers
 
                 try
                 {
-                    payload = JWToken.TokenDecode(token);
+                    Payload payload = JWToken.TokenDecode(token);
                     user = new _User() { Id = Guid.Parse(payload.UserId), Token = authHeader };
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     throw new Exception("The access is invalid");
                 }

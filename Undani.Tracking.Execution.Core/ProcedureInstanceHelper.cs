@@ -14,31 +14,69 @@ namespace Undani.Tracking.Execution.Core
     {
         public ProcedureInstanceHelper(IConfiguration configuration, Guid userId, string token = "") : base(configuration, userId, token) { }
 
-        public Guid Create(Guid procedureRefId, Guid? systemActionInstanceId = null)
+        public ProcedureInstanceCreated Create(Guid procedureRefId, Guid? systemActionInstanceId = null)
         {
-            int procedureInstanceId = 0;
-            int flowId = 0;
+            int procedureId = 0;
+            ProcedureInstanceCreated procedureInstanceCreated = Behavior(procedureRefId, ref procedureId);
+
+            if (procedureInstanceCreated.ProcedureInstanceRefId == Guid.Empty)
+            {
+                int procedureInstanceId = 0;
+                int flowId = 0;
+                using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+                {
+                    cn.Open();
+
+                    using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_ProcedureInstance", cn) { CommandType = CommandType.StoredProcedure })
+                    {
+
+                        cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                        cmd.Parameters.Add(new SqlParameter("@ProcedureId", SqlDbType.Int) { Value = procedureId });
+                        cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId ?? Guid.Empty });
+                        cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new SqlParameter("@FlowId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+
+                        cmd.ExecuteNonQuery();
+
+                        procedureInstanceId = (int)cmd.Parameters["@ProcedureInstanceId"].Value;
+                        procedureInstanceCreated.ProcedureInstanceRefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
+                        flowId = (int)cmd.Parameters["@FlowId"].Value;
+                    }
+                }
+
+                procedureInstanceCreated.ActivityInstanceRefId = new FlowInstanceHelper(Configuration, UserId, Token).Create(flowId, procedureInstanceId, systemActionInstanceId);
+            }
+
+            return procedureInstanceCreated;
+        }
+
+        private ProcedureInstanceCreated Behavior(Guid procedureRefId, ref int procedureId)
+        {
+            ProcedureInstanceCreated procedureInstanceCreated = new ProcedureInstanceCreated();
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_ProcedureInstance", cn) { CommandType = CommandType.StoredProcedure })
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureBehavior", cn) { CommandType = CommandType.StoredProcedure })
                 {
-
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureRefId", SqlDbType.UniqueIdentifier) { Value = procedureRefId });
-                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId ?? Guid.Empty });
-                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@FlowId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureBehaviorTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
-                    procedureInstanceId = (int)cmd.Parameters["@ProcedureInstanceId"].Value;
-                    flowId = (int)cmd.Parameters["@FlowId"].Value;
+                    procedureId = (int)cmd.Parameters["@ProcedureId"].Value;
+                    procedureInstanceCreated.ProcedureBehaviorTypeId = (int)cmd.Parameters["@ProcedureBehaviorTypeId"].Value;
+                    procedureInstanceCreated.ProcedureInstanceRefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
+                    procedureInstanceCreated.ActivityInstanceRefId = (Guid)cmd.Parameters["@ActivityInstanceRefId"].Value;
+
+                    return procedureInstanceCreated;
                 }
             }
-
-            return new FlowInstanceHelper(Configuration, UserId, Token).Create(flowId, procedureInstanceId, systemActionInstanceId);
         }
 
         public ProcedureInstance Get(Guid procedureInstanceRefId)
@@ -90,7 +128,7 @@ namespace Undani.Tracking.Execution.Core
             return procedureInstance;
         }
 
-        public List<ProcedureInstanceSummary> GetInProcess(Guid userId)
+        public List<ProcedureInstanceSummary> GetInProcess()
         {
             List<ProcedureInstanceSummary> procedures = new List<ProcedureInstanceSummary>();
 
@@ -98,8 +136,8 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceInProcess", cn);
-                cmd.CommandType = CommandType.StoredProcedure;
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceInProcess", cn) { CommandType = CommandType.StoredProcedure };
+
                 cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -124,7 +162,7 @@ namespace Undani.Tracking.Execution.Core
             return procedures;
         }
 
-        public int GetInProcessCount(Guid userId)
+        public int GetInProcessCount()
         {
             int inProcessCount = 0;
 
@@ -132,8 +170,7 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceInProcessCount", cn);
-                cmd.CommandType = CommandType.StoredProcedure;
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceInProcessCount", cn) { CommandType = CommandType.StoredProcedure };
                 cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                 cmd.Parameters.Add(new SqlParameter("@Count", SqlDbType.Int) { Direction = ParameterDirection.Output });
 
@@ -145,7 +182,7 @@ namespace Undani.Tracking.Execution.Core
             return inProcessCount;
         }
 
-        public List<ProcedureInstanceSummary> GetResolved(Guid userId)
+        public List<ProcedureInstanceSummary> GetResolved()
         {
             List<ProcedureInstanceSummary> procedures = new List<ProcedureInstanceSummary>();
 
@@ -153,8 +190,7 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceResolved", cn);
-                cmd.CommandType = CommandType.StoredProcedure;
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceResolved", cn) { CommandType = CommandType.StoredProcedure };
                 cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -188,8 +224,7 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceLog", cn);
-                cmd.CommandType = CommandType.StoredProcedure;
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceLog", cn) { CommandType = CommandType.StoredProcedure };
                 cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Value = procedureInstanceRefId });
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -223,8 +258,7 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceComments", cn);
-                cmd.CommandType = CommandType.StoredProcedure;
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceComments", cn) { CommandType = CommandType.StoredProcedure };
                 cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                 cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Value = procedureInstanceRefId });
 
