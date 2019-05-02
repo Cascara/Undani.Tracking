@@ -210,84 +210,7 @@ namespace Undani.Tracking.Execution.Core
             return activityLog;
         }
 
-        public Guid Create(string activityId, int flowInstanceId)
-        {
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
-            {
-                cn.Open();
-
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_Activity", cn) { CommandType = CommandType.StoredProcedure })
-                {
-                    cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Value = activityId });
-                    cmd.Parameters.Add(new SqlParameter("@UserGroupTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-
-                    cmd.ExecuteNonQuery();
-
-                    if ((int)cmd.Parameters["@UserGroupTypeId"].Value == 1)
-                    {
-                        cmd.CommandText = "EXECUTION.usp_Get_UserGroup";
-                        cmd.Parameters.Clear();
-                        cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
-
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                Create(reader.GetGuid(0), activityId, flowInstanceId, Guid.Empty);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        return Create(UserId, activityId, flowInstanceId, Guid.Empty);
-                    }
-                }
-            }
-
-            return Guid.Empty;
-        }
-
-        public void Create(Guid actionInstanceId)
-        {
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
-            {
-                cn.Open();
-
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityActionInstance", cn) { CommandType = CommandType.StoredProcedure })
-                {
-                    cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Value = actionInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@UserGroupTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-
-                    cmd.ExecuteNonQuery();
-
-                    string activityId = (string)cmd.Parameters["@ActivityId"].Value;
-                    int flowInstanceId = (int)cmd.Parameters["@FlowInstanceId"].Value;
-
-                    if ((int)cmd.Parameters["@UserGroupTypeId"].Value == 1)
-                    {
-                        cmd.Parameters.Clear();
-                        cmd.CommandText = "EXECUTION.usp_Get_UserGroup";
-                        cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
-
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                Create(reader.GetGuid(0), activityId, flowInstanceId, actionInstanceId);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Create(Guid.Empty, activityId, flowInstanceId, actionInstanceId);
-                    }
-                }
-            }
-        }
-
-        private Guid Create(Guid userId, string activityId, int flowInstanceId, Guid actionInstanceId)
+        public void Create(string elementId,int elementInstanceId)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -295,29 +218,22 @@ namespace Undani.Tracking.Execution.Core
 
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_ActivityInstance", cn) { CommandType = CommandType.StoredProcedure })
                 {
-                    cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Value = activityId });
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Value = actionInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ElementId", SqlDbType.VarChar, 50) { Value = elementId });
+                    cmd.Parameters.Add(new SqlParameter("@ElementInstanceId", SqlDbType.Int) { Value = elementInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@GetFormInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
-                    int activityInstanceId = (int)cmd.Parameters["@ActivityInstanceId"].Value;
-
                     if ((string)cmd.Parameters["@GetFormInstanceKey"].Value == "auto")
                     {
                         ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, UserId, Token);
-                        actionInstanceHelper.Execute(userId, activityInstanceId);
+                        actionInstanceHelper.Execute(UserId, elementInstanceId);
                     }
                     else
                     {
                         MessageHelper messageHelper = new MessageHelper(Configuration, UserId, Token);
-                        messageHelper.Create(activityInstanceId);
+                        messageHelper.Create(elementInstanceId);
                     }
-                        
-                    return (Guid)cmd.Parameters["@ActivityInstanceRefId"].Value;
                 }
             }
         }

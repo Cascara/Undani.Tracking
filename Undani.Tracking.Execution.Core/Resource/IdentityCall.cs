@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Security.Claims;
-using System.Text;
 using Undani.JWT;
 
 namespace Undani.Tracking.Execution.Core.Resource

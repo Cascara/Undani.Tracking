@@ -161,7 +161,7 @@ namespace Undani.Tracking.Execution.Core
         public Guid Create(int flowId, int procedureInstanceId, Guid? systemActionInstanceId, string version = "")
         {
             int flowInstanceId = 0;
-            string activityId = "";
+            string elementId = "";
 
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -174,16 +174,16 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Value = procedureInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId ?? Guid.Empty });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ElementId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     flowInstanceId = (int)cmd.Parameters["@FlowInstanceId"].Value;
-                    activityId = (string)cmd.Parameters["@ActivityId"].Value;
+                    elementId = (string)cmd.Parameters["@ElementId"].Value;
                 }
             }                      
 
-            return new ActivityInstanceHelper(Configuration, UserId, Token).Create(activityId, flowInstanceId);
+            return new ElementInstanceHelper(Configuration, UserId, Token).Create(elementId, flowInstanceId);
         }
 
 

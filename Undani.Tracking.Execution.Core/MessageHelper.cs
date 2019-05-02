@@ -43,7 +43,7 @@ namespace Undani.Tracking.Execution.Core
             return openedMessage;
         }
 
-        public void Create(int activityInstanceId)
+        public void Create(int elementInstanceId)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -52,7 +52,7 @@ namespace Undani.Tracking.Execution.Core
                 SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_Messages", cn);
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
-                cmd.Parameters.Add(new SqlParameter("@ActivityInstanceId", SqlDbType.Int) { Value = activityInstanceId });
+                cmd.Parameters.Add(new SqlParameter("@ElementInstanceId", SqlDbType.Int) { Value = elementInstanceId });
 
                 cmd.ExecuteNonQuery();
             }
