@@ -11,6 +11,7 @@ namespace Undani.Tracking.Execution
             this.ProcedureInstanceSummary = new ProcedureInstanceSummary();
         }
         public Guid RefId { get; set; }
+        public Guid FlowRefId { get; set; }
         public string Name { get; set; } 
         public string Key { get; set; }
         public dynamic Content { get; set; }

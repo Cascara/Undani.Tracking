@@ -47,7 +47,7 @@ namespace Undani.Tracking.Execution.Core
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_ElementInstance", cn) { CommandType = CommandType.StoredProcedure })
                 {
                     cmd.Parameters.Add(new SqlParameter("@ElementId", SqlDbType.VarChar, 50) { Value = elementId });
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.UniqueIdentifier) { Value = flowInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Value = actionInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@ElementInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });

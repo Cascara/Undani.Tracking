@@ -45,7 +45,7 @@ namespace Undani.Tracking.Execution.Core
                     }
                 }
 
-                procedureInstanceCreated.ActivityInstanceRefId = new FlowInstanceHelper(Configuration, UserId, Token).Create(flowId, procedureInstanceId, systemActionInstanceId);
+                procedureInstanceCreated.ElementInstanceRefId = new FlowInstanceHelper(Configuration, UserId, Token).Create(flowId, procedureInstanceId, systemActionInstanceId);
             }
 
             return procedureInstanceCreated;
@@ -65,14 +65,14 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ProcedureId", SqlDbType.Int) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureBehaviorTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     procedureId = (int)cmd.Parameters["@ProcedureId"].Value;
                     procedureInstanceCreated.ProcedureBehaviorTypeId = (int)cmd.Parameters["@ProcedureBehaviorTypeId"].Value;
                     procedureInstanceCreated.ProcedureInstanceRefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
-                    procedureInstanceCreated.ActivityInstanceRefId = (Guid)cmd.Parameters["@ActivityInstanceRefId"].Value;
+                    procedureInstanceCreated.ElementInstanceRefId = (Guid)cmd.Parameters["@ElementInstanceRefId"].Value;
 
                     return procedureInstanceCreated;
                 }
@@ -234,7 +234,7 @@ namespace Undani.Tracking.Execution.Core
                         activityLog.Add(new ActivityInstanceSummary()
                         {
                             RefId = reader.GetGuid(0),
-                            ActivityName = reader.GetString(1),
+                            Name = reader.GetString(1),
                             CoustomViewer = reader.GetString(2),
                             UserName = reader.GetString(3),
                             Start = reader.GetDateTime(4),
@@ -282,7 +282,7 @@ namespace Undani.Tracking.Execution.Core
             return comments;
         }
 
-        public void SetComment(Guid activityInstanceRefId, string comment)
+        public void SetComment(Guid elementInstanceRefId, string comment)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -292,7 +292,7 @@ namespace Undani.Tracking.Execution.Core
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Value = activityInstanceRefId });
+                    cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Value = elementInstanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@Comment", SqlDbType.VarChar, 255) { Value = comment });
                     cmd.ExecuteNonQuery();
                 }

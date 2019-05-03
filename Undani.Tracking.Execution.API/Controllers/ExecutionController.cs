@@ -78,11 +78,11 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
 
         [Route("ProcedureInstance/SetComment")]
-        public string SetProcedureInstanceComment(Guid activityInstanceRefId, string comment)
+        public string SetProcedureInstanceComment(Guid elementInstanceRefId, string comment)
         {
             _User user = GetUser(Request);
             ProcedureInstanceHelper procedureInstanceHelper = new ProcedureInstanceHelper(Configuration, user.Id, user.Token);
-            procedureInstanceHelper.SetComment(activityInstanceRefId, comment);
+            procedureInstanceHelper.SetComment(elementInstanceRefId, comment);
             return comment;
         }
         #endregion
@@ -128,11 +128,11 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
 
         [Route("FlowInstance/SetState")]
-        public void SetState(Guid activityInstanceRefId, string key, string state)
+        public void SetState(Guid elementInstanceRefId, string key, string state)
         {
             _User user = GetUser(Request);
             FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, user.Id, user.Token);
-            flowInstanceHelper.SetState(activityInstanceRefId, key, state);
+            flowInstanceHelper.SetState(elementInstanceRefId, key, state);
         }
 
         [Route("FlowInstance/SetState/ByFormInstance")]
@@ -141,13 +141,6 @@ namespace Undani.Tracking.Execution.API.Controllers
             _User user = GetUser(Request);
             FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, user.Id, user.Token);
             flowInstanceHelper.SetStateFormInstance(formInstanceId, key, state);
-        }
-
-        [Route("FlowInstance/GetLog")]
-        public PagedList<FlowInstanceSummary> GetFlowLog(int? pageLimit = null, int? page = null)
-        {
-            _User user = GetUser(Request);
-            return new FlowInstanceHelper(Configuration, user.Id, user.Token).GetLog(pageLimit, page);
         }
         #endregion
 
@@ -183,55 +176,55 @@ namespace Undani.Tracking.Execution.API.Controllers
 
         #region Activity 
         [Route("ActivityInstance")]
-        public ActivityInstance GetActivityInstance(Guid activityInstanceRefId)
+        public ActivityInstance GetActivityInstance(Guid elementInstanceRefId)
         {
             _User user = GetUser(Request);
-            return new ActivityInstanceHelper(Configuration, user.Id, user.Token).Get(activityInstanceRefId);
+            return new ActivityInstanceHelper(Configuration, user.Id, user.Token).Get(elementInstanceRefId);
         }
 
         [Route("ActivityInstance/Anonymous")]
-        public ActivityInstance GetAnonymousActivityInstance(Guid activityInstanceRefId)
+        public ActivityInstance GetAnonymousActivityInstance(Guid elementInstanceRefId)
         {
-            return new ActivityInstanceHelper(Configuration, Guid.Empty).Get(activityInstanceRefId);
+            return new ActivityInstanceHelper(Configuration, Guid.Empty).Get(elementInstanceRefId);
         }
 
         [Route("ActivityInstance/IsAnonymous")]
-        public string GetIsAnonymousActivityInstance(Guid activityInstanceRefId)
+        public string GetIsAnonymousActivityInstance(Guid elementInstanceRefId)
         {
-            return new ActivityInstanceHelper(Configuration, Guid.Empty).IsAnonymous(activityInstanceRefId);
+            return new ActivityInstanceHelper(Configuration, Guid.Empty).IsAnonymous(elementInstanceRefId);
         }
 
         [Route("ActivityInstance/GetComments")]
-        public List<Comment> GetActivityInstanceComments(Guid activityInstanceRefId)
+        public List<Comment> GetActivityInstanceComments(Guid elementInstanceRefId)
         {
             _User user = GetUser(Request);
-            return new ActivityInstanceHelper(Configuration, user.Id, user.Token).GetComments(activityInstanceRefId);
+            return new ActivityInstanceHelper(Configuration, user.Id, user.Token).GetComments(elementInstanceRefId);
         }
 
         [Route("ActivityInstance/SetComment")]
-        public string SetActivityInstanceComment(Guid activityInstanceRefId, string comment)
+        public string SetActivityInstanceComment(Guid elementInstanceRefId, string comment)
         {
             _User user = GetUser(Request);
             ActivityInstanceHelper activityInstanceHelper = new ActivityInstanceHelper(Configuration, user.Id, user.Token);
-            activityInstanceHelper.SetComment(activityInstanceRefId, comment);
+            activityInstanceHelper.SetComment(elementInstanceRefId, comment);
             return comment;
         }
         #endregion
 
         #region Action 
         [Route("ActionInstance/Execute")]
-        public void ExecuteActionInstance(Guid actionRefId, Guid activityInstanceRefId)
+        public void ExecuteActionInstance(Guid actionRefId, Guid elementInstanceRefId)
         {
             _User user = GetUser(Request);
             ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, user.Id, user.Token);
-            actionInstanceHelper.Execute(actionRefId, activityInstanceRefId);
+            actionInstanceHelper.Execute(actionRefId, elementInstanceRefId);
         }
 
         [Route("ActionInstance/Execute/Anonymous")]
-        public void ExecuteAnonymousActionInstance(Guid actionRefId, Guid activityInstanceRefId)
+        public void ExecuteAnonymousActionInstance(Guid actionRefId, Guid elementInstanceRefId)
         {
             ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, Guid.Empty);
-            actionInstanceHelper.Execute(actionRefId, activityInstanceRefId);
+            actionInstanceHelper.Execute(actionRefId, elementInstanceRefId);
         }
         #endregion
 

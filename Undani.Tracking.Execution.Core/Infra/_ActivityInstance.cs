@@ -8,7 +8,7 @@ namespace Undani.Tracking.Execution.Core.Infra
     {
 
         public string Id { get; set; }
-        public int ActivityInstanceId { get; set; }
+        public int ElementInstanceId { get; set; }
         public int FlowInstanceId { get; set; }
         public Guid UserId { get; set; }
         public Guid? ActionInstanceId { get; set; }

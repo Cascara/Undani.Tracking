@@ -7,6 +7,7 @@ namespace Undani.Tracking.Execution
     public class ProcedureInstanceSummary
     {
         public Guid RefId { get; set; }
+        public Guid ProcedureRefId { get; set; }
         public string Name { get; set; }
         public string Key { get; set; }
         public dynamic Content { get; set; }

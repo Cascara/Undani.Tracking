@@ -7,7 +7,7 @@ namespace Undani.Tracking.Execution
     public class ActivityInstanceSummary
     {
         public Guid RefId { get; set; }
-        public string ActivityName { get; set; }
+        public string Name { get; set; }
         public string CoustomViewer { get; set; }
         public string UserName { get; set; }
         public DateTime Start { get; set; }

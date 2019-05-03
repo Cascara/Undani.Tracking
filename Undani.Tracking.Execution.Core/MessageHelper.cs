@@ -27,12 +27,12 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId, Direction = ParameterDirection.InputOutput });
                     cmd.Parameters.Add(new SqlParameter("@UserName", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@MessageId", SqlDbType.UniqueIdentifier) { Value = messageId });
-                    cmd.Parameters.Add(new SqlParameter("@ActivityInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
-                    if (cmd.Parameters["@ActivityInstanceRefId"].Value.ToString() != "")
+                    if (cmd.Parameters["@ElementInstanceRefId"].Value.ToString() != "")
                     {
-                        openedMessage.ActivityIntanceRefId = (Guid)cmd.Parameters["@ActivityInstanceRefId"].Value;
+                        openedMessage.ElementInstanceRefId = (Guid)cmd.Parameters["@ElementInstanceRefId"].Value;
                     }
 
                     openedMessage.UserId = (Guid)cmd.Parameters["@UserId"].Value;
