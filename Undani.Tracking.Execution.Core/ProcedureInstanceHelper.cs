@@ -114,7 +114,7 @@ namespace Undani.Tracking.Execution.Core
                             };
 
                             if (dr["StartDate"] != DBNull.Value)
-                                procedureInstance.EndDate = (DateTime)dr["StartDate"];
+                                procedureInstance.StartDate = (DateTime)dr["StartDate"];
 
                             if (dr["EndDate"] != DBNull.Value)
                                 procedureInstance.EndDate = (DateTime)dr["EndDate"];
@@ -236,12 +236,13 @@ namespace Undani.Tracking.Execution.Core
                             RefId = reader.GetGuid(0),
                             Name = reader.GetString(1),
                             CoustomViewer = reader.GetString(2),
-                            UserName = reader.GetString(3),
-                            Start = reader.GetDateTime(4),
-                            End = reader.IsDBNull(5) ? new DateTime() : reader.GetDateTime(5),
-                            Days = reader.GetString(6),
-                            Hours = reader.GetString(7),
-                            Reference = reader.GetString(8)
+                            UserId = reader.GetGuid(3),
+                            UserName = reader.GetString(4),
+                            Start = reader.GetDateTime(5),
+                            End = reader.IsDBNull(6) ? new DateTime() : reader.GetDateTime(5),
+                            Days = reader.GetString(7),
+                            Hours = reader.GetString(8),
+                            Reference = reader.GetString(9)
                         });
                     }
                 }

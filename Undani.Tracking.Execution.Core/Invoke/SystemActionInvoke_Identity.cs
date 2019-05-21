@@ -23,7 +23,7 @@ namespace Undani.Tracking.Core.Invoke
             switch (alias)
             {
                 case "CreateUser":
-                    start = CreateUser(systemActionInstanceId, alias, configuration);
+                    start = CreateUser(systemActionInstanceId, configuration);
                     break;
 
                 default:
@@ -33,7 +33,7 @@ namespace Undani.Tracking.Core.Invoke
             return start;
         }
 
-        private bool CreateUser(Guid systemActionInstanceId, string alias, string configuration)
+        private bool CreateUser(Guid systemActionInstanceId, string configuration)
         {
             bool start = false;
 

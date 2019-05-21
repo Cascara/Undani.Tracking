@@ -254,6 +254,13 @@ namespace Undani.Tracking.Execution.API.Controllers
         #endregion
 
         #region User
+        [Route("User")]
+        public User GetUser(Guid ownerId)
+        {
+            _User user = GetUser(Request);
+            return new UserHelper(Configuration, user.Id, user.Token).Get(ownerId);
+        }
+
         [Route("User/GetOwnerRoles")]
         public List<string> GetUserOwnerRoles(Guid ownerId)
         {
