@@ -85,6 +85,13 @@ namespace Undani.Tracking.Execution.API.Controllers
             procedureInstanceHelper.SetComment(elementInstanceRefId, comment);
             return comment;
         }
+
+        [Route("ProcedureInstance/Delete")]
+        public void DeleteProcedureInstance(string key)
+        {
+            ProcedureInstanceHelper procedureInstanceHelper = new ProcedureInstanceHelper(Configuration, Guid.Empty, "");
+            procedureInstanceHelper.Delete(key);
+        }
         #endregion
 
         #region FlowInstance
@@ -209,6 +216,28 @@ namespace Undani.Tracking.Execution.API.Controllers
             activityInstanceHelper.SetComment(elementInstanceRefId, comment);
             return comment;
         }
+
+        [Route("ActivityInstance/GetSignature")]
+        public ActivityInstanceSignature GetSignature(Guid elementInstanceRefId)
+        {
+            _User user = GetUser(Request);
+            return new ActivityInstanceHelper(Configuration, user.Id, user.Token).GetSignature(elementInstanceRefId);
+        }
+
+        [Route("ActivityInstance/GetSignatureTemplate")]
+        public ActivityInstanceSignature GetSignatureTemplate(Guid elementInstanceRefId, string template)
+        {
+            _User user = GetUser(Request);
+            return new ActivityInstanceHelper(Configuration, user.Id, user.Token).GetSignatureTemplate(elementInstanceRefId, template);
+        }
+
+        [Route("ActivityInstance/SetDocumentSigned")]
+        public void SetDocumentSigned(Guid elementInstanceRefId, string key, DocumentSigned documentSigned)
+        {
+            _User user = GetUser(Request);
+            ActivityInstanceHelper activityInstanceHelper = new ActivityInstanceHelper(Configuration, user.Id, user.Token);
+            activityInstanceHelper.SetDocumentSigned(elementInstanceRefId, key, documentSigned);
+        }
         #endregion
 
         #region Action 
@@ -297,7 +326,7 @@ namespace Undani.Tracking.Execution.API.Controllers
                     Payload payload = JWToken.TokenDecode(token);
                     user = new _User() { Id = Guid.Parse(payload.UserId), Token = authHeader };
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     throw new Exception("The access is invalid");
                 }

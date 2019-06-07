@@ -290,5 +290,109 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
+        public ActivityInstanceSignature GetSignature(Guid elementInstanceRefId)
+        {
+            ActivityInstanceSignature activityInstanceSignature = new ActivityInstanceSignature() { RefId = elementInstanceRefId, FormInstanceId = Guid.Empty };
+            string scn = Configuration["CnDbTracking"];
+            using (SqlConnection cn = new SqlConnection(scn))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ElementSignature", cn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Value = elementInstanceRefId });
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+
+                    while (reader.Read())
+                    {
+                        activityInstanceSignature.ElementsSignatures.Add(new ElementSignature()
+                        {                            
+                            Template = reader.GetString(1),
+                            Key = reader.GetString(2),
+                            JsonPaths = reader.GetString(3).Split(',').ToList(),
+                            ElementSignatureTypeId = reader.GetInt32(4),
+                            Content = reader.GetString(5),
+                            OriginalName = reader.GetString(6),
+                            Create = reader.GetBoolean(7)
+                        });
+
+                        if (activityInstanceSignature.FormInstanceId == Guid.Empty)
+                        {
+                            activityInstanceSignature.ElementId = reader.GetString(0);
+                            activityInstanceSignature.FormInstanceId = reader.GetGuid(8);
+                            activityInstanceSignature.EnvironmentId = reader.GetGuid(9);
+                            activityInstanceSignature.ProcedureInstanceRefId = reader.GetGuid(10);
+                        }
+                            
+                    }
+                }
+            }
+
+            return activityInstanceSignature;
+        }
+
+        public ActivityInstanceSignature GetSignatureTemplate(Guid elementInstanceRefId, string template)
+        {
+            ActivityInstanceSignature activityInstanceSignature = new ActivityInstanceSignature() { RefId = elementInstanceRefId, FormInstanceId = Guid.Empty };
+            string scn = Configuration["CnDbTracking"];
+            using (SqlConnection cn = new SqlConnection(scn))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ElementSignatureTemplate", cn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Value = elementInstanceRefId });
+                cmd.Parameters.Add(new SqlParameter("@Template", SqlDbType.VarChar, 50) { Value = template });
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+
+                    while (reader.Read())
+                    {
+                        activityInstanceSignature.ElementsSignatures.Add(new ElementSignature()
+                        {
+                            Template = reader.GetString(1),
+                            Key = reader.GetString(2),
+                            JsonPaths = reader.GetString(3).Split(',').ToList(),
+                            ElementSignatureTypeId = reader.GetInt32(4),
+                            Content = reader.GetString(5),
+                            OriginalName = reader.GetString(6),
+                            Create = reader.GetBoolean(7)
+                        });
+
+                        if (activityInstanceSignature.FormInstanceId == Guid.Empty)
+                        {
+                            activityInstanceSignature.ElementId = reader.GetString(0);
+                            activityInstanceSignature.FormInstanceId = reader.GetGuid(8);
+                            activityInstanceSignature.EnvironmentId = reader.GetGuid(9);
+                            activityInstanceSignature.ProcedureInstanceRefId = reader.GetGuid(10);
+                        }
+
+                    }
+                }
+            }
+
+            return activityInstanceSignature;
+        }
+
+        public void SetDocumentSigned(Guid elementInstanceRefId, string key, DocumentSigned documentSigned)
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_DocumentSigned", cn) { CommandType = CommandType.StoredProcedure })
+                {                    
+                    cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Value = elementInstanceRefId });
+                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
+                    cmd.Parameters.Add(new SqlParameter("@DocumentSigned", SqlDbType.VarChar, 250) { Value = JsonConvert.SerializeObject(documentSigned) });
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
     }
 }
