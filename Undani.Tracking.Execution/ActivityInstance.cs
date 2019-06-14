@@ -19,5 +19,7 @@ namespace Undani.Tracking.Execution
         public bool FormReadOnly { get; set; }
         public List<ActionButton> ActionButtons { get; set; }
         public FlowInstanceSummary FlowInstanceSummary { get; set; }
+        public string BeforeSignScript { get; set; }
+        public dynamic DocumentsSigned { get; set; }
     }
 }

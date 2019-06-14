@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -45,7 +46,7 @@ namespace Undani.Tracking.Execution.Core
                                 EnvironmentId = (Guid)dr["EnvironmentId"],
                                 Created = (DateTime)dr["Created"],
                                 States = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["States"], expandoConverter),
-                                ActivityInstances = new ActivityInstanceHelper(Configuration, UserId, Token).GetLogFlowInstance((int)dr["Id"])
+                                ActivityInstances = GetLog((int)dr["Id"])
                             };
                         }
                         else
@@ -55,6 +56,23 @@ namespace Undani.Tracking.Execution.Core
             }
 
             return flow;
+        }
+
+        public List<ActivityInstanceSummary> GetLog(int flowInstanceId)
+        {
+            List<ActivityInstanceSummary> activityLog = new List<ActivityInstanceSummary>();
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_FlowInstanceLog", cn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
+
+                return new ActivityInstanceHelper(Configuration, UserId, Token).FillActivitiesInstanceSummary(cmd);
+            }
+
+            
         }
 
         public FlowInstanceSummary GetSummary(int flowInstanceId)
@@ -75,6 +93,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceStartDate", SqlDbType.DateTime) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceEnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureDocumentsSigned", SqlDbType.VarChar, 8000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowName", SqlDbType.VarChar, 500) { Direction = ParameterDirection.Output });
@@ -103,6 +122,7 @@ namespace Undani.Tracking.Execution.Core
                         if(cmd.Parameters["@ProcedureInstanceStartDate"].Value != DBNull.Value)
                             flowInstanceSummary.ProcedureInstanceSummary.Start = (DateTime)cmd.Parameters["@ProcedureInstanceStartDate"].Value;
                         flowInstanceSummary.ProcedureInstanceSummary.EnvironmentId = (Guid)cmd.Parameters["@ProcedureInstanceEnvironmentId"].Value;
+                        flowInstanceSummary.ProcedureInstanceSummary.DocumentsSignedZiped = GetDocumentsSignedZiped((string)cmd.Parameters["@ProcedureDocumentsSigned"].Value);
                     }
                     else
                     {
@@ -112,6 +132,26 @@ namespace Undani.Tracking.Execution.Core
             }
 
             return flowInstanceSummary;
+        }
+
+        private string GetDocumentsSignedZiped(string documentsSigned)
+        {
+            JObject jObject = JObject.Parse(documentsSigned);
+
+            JEnumerable<JToken> jTokens = jObject.Children();
+
+            JArray jArray;
+            string documents = "";
+            foreach (JToken jToken in jTokens)
+            {
+                jArray = (JArray)jObject[jToken.Path];
+                for (int i = 0; i < jArray.Count; i++)
+                {
+                    documents += "," + jArray[i]["SystemName"];
+                }
+            }
+
+            return documents != "" ? documents.Substring(1) : "";
         }
 
         public Guid Create(int flowId, int procedureInstanceId, Guid? systemActionInstanceId, string version = "")

@@ -231,29 +231,31 @@ namespace Undani.Tracking.Execution.API.Controllers
             return new ActivityInstanceHelper(Configuration, user.Id, user.Token).GetSignatureTemplate(elementInstanceRefId, template);
         }
 
+        [HttpPost]
         [Route("ActivityInstance/SetDocumentSigned")]
-        public void SetDocumentSigned(Guid elementInstanceRefId, string key, DocumentSigned documentSigned)
+        public void SetDocumentSigned(Guid elementInstanceRefId, string key, [FromBody] DocumentSigned[] documentSigneds)
         {
             _User user = GetUser(Request);
+            
             ActivityInstanceHelper activityInstanceHelper = new ActivityInstanceHelper(Configuration, user.Id, user.Token);
-            activityInstanceHelper.SetDocumentSigned(elementInstanceRefId, key, documentSigned);
+            activityInstanceHelper.SetDocumentsSigned(elementInstanceRefId, key, documentSigneds);
         }
         #endregion
 
         #region Action 
         [Route("ActionInstance/Execute")]
-        public void ExecuteActionInstance(Guid actionRefId, Guid elementInstanceRefId)
+        public bool ExecuteActionInstance(Guid actionRefId, Guid elementInstanceRefId)
         {
             _User user = GetUser(Request);
             ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, user.Id, user.Token);
-            actionInstanceHelper.Execute(actionRefId, elementInstanceRefId);
+            return actionInstanceHelper.Execute(actionRefId, elementInstanceRefId);
         }
 
         [Route("ActionInstance/Execute/Anonymous")]
-        public void ExecuteAnonymousActionInstance(Guid actionRefId, Guid elementInstanceRefId)
+        public bool ExecuteAnonymousActionInstance(Guid actionRefId, Guid elementInstanceRefId)
         {
             ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, Guid.Empty);
-            actionInstanceHelper.Execute(actionRefId, elementInstanceRefId);
+            return actionInstanceHelper.Execute(actionRefId, elementInstanceRefId);
         }
         #endregion
 

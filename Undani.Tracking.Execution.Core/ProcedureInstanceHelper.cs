@@ -109,8 +109,9 @@ namespace Undani.Tracking.Execution.Core
                                 Key = (string)dr["Key"],
                                 Content = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["Content"], expandoConverter),
                                 States = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["States"], expandoConverter),
-                                ActivityInstances = new ActivityInstanceHelper(Configuration, UserId, Token).GetLogProcedureInstance((int)dr["Id"]),
-                                EnvironmentId = (Guid)dr["EnvironmentId"]
+                                ActivityInstances = GetLog((int)dr["Id"]),
+                                EnvironmentId = (Guid)dr["EnvironmentId"],
+                                DocumentsSigned = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["DocumentsSigned"], new ExpandoObjectConverter())
                             };
 
                             if (dr["StartDate"] != DBNull.Value)
@@ -224,31 +225,25 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceLog", cn) { CommandType = CommandType.StoredProcedure };
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceRefIdLog", cn) { CommandType = CommandType.StoredProcedure };
                 cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Value = procedureInstanceRefId });
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        activityLog.Add(new ActivityInstanceSummary()
-                        {
-                            RefId = reader.GetGuid(0),
-                            Name = reader.GetString(1),
-                            CoustomViewer = reader.GetString(2),
-                            UserId = reader.GetGuid(3),
-                            UserName = reader.GetString(4),
-                            Start = reader.GetDateTime(5),
-                            End = reader.IsDBNull(6) ? new DateTime() : reader.GetDateTime(5),
-                            Days = reader.GetString(7),
-                            Hours = reader.GetString(8),
-                            Reference = reader.GetString(9)
-                        });
-                    }
-                }
+               
+                return new ActivityInstanceHelper(Configuration, UserId, Token).FillActivitiesInstanceSummary(cmd);
             }
+        }
 
-            return activityLog;
+        public List<ActivityInstanceSummary> GetLog(int procedureInstanceId)
+        {
+            List<ActivityInstanceSummary> activityLog = new List<ActivityInstanceSummary>();
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceIdLog", cn) { CommandType = CommandType.StoredProcedure };
+                cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Value = procedureInstanceId });
+
+                return new ActivityInstanceHelper(Configuration, UserId, Token).FillActivitiesInstanceSummary(cmd);
+            }
         }
 
         public List<Comment> GetComments(Guid procedureInstanceRefId)

@@ -16,5 +16,6 @@ namespace Undani.Tracking.Execution
         public string Days { get; set; }
         public string Hours { get; set; }
         public string Reference { get; set; }
+        public string DocumentsSignedZiped { get; set; }
     }
 }

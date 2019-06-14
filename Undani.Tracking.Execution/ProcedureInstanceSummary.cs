@@ -15,5 +15,6 @@ namespace Undani.Tracking.Execution
         public DateTime End { get; set; }
         public Guid EnvironmentId { get; set; }
         public string PrincipalState { get; set; }
+        public string DocumentsSignedZiped { get; set; }
     }
 }

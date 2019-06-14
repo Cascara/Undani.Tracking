@@ -12,6 +12,7 @@ using Undani.Tracking.Execution.Core.Infra;
 using Newtonsoft.Json;
 using Undani.Tracking.Execution.Core.Resource;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
 
 namespace Undani.Tracking.Execution.Core
 {
@@ -70,7 +71,9 @@ namespace Undani.Tracking.Execution.Core
                                 Start = (DateTime)dr["StartDate"],
                                 FormInstanceId = SetFormInstance((Guid)dr["FormInstanceId"], (int)dr["Id"]),
                                 FormReadOnly = (bool)dr["ActivityFormReadOnly"],
-                                FlowInstanceSummary = new FlowInstanceHelper(Configuration, UserId, Token).GetSummary((int)dr["FlowInstanceId"])
+                                FlowInstanceSummary = new FlowInstanceHelper(Configuration, UserId, Token).GetSummary((int)dr["FlowInstanceId"]),
+                                BeforeSignScript = (string)dr["ActivityBeforeSignScript"],
+                                DocumentsSigned = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["DocumentsSigned"], new ExpandoObjectConverter())
                             };
 
                             if (dr["EndDate"] != DBNull.Value)
@@ -141,75 +144,53 @@ namespace Undani.Tracking.Execution.Core
                 return formInstanceId;
             }
         }
-
-        public List<ActivityInstanceSummary> GetLogFlowInstance(int flowInstanceId)
+        
+        public List<ActivityInstanceSummary> FillActivitiesInstanceSummary(SqlCommand cmd)
         {
             List<ActivityInstanceSummary> activityLog = new List<ActivityInstanceSummary>();
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+
+            using (SqlDataReader reader = cmd.ExecuteReader())
             {
-                cn.Open();
-
-                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityInstanceFlowInstanceLog", cn);
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                while (reader.Read())
                 {
-                    while (reader.Read())
+                    activityLog.Add(new ActivityInstanceSummary()
                     {
-                        activityLog.Add(new ActivityInstanceSummary()
-                        {
-                            RefId = reader.GetGuid(0),
-                            Name = reader.GetString(1),
-                            CoustomViewer = reader.GetString(2),
-                            UserId = reader.GetGuid(3),
-                            UserName = reader.GetString(4),
-                            Start = reader.GetDateTime(5),
-                            End = reader.IsDBNull(6) ? new DateTime() : reader.GetDateTime(5),
-                            Days = reader.GetString(7),
-                            Hours = reader.GetString(8),
-                            Reference = reader.GetString(9)
-                        });
-                    }
+                        RefId = reader.GetGuid(0),
+                        Name = reader.GetString(1),
+                        CoustomViewer = reader.GetString(2),
+                        UserId = reader.GetGuid(3),
+                        UserName = reader.GetString(4),
+                        Start = reader.GetDateTime(5),
+                        End = reader.IsDBNull(6) ? new DateTime() : reader.GetDateTime(5),
+                        Days = reader.GetString(7),
+                        Hours = reader.GetString(8),
+                        Reference = reader.GetString(9),
+                        DocumentsSignedZiped = GetDocumentsSignedZiped(reader.GetString(10))
+                    });
                 }
             }
 
             return activityLog;
         }
 
-        public List<ActivityInstanceSummary> GetLogProcedureInstance(int procedureInstanceId)
+        private string GetDocumentsSignedZiped(string documentsSigned)
         {
-            List<ActivityInstanceSummary> activityLog = new List<ActivityInstanceSummary>();
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            JObject jObject = JObject.Parse(documentsSigned);
+
+            JEnumerable<JToken> jTokens = jObject.Children();
+
+            JArray jArray;
+            string documents = "";
+            foreach (JToken jToken in jTokens)
             {
-                cn.Open();
-
-                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityInstanceProcedureInstanceLog", cn);
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Value = procedureInstanceId });
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                jArray = (JArray)jObject[jToken.Path];
+                for (int i = 0; i < jArray.Count; i++)
                 {
-                    while (reader.Read())
-                    {
-                        activityLog.Add(new ActivityInstanceSummary()
-                        {
-                            RefId = reader.GetGuid(0),
-                            Name = reader.GetString(1),
-                            CoustomViewer = reader.GetString(2),
-                            UserId = reader.GetGuid(3),
-                            UserName = reader.GetString(4),
-                            Start = reader.GetDateTime(5),
-                            End = reader.IsDBNull(6) ? new DateTime() : reader.GetDateTime(5),
-                            Days = reader.GetString(7),
-                            Hours = reader.GetString(8),
-                            Reference = reader.GetString(9)
-                        });
-                    }
+                    documents += "," + jArray[i]["SystemName"];
                 }
             }
 
-            return activityLog;
+            return documents != "" ? documents.Substring(1) : "";
         }
 
         public void Create(string elementId,int elementInstanceId)
@@ -377,7 +358,7 @@ namespace Undani.Tracking.Execution.Core
             return activityInstanceSignature;
         }
 
-        public void SetDocumentSigned(Guid elementInstanceRefId, string key, DocumentSigned documentSigned)
+        public void SetDocumentsSigned(Guid elementInstanceRefId, string key, DocumentSigned[] documentsSigned)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -387,7 +368,7 @@ namespace Undani.Tracking.Execution.Core
                 {                    
                     cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Value = elementInstanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
-                    cmd.Parameters.Add(new SqlParameter("@DocumentSigned", SqlDbType.VarChar, 250) { Value = JsonConvert.SerializeObject(documentSigned) });
+                    cmd.Parameters.Add(new SqlParameter("@DocumentSigned", SqlDbType.VarChar, 500) { Value = JsonConvert.SerializeObject(documentsSigned) });
 
                     cmd.ExecuteNonQuery();
                 }

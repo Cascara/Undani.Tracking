@@ -69,7 +69,7 @@ namespace Undani.Tracking.Execution.Core
             Create(actionId, elementInstanceId);
         }
 
-        public void Execute(Guid actionRefId, Guid elementInstanceRefId)
+        public bool Execute(Guid actionRefId, Guid elementInstanceRefId)
         {
             string actionId;
             int elementInstanceId;
@@ -95,6 +95,8 @@ namespace Undani.Tracking.Execution.Core
             }
 
             Create(actionId, elementInstanceId);
+
+            return true;
         }
 
         public void Execute(Guid actionRefId, int elementInstanceId)

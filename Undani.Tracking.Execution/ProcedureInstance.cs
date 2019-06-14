@@ -17,5 +17,6 @@ namespace Undani.Tracking.Execution
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public Guid EnvironmentId { get; set; }
+        public dynamic DocumentsSigned { get; set; }
     }
 }

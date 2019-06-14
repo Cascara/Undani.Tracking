@@ -8,6 +8,6 @@ namespace Undani.Tracking.Execution
     {
         public string SystemName { get; set; }
         public string OriginalName { get; set; }
-        public string Hash { get; set; }
+        public string HashCode { get; set; }
     }
 }
