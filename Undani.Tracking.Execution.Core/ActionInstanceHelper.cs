@@ -53,10 +53,9 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActionElementInstance", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActionElementInstanceId", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@ElementInstanceId", SqlDbType.Int) { Value = elementInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@ActionId", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
 

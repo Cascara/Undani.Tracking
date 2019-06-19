@@ -92,6 +92,20 @@ namespace Undani.Tracking.Execution.API.Controllers
             ProcedureInstanceHelper procedureInstanceHelper = new ProcedureInstanceHelper(Configuration, Guid.Empty, "");
             procedureInstanceHelper.Delete(key);
         }
+
+        [Route("ProcedureInstance/SetState")]
+        public bool SetProcedureInstanceState(Guid procedureInstanceRefId, string key, string state)
+        {
+            _User user = GetUser(Request);
+           return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).SetState(procedureInstanceRefId, key, state);
+        }
+
+        [Route("ProcedureInstance/GetState")]
+        public dynamic GetProcedureInstanceState(Guid procedureInstanceRefId)
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetState(procedureInstanceRefId);
+        }
         #endregion
 
         #region FlowInstance
@@ -135,19 +149,17 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
 
         [Route("FlowInstance/SetState")]
-        public void SetState(Guid elementInstanceRefId, string key, string state)
+        public bool SetFlowInstanceState(Guid flowInstanceRefId, string key, string state)
         {
             _User user = GetUser(Request);
-            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, user.Id, user.Token);
-            flowInstanceHelper.SetState(elementInstanceRefId, key, state);
+            return new FlowInstanceHelper(Configuration, user.Id, user.Token).SetState(flowInstanceRefId, key, state);
         }
 
-        [Route("FlowInstance/SetState/ByFormInstance")]
-        public void SetStateFormInstance(Guid formInstanceId, string key, string state)
+        [Route("FlowInstance/GetState")]
+        public dynamic GetFlowInstanceState(Guid flowInstanceRefId)
         {
             _User user = GetUser(Request);
-            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, user.Id, user.Token);
-            flowInstanceHelper.SetStateFormInstance(formInstanceId, key, state);
+            return new FlowInstanceHelper(Configuration, user.Id, user.Token).GetState(flowInstanceRefId);
         }
         #endregion
 

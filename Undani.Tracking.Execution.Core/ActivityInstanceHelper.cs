@@ -210,7 +210,7 @@ namespace Undani.Tracking.Execution.Core
                     if ((string)cmd.Parameters["@GetFormInstanceKey"].Value == "auto")
                     {
                         ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, UserId, Token);
-                        actionInstanceHelper.Execute(UserId, elementInstanceId);
+                        actionInstanceHelper.Execute(elementInstanceId);
                     }
                     else
                     {

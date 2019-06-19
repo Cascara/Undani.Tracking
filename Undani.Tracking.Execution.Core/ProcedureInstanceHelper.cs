@@ -111,7 +111,7 @@ namespace Undani.Tracking.Execution.Core
                                 States = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["States"], expandoConverter),
                                 ActivityInstances = GetLog((int)dr["Id"]),
                                 EnvironmentId = (Guid)dr["EnvironmentId"],
-                                DocumentsSigned = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["DocumentsSigned"], new ExpandoObjectConverter())
+                                DocumentsSigned = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["DocumentsSigned"], expandoConverter)
                             };
 
                             if (dr["StartDate"] != DBNull.Value)
@@ -295,7 +295,7 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public void Delete(string key)
+        public void Delete(string key) ///TODO: BORRAR     
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -306,6 +306,45 @@ namespace Undani.Tracking.Execution.Core
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
                     cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public bool SetState(Guid procedureInstanceRefId, string key, string state)
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_StateProcedureInstance", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Value = procedureInstanceRefId });
+                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
+                    cmd.Parameters.Add(new SqlParameter("@State", SqlDbType.VarChar, 50) { Value = state });
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            return true;
+        }
+
+        public dynamic GetState(Guid procedureInstanceRefId)
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_StateProcedureInstanceRefId", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Value = procedureInstanceRefId });
+                    cmd.Parameters.Add(new SqlParameter("@States", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+                    cmd.ExecuteNonQuery();
+
+                    return JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@States"].Value, new ExpandoObjectConverter());
                 }
             }
         }

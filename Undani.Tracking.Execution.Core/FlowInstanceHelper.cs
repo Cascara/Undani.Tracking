@@ -93,6 +93,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceStartDate", SqlDbType.DateTime) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceEnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstancePrincipalState", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureDocumentsSigned", SqlDbType.VarChar, 8000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
@@ -122,6 +123,7 @@ namespace Undani.Tracking.Execution.Core
                         if(cmd.Parameters["@ProcedureInstanceStartDate"].Value != DBNull.Value)
                             flowInstanceSummary.ProcedureInstanceSummary.Start = (DateTime)cmd.Parameters["@ProcedureInstanceStartDate"].Value;
                         flowInstanceSummary.ProcedureInstanceSummary.EnvironmentId = (Guid)cmd.Parameters["@ProcedureInstanceEnvironmentId"].Value;
+                        flowInstanceSummary.ProcedureInstanceSummary.PrincipalState = (string)cmd.Parameters["@ProcedureInstancePrincipalState"].Value;
                         flowInstanceSummary.ProcedureInstanceSummary.DocumentsSignedZiped = GetDocumentsSignedZiped((string)cmd.Parameters["@ProcedureDocumentsSigned"].Value);
                     }
                     else
@@ -303,7 +305,7 @@ namespace Undani.Tracking.Execution.Core
             return JsonConvert.DeserializeObject<ExpandoObject>(content, new ExpandoObjectConverter());
         }
 
-        public void SetState(Guid elementInstanceRefId, string key, string state)
+        public bool SetState(Guid flowInstanceRefId, string key, string state)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -313,28 +315,31 @@ namespace Undani.Tracking.Execution.Core
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
-                    cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Value = elementInstanceRefId });
+                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Value = flowInstanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
                     cmd.Parameters.Add(new SqlParameter("@State", SqlDbType.VarChar, 50) { Value = state });
                     cmd.ExecuteNonQuery();
                 }
             }
+
+            return true;
         }
 
-        public void SetStateFormInstance(Guid formInstanceId, string key, string state)
+        public dynamic GetState(Guid flowInstanceRefId)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_StateFlowInstanceFormInstanceId", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_StateFlowInstanceRefId", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
-                    cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Value = formInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
-                    cmd.Parameters.Add(new SqlParameter("@State", SqlDbType.VarChar, 50) { Value = state });
+                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Value = flowInstanceRefId });
+                    cmd.Parameters.Add(new SqlParameter("@States", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.ExecuteNonQuery();
+
+                    return JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@States"].Value, new ExpandoObjectConverter());
                 }
             }
         }
