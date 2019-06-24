@@ -16,6 +16,7 @@ namespace Undani.Tracking.Execution
         public string Key { get; set; }
         public dynamic Content { get; set; }
         public DateTime Created { get; set; }
+        public dynamic States { get; set; }
         public ProcedureInstanceSummary ProcedureInstanceSummary { get; set; }
     }
 }

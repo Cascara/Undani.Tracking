@@ -93,13 +93,15 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceStartDate", SqlDbType.DateTime) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceEnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstancePrincipalState", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceStates", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceFormInstances", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureDocumentsSigned", SqlDbType.VarChar, 8000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowName", SqlDbType.VarChar, 500) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceStates", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceCreated", SqlDbType.DateTime) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
@@ -113,6 +115,7 @@ namespace Undani.Tracking.Execution.Core
                         flowInstanceSummary.Name = (string)cmd.Parameters["@FlowName"].Value;
                         flowInstanceSummary.Key = (string)cmd.Parameters["@FlowInstanceKey"].Value;
                         flowInstanceSummary.Content = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@FlowInstanceContent"].Value, expandoObjectConverter);
+                        flowInstanceSummary.States = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@FlowInstanceStates"].Value, expandoObjectConverter);
                         flowInstanceSummary.Created = (DateTime)cmd.Parameters["@FlowInstanceCreated"].Value;
 
                         flowInstanceSummary.ProcedureInstanceSummary.RefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
@@ -123,7 +126,8 @@ namespace Undani.Tracking.Execution.Core
                         if(cmd.Parameters["@ProcedureInstanceStartDate"].Value != DBNull.Value)
                             flowInstanceSummary.ProcedureInstanceSummary.Start = (DateTime)cmd.Parameters["@ProcedureInstanceStartDate"].Value;
                         flowInstanceSummary.ProcedureInstanceSummary.EnvironmentId = (Guid)cmd.Parameters["@ProcedureInstanceEnvironmentId"].Value;
-                        flowInstanceSummary.ProcedureInstanceSummary.PrincipalState = (string)cmd.Parameters["@ProcedureInstancePrincipalState"].Value;
+                        flowInstanceSummary.ProcedureInstanceSummary.States = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureInstanceStates"].Value, expandoObjectConverter);
+                        flowInstanceSummary.ProcedureInstanceSummary.FormInstances = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureInstanceFormInstances"].Value, expandoObjectConverter);
                         flowInstanceSummary.ProcedureInstanceSummary.DocumentsSignedZiped = GetDocumentsSignedZiped((string)cmd.Parameters["@ProcedureDocumentsSigned"].Value);
                     }
                     else

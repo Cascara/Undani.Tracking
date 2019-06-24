@@ -154,7 +154,7 @@ namespace Undani.Tracking.Execution.Core
                             Key = reader.GetString(2),
                             Content = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(3), expandoConverter),
                             Start = reader.GetDateTime(4),
-                            PrincipalState = reader.GetString(5)
+                            States = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(5), expandoConverter)
                         });
                     }
                 }
@@ -208,7 +208,7 @@ namespace Undani.Tracking.Execution.Core
                             Content = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(3), expandoConverter),
                             Start = reader.GetDateTime(4),
                             End = reader.GetDateTime(5),
-                            PrincipalState = reader.GetString(6)
+                            States = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(6), expandoConverter)
                         });
                     }
                 }
