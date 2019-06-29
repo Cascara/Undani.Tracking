@@ -275,8 +275,8 @@ namespace Undani.Tracking.Execution.API.Controllers
         [Route("SystemAccionInstance/Finish")]
         public void FinishSystemAction(Guid systemActionInstanceId)
         {
-            _User user = GetUser(Request);
-            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, user.Id, user.Token);
+            //_User user = GetUser(Request);
+            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
             systemActionInstanceHelper.Finish(systemActionInstanceId);
         }
 
