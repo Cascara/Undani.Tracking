@@ -31,6 +31,10 @@ namespace Undani.Tracking.Core.Invoke
                     start = ProcedureInstanceEndDate(systemActionInstanceId, configuration);
                     break;
 
+                case "ProcedureInstanceUnique":
+                    start = ProcedureInstanceUnique(systemActionInstanceId, configuration);
+                    break;
+
                 case "FlowInstanceStartDate":
                     start = FlowInstanceStartDate(systemActionInstanceId);
                     break;
@@ -76,6 +80,42 @@ namespace Undani.Tracking.Core.Invoke
                 cn.Open();
 
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceEndDate", cn))
+                {
+                    JObject oJson = JObject.Parse(configuration);
+
+                    JToken token = JToken.FromObject(oJson);
+
+                    string key = token["Key"].ToString();
+
+                    string[] states = token["States"].ToString().Split(',');
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
+                    cmd.Parameters.Add(new SqlParameter("@State", SqlDbType.VarChar, 50));
+
+                    foreach (string state in states)
+                    {
+                        cmd.Parameters["@State"].Value = state;
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    start = true;
+                }
+
+                return start;
+            }
+        }
+
+        private bool ProcedureInstanceUnique(Guid systemActionInstanceId, string configuration)
+        {
+            bool start = false;
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceUnique", cn))
                 {
                     JObject oJson = JObject.Parse(configuration);
 

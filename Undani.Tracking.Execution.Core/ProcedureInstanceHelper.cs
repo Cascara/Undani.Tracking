@@ -17,7 +17,7 @@ namespace Undani.Tracking.Execution.Core
         public ProcedureInstanceCreated Create(Guid procedureRefId, Guid? systemActionInstanceId = null)
         {
             int procedureId = 0;
-            ProcedureInstanceCreated procedureInstanceCreated = Behavior(procedureRefId, ref procedureId);
+            ProcedureInstanceCreated procedureInstanceCreated = Unique(procedureRefId, ref procedureId);
 
             if (procedureInstanceCreated.ProcedureInstanceRefId == Guid.Empty)
             {
@@ -51,26 +51,24 @@ namespace Undani.Tracking.Execution.Core
             return procedureInstanceCreated;
         }
 
-        private ProcedureInstanceCreated Behavior(Guid procedureRefId, ref int procedureId)
+        private ProcedureInstanceCreated Unique(Guid procedureRefId, ref int procedureId)
         {
             ProcedureInstanceCreated procedureInstanceCreated = new ProcedureInstanceCreated();
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureBehavior", cn) { CommandType = CommandType.StoredProcedure })
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureUnique", cn) { CommandType = CommandType.StoredProcedure })
                 {
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureRefId", SqlDbType.UniqueIdentifier) { Value = procedureRefId });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ProcedureBehaviorTypeId", SqlDbType.Int) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     procedureId = (int)cmd.Parameters["@ProcedureId"].Value;
-                    procedureInstanceCreated.ProcedureBehaviorTypeId = (int)cmd.Parameters["@ProcedureBehaviorTypeId"].Value;
                     procedureInstanceCreated.ProcedureInstanceRefId = (Guid)cmd.Parameters["@ProcedureInstanceRefId"].Value;
                     procedureInstanceCreated.ElementInstanceRefId = (Guid)cmd.Parameters["@ElementInstanceRefId"].Value;
 

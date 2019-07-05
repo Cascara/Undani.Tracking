@@ -8,6 +8,5 @@ namespace Undani.Tracking.Execution
     {
         public Guid ProcedureInstanceRefId { get; set; }
         public Guid ElementInstanceRefId { get; set; }
-        public int ProcedureBehaviorTypeId { get; set; }
     }
 }
