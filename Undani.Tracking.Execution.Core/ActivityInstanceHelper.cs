@@ -66,6 +66,7 @@ namespace Undani.Tracking.Execution.Core
                             {
                                 RefId = elementInstanceRefId,
                                 Name = (string)dr["ElementName"],
+                                CatalogId = (string)dr["ActivityCatalogId"],
                                 CoustomViewer = (string)dr["ActivityCoustomViewer"],
                                 ActionButtonsDisabled = (bool)dr["ActionsDisabled"],
                                 Start = (DateTime)dr["StartDate"],
@@ -157,15 +158,16 @@ namespace Undani.Tracking.Execution.Core
                     {
                         RefId = reader.GetGuid(0),
                         Name = reader.GetString(1),
-                        CoustomViewer = reader.GetString(2),
-                        UserId = reader.GetGuid(3),
-                        UserName = reader.GetString(4),
-                        Start = reader.GetDateTime(5),
-                        End = reader.IsDBNull(6) ? new DateTime() : reader.GetDateTime(5),
-                        Days = reader.GetString(7),
-                        Hours = reader.GetString(8),
-                        Reference = reader.GetString(9),
-                        DocumentsSignedZiped = GetDocumentsSignedZiped(reader.GetString(10))
+                        CatalogId = reader.GetString(2),
+                        CoustomViewer = reader.GetString(3),
+                        UserId = reader.GetGuid(4),
+                        UserName = reader.GetString(5),
+                        Start = reader.GetDateTime(6),
+                        End = reader.IsDBNull(7) ? new DateTime() : reader.GetDateTime(7),
+                        Days = reader.GetString(8),
+                        Hours = reader.GetString(9),
+                        Reference = reader.GetString(10),
+                        DocumentsSignedZiped = GetDocumentsSignedZiped(reader.GetString(11))
                     });
                 }
             }
@@ -364,7 +366,7 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_DocumentSigned", cn) { CommandType = CommandType.StoredProcedure })
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_ActivityInstanceDocumentSigned", cn) { CommandType = CommandType.StoredProcedure })
                 {                    
                     cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Value = elementInstanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });

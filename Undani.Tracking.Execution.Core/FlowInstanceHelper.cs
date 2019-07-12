@@ -129,6 +129,7 @@ namespace Undani.Tracking.Execution.Core
                         flowInstanceSummary.ProcedureInstanceSummary.States = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureInstanceStates"].Value, expandoObjectConverter);
                         flowInstanceSummary.ProcedureInstanceSummary.FormInstances = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureInstanceFormInstances"].Value, expandoObjectConverter);
                         flowInstanceSummary.ProcedureInstanceSummary.DocumentsSignedZiped = GetDocumentsSignedZiped((string)cmd.Parameters["@ProcedureDocumentsSigned"].Value);
+                        flowInstanceSummary.ProcedureInstanceSummary.DocumentsSigned = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureDocumentsSigned"].Value, expandoObjectConverter);
                     }
                     else
                     {

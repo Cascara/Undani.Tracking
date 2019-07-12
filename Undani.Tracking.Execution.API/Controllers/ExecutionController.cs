@@ -106,6 +106,16 @@ namespace Undani.Tracking.Execution.API.Controllers
             _User user = GetUser(Request);
             return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetState(procedureInstanceRefId);
         }
+
+        [HttpPost]
+        [Route("ProcedureInstance/SetDocumentSigned")]
+        public void SetProcedureInstanceDocumentSigned(Guid procedureInstanceRefId, string key, [FromBody] DocumentSigned[] documentSigneds)
+        {
+            _User user = GetUser(Request);
+
+            ProcedureInstanceHelper procedureInstanceHelper = new ProcedureInstanceHelper(Configuration, user.Id, user.Token);
+            procedureInstanceHelper.SetDocumentsSigned(procedureInstanceRefId, key, documentSigneds);
+        }
         #endregion
 
         #region FlowInstance
@@ -245,7 +255,7 @@ namespace Undani.Tracking.Execution.API.Controllers
 
         [HttpPost]
         [Route("ActivityInstance/SetDocumentSigned")]
-        public void SetDocumentSigned(Guid elementInstanceRefId, string key, [FromBody] DocumentSigned[] documentSigneds)
+        public void SetActivityInstanceDocumentSigned(Guid elementInstanceRefId, string key, [FromBody] DocumentSigned[] documentSigneds)
         {
             _User user = GetUser(Request);
             
@@ -272,19 +282,20 @@ namespace Undani.Tracking.Execution.API.Controllers
         #endregion
 
         #region SystemAction
+        [HttpPost]
         [Route("SystemAccionInstance/Finish")]
-        public void FinishSystemAction(Guid systemActionInstanceId)
+        public void FinishSystemAction(Guid systemActionInstanceId, [FromBody] string procedureInstanceContent = "", [FromBody] string flowInstanceContent = "")
         {
-            //_User user = GetUser(Request);
-            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
-            systemActionInstanceHelper.Finish(systemActionInstanceId);
+            _User user = GetUser(Request);
+            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, user.Id, user.Token);
+            systemActionInstanceHelper.Finish(systemActionInstanceId, procedureInstanceContent, flowInstanceContent);
         }
 
         [Route("SystemAccionInstance/Finish/Anonymous")]
-        public void FinishAnonymousSystemAction(Guid systemActionInstanceId)
+        public void FinishAnonymousSystemAction(Guid systemActionInstanceId, [FromBody] string procedureInstanceContent = "", [FromBody] string flowInstanceContent = "")
         {
             SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
-            systemActionInstanceHelper.Finish(systemActionInstanceId);
+            systemActionInstanceHelper.Finish(systemActionInstanceId, procedureInstanceContent, flowInstanceContent);
         }
 
         [Route("SystemAccionInstance/Execute")]

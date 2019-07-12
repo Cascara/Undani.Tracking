@@ -347,5 +347,22 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
+        public void SetDocumentsSigned(Guid procedureInstanceRefId, string key, DocumentSigned[] documentsSigned)
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_ProcedureInstanceDocumentSigned", cn) { CommandType = CommandType.StoredProcedure })
+                {
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Value = procedureInstanceRefId });
+                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
+                    cmd.Parameters.Add(new SqlParameter("@DocumentSigned", SqlDbType.VarChar, 500) { Value = JsonConvert.SerializeObject(documentsSigned) });
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
     }
 }

@@ -17,5 +17,6 @@ namespace Undani.Tracking.Execution
         public dynamic States { get; set; }
         public dynamic FormInstances { get; set; }
         public string DocumentsSignedZiped { get; set; }
+        public dynamic DocumentsSigned { get; set; }
     }
 }

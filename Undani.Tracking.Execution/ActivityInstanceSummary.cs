@@ -8,6 +8,7 @@ namespace Undani.Tracking.Execution
     {
         public Guid RefId { get; set; }
         public string Name { get; set; }
+        public string CatalogId { get; set; }
         public string CoustomViewer { get; set; }
         public Guid UserId { get; set; }
         public string UserName { get; set; }

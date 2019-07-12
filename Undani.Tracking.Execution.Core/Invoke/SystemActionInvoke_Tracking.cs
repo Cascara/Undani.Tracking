@@ -35,6 +35,10 @@ namespace Undani.Tracking.Core.Invoke
                     start = ProcedureInstanceUnique(systemActionInstanceId, configuration);
                     break;
 
+                case "ProcedureInstanceFormDocument":
+                    start = ProcedureInstanceFormDocument(systemActionInstanceId, configuration);
+                    break;
+
                 case "FlowInstanceStartDate":
                     start = FlowInstanceStartDate(systemActionInstanceId);
                     break;
@@ -138,6 +142,36 @@ namespace Undani.Tracking.Core.Invoke
 
                     start = true;
                 }
+
+                return start;
+            }
+        }
+
+        private bool ProcedureInstanceFormDocument(Guid systemActionInstanceId, string configuration)
+        {
+            bool start = false;
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+                ///TODO: Terminar
+                //using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceFormDocument", cn))
+                //{
+                //    string[] paths = configuration.Split(',');
+
+                //    cmd.CommandType = CommandType.StoredProcedure;
+                //    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                //    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
+                //    cmd.Parameters.Add(new SqlParameter("@State", SqlDbType.VarChar, 50));
+
+                //    foreach (string state in states)
+                //    {
+                //        cmd.Parameters["@State"].Value = state;
+                //        cmd.ExecuteNonQuery();
+                //    }
+
+                //    start = true;
+                //}
 
                 return start;
             }
