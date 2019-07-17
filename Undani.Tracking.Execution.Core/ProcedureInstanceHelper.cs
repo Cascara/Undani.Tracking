@@ -206,8 +206,9 @@ namespace Undani.Tracking.Execution.Core
                             Content = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(3), expandoConverter),
                             Start = reader.GetDateTime(4),
                             End = reader.GetDateTime(5),
-                            States = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(6), expandoConverter)
-                        });
+                            States = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(6), expandoConverter),
+                            DocumentsSigned = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(7), expandoConverter)
+                    });
                     }
                 }
             }
@@ -288,21 +289,6 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Value = elementInstanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@Comment", SqlDbType.VarChar, 255) { Value = comment });
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        public void Delete(string key) ///TODO: BORRAR     
-        {
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
-            {
-                cn.Open();
-
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Delete_ProcedureInstance", cn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
                     cmd.ExecuteNonQuery();
                 }
             }

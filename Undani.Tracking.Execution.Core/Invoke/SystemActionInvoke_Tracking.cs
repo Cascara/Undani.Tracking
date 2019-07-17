@@ -151,27 +151,33 @@ namespace Undani.Tracking.Core.Invoke
         {
             bool start = false;
 
+            dynamic jsonConfiguration = JsonConvert.DeserializeObject<ExpandoObject>(configuration, new ExpandoObjectConverter());
+
+            JObject oJson = JObject.Parse(new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token));
+
+            JToken jToken = oJson.SelectToken(jsonConfiguration.Path);
+
+            string documents = JsonConvert.SerializeObject(jToken);
+
+            if (jToken.Type != JTokenType.Array)
+            {
+                documents = "[" + documents + "]";
+            }
+
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
-                ///TODO: Terminar
-                //using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceFormDocument", cn))
-                //{
-                //    string[] paths = configuration.Split(',');
 
-                //    cmd.CommandType = CommandType.StoredProcedure;
-                //    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
-                //    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = key });
-                //    cmd.Parameters.Add(new SqlParameter("@State", SqlDbType.VarChar, 50));
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceFormDocument", cn) { CommandType = CommandType.StoredProcedure })
+                {
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = jsonConfiguration.Key });
+                    cmd.Parameters.Add(new SqlParameter("@Document", SqlDbType.VarChar, 500) { Value = documents });
 
-                //    foreach (string state in states)
-                //    {
-                //        cmd.Parameters["@State"].Value = state;
-                //        cmd.ExecuteNonQuery();
-                //    }
+                    cmd.ExecuteNonQuery();
 
-                //    start = true;
-                //}
+                    start = true;
+                }
 
                 return start;
             }

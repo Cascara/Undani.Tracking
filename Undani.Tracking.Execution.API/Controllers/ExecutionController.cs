@@ -86,13 +86,6 @@ namespace Undani.Tracking.Execution.API.Controllers
             return comment;
         }
 
-        [Route("ProcedureInstance/Delete")]
-        public void DeleteProcedureInstance(string key)
-        {
-            ProcedureInstanceHelper procedureInstanceHelper = new ProcedureInstanceHelper(Configuration, Guid.Empty, "");
-            procedureInstanceHelper.Delete(key);
-        }
-
         [Route("ProcedureInstance/SetState")]
         public bool SetProcedureInstanceState(Guid procedureInstanceRefId, string key, string state)
         {
@@ -284,15 +277,24 @@ namespace Undani.Tracking.Execution.API.Controllers
         #region SystemAction
         [HttpPost]
         [Route("SystemAccionInstance/Finish")]
-        public void FinishSystemAction(Guid systemActionInstanceId, [FromBody] string procedureInstanceContent = "", [FromBody] string flowInstanceContent = "")
+        public string FinishSystemAction(Guid systemActionInstanceId, [FromForm] string procedureInstanceContent = "{}", [FromForm] string flowInstanceContent = "{}")
         {
-            _User user = GetUser(Request);
-            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, user.Id, user.Token);
-            systemActionInstanceHelper.Finish(systemActionInstanceId, procedureInstanceContent, flowInstanceContent);
+            try
+            {
+                SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
+                systemActionInstanceHelper.Finish(systemActionInstanceId, procedureInstanceContent, flowInstanceContent);
+
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                return "Fail: " + ex.Message;
+            }
+                   
         }
 
-        [Route("SystemAccionInstance/Finish/Anonymous")]
-        public void FinishAnonymousSystemAction(Guid systemActionInstanceId, [FromBody] string procedureInstanceContent = "", [FromBody] string flowInstanceContent = "")
+        [Route("SystemAccionInstance/Finish/Anonymous")] ///TODO: Actualizar
+        public void FinishAnonymousSystemAction(Guid systemActionInstanceId, [FromBody] string procedureInstanceContent = "{}", [FromBody] string flowInstanceContent = "{}")
         {
             SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
             systemActionInstanceHelper.Finish(systemActionInstanceId, procedureInstanceContent, flowInstanceContent);

@@ -22,7 +22,7 @@ namespace Undani.Tracking.Execution.Core.Invoke.Resource
                 httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
                 var client = new HttpClient(httpClientHandler);
 
-                client.DefaultRequestHeaders.Add("Authorization", token);
+                client.DefaultRequestHeaders.Add("Authorization", token);                
 
                 string url = Configuration["ApiTemplate"] + "/Execution/Template/FormRequest";
                 StringContent contentJson = new StringContent(content, Encoding.UTF8, "application/json");
