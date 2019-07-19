@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -33,7 +34,7 @@ namespace Undani.Tracking.Execution.Core.Invoke.Resource
                 if (response.StatusCode != HttpStatusCode.OK)
                     throw new Exception("It was not possible to add the traceability page in box");
 
-                _User _user = Newtonsoft.Json.JsonConvert.DeserializeObject<_User>(response.Content.ReadAsStringAsync().Result);
+                _User _user = JsonConvert.DeserializeObject<_User>(response.Content.ReadAsStringAsync().Result);
                 _user.OwnerId = ownerId;
                 _user.RFC = user.Integration.Datos.RFC;
 

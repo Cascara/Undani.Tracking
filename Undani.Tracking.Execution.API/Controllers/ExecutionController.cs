@@ -289,23 +289,24 @@ namespace Undani.Tracking.Execution.API.Controllers
             catch (Exception ex)
             {
                 return "Fail: " + ex.Message;
-            }
-                   
-        }
-
-        [Route("SystemAccionInstance/Finish/Anonymous")] ///TODO: Actualizar
-        public void FinishAnonymousSystemAction(Guid systemActionInstanceId, [FromBody] string procedureInstanceContent = "{}", [FromBody] string flowInstanceContent = "{}")
-        {
-            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
-            systemActionInstanceHelper.Finish(systemActionInstanceId, procedureInstanceContent, flowInstanceContent);
+            }                   
         }
 
         [Route("SystemAccionInstance/Execute")]
-        public void ExecuteSystemAction(Guid systemActionInstanceId)
+        public string ExecuteSystemAction(Guid systemActionInstanceId)
         {
-            //_User user = GetUser(Request);
-            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
-            systemActionInstanceHelper.Execute(systemActionInstanceId);
+            try
+            {
+
+                SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
+                systemActionInstanceHelper.Execute(systemActionInstanceId);
+
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                return "Fail: " + ex.Message;
+            }
         }
         #endregion
 

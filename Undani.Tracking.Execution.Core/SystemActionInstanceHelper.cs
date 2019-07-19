@@ -79,13 +79,20 @@ namespace Undani.Tracking.Execution.Core
 
                     cmd.ExecuteNonQuery();
 
+
                     if (cmd.Parameters["@SystemActionInstanceId"].Value != DBNull.Value)
-                        Execute((Guid)cmd.Parameters["@SystemActionInstanceId"].Value);
+                    {
+                        if ((Guid)cmd.Parameters["@SystemActionInstanceId"].Value != Guid.Empty)
+                        {
+                            Execute((Guid)cmd.Parameters["@SystemActionInstanceId"].Value);
+                        }                        
+                    }                        
                     else
                     {
                         ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, UserId, Token);
                         actionInstanceHelper.Finish((Guid)cmd.Parameters["@ActionInstanceId"].Value);
                     }
+                    
                         
                 }
             }

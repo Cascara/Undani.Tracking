@@ -42,6 +42,10 @@ namespace Undani.Tracking.Core.Invoke
                     start = Custom_CredereState(systemActionInstanceId, configuration);
                     break;
 
+                case "Custom_MailEvaluator":
+                    start = Custom_MailEvaluator(systemActionInstanceId, configuration);
+                    break;
+
                 default:
                     throw new Exception("The method is not implemented");
             }
@@ -177,6 +181,34 @@ namespace Undani.Tracking.Core.Invoke
                 cn.Open();
 
                 using (SqlCommand cmd = new SqlCommand("CUSTOM.usp_Set_SAI_CredereState", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+
+                    cmd.ExecuteNonQuery();
+
+                    dynamic oJson = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureInstanceContent"].Value, new ExpandoObjectConverter());
+
+                    configuration = configuration.Replace("[SystemActionInstranceId]", systemActionInstanceId.ToString());
+                    configuration = configuration.Replace("[NumeroCliente]", oJson.SAIResponse.folioClienteField);
+                }
+            }
+
+            start = new IntegrationCall(Configuration).ExecuteFormInstanceIntegration(configuration);
+
+            return start;
+        }
+
+        private bool Custom_MailEvaluator(Guid systemActionInstanceId, string configuration)
+        {
+            bool start = false;
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("CUSTOM.usp_Set_SAI_MailEvaluator", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });

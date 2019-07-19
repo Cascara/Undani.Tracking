@@ -39,6 +39,10 @@ namespace Undani.Tracking.Core.Invoke
                     start = ProcedureInstanceFormDocument(systemActionInstanceId, configuration);
                     break;
 
+                case "ProcedureInstanceFormDocumentToPDF":
+                    start = ProcedureInstanceFormDocumentToPDF(systemActionInstanceId, configuration);
+                    break;
+
                 case "FlowInstanceStartDate":
                     start = FlowInstanceStartDate(systemActionInstanceId);
                     break;
@@ -157,11 +161,15 @@ namespace Undani.Tracking.Core.Invoke
 
             JToken jToken = oJson.SelectToken(jsonConfiguration.Path);
 
-            string documents = JsonConvert.SerializeObject(jToken);
+            string documents = "";
 
             if (jToken.Type != JTokenType.Array)
             {
-                documents = "[" + documents + "]";
+                documents = "[" + JsonConvert.SerializeObject(jToken) + "]";
+            }
+            else
+            {
+                documents = JsonConvert.SerializeObject(jToken);               
             }
 
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
@@ -172,11 +180,64 @@ namespace Undani.Tracking.Core.Invoke
                 {
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = jsonConfiguration.Key });
-                    cmd.Parameters.Add(new SqlParameter("@Document", SqlDbType.VarChar, 500) { Value = documents });
+                    cmd.Parameters.Add(new SqlParameter("@Document", SqlDbType.VarChar, 500) { Value = documents.Replace(".docx", ".pdf").Replace(".DOCX", ".pdf") });
 
                     cmd.ExecuteNonQuery();
 
                     start = true;
+                }
+
+                return start;
+            }
+        }
+
+        private bool ProcedureInstanceFormDocumentToPDF(Guid systemActionInstanceId, string configuration)
+        {
+            bool start = false;
+
+            dynamic jsonConfiguration = JsonConvert.DeserializeObject<ExpandoObject>(configuration, new ExpandoObjectConverter());
+
+            JObject oJson = JObject.Parse(new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token));
+
+            JToken jToken = oJson.SelectToken(jsonConfiguration.Path);
+
+            string documents = "";
+            List<string> documentsToConvert = new List<string>();
+
+            if (jToken.Type != JTokenType.Array)
+            {
+                documents = "[" + JsonConvert.SerializeObject(jToken) + "]";
+                documentsToConvert.Add((string)jToken["SystemName"]);
+            }
+            else
+            {
+                documents = JsonConvert.SerializeObject(jToken);
+                string document = "";
+                foreach (JToken item in jToken)
+                {
+                    document = (string)item["SystemName"];
+                    if ((document.Contains(".docx") || document.Contains(".DOCX")) && (bool)item["ToPDF"])
+                    {
+                        documentsToConvert.Add((string)item["SystemName"]);
+                    }
+                }
+            }
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceFormDocumentToPDF", cn) { CommandType = CommandType.StoredProcedure })
+                {
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = jsonConfiguration.Key });
+                    cmd.Parameters.Add(new SqlParameter("@Document", SqlDbType.VarChar, 500) { Value = documents.Replace(".docx", ".pdf").Replace(".DOCX", ".pdf") });
+                    cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+
+                    cmd.ExecuteNonQuery();
+
+                    start = new BoxCall(Configuration).DocxToPDF(systemActionInstanceId, (Guid)cmd.Parameters["@OwnerId"].Value, documentsToConvert);
+
                 }
 
                 return start;
