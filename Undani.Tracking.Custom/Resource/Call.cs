@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Undani.Tracking.Execution.Core.Invoke.Resource
+namespace Undani.Tracking.Custom.Resource
 {
-    internal abstract class Call
+    public abstract class Call
     {
         private IConfiguration _configuration;
 

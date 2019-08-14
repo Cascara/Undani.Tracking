@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Undani.Tracking.Execution.Core.Invoke.Infra
 {
-    public class _CreateFlow
+    internal class _CreateFlow
     {
         public string Key { get; set; }
         public string State { get; set; }

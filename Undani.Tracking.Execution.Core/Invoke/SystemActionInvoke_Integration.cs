@@ -55,7 +55,7 @@ namespace Undani.Tracking.Core.Invoke
 
         private bool FormInstanceIntegration(Guid systemActionInstanceId, string configuration)
         {
-            bool start = false;
+            BusCall busCall = new BusCall(Configuration);
 
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -70,17 +70,17 @@ namespace Undani.Tracking.Core.Invoke
                     cmd.ExecuteNonQuery();
 
                     configuration = configuration.Replace("[FormInstanceId]", cmd.Parameters["@FormInstanceId"].Value.ToString());
+
+                    busCall.SendMessage(configuration);
                 }
-            }
+            }            
 
-            start = new IntegrationCall(Configuration).ExecuteFormInstanceIntegration(configuration);
-
-            return start;
+            return true;
         }
 
         private bool Custom_Credere(Guid systemActionInstanceId, string configuration)
         {
-            bool start = false;
+            BusCall busCall = new BusCall(Configuration);
 
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -103,9 +103,9 @@ namespace Undani.Tracking.Core.Invoke
                 }
             }
 
-            start = new IntegrationCall(Configuration).ExecuteFormInstanceIntegration(configuration);
+            busCall.SendMessage(configuration);
 
-            return start;
+            return true;
         }
 
         private bool Custom_AssignEvaluator(Guid systemActionInstanceId, string configuration)
@@ -174,7 +174,7 @@ namespace Undani.Tracking.Core.Invoke
 
         private bool Custom_CredereState(Guid systemActionInstanceId, string configuration)
         {
-            bool start = false;
+            BusCall busCall = new BusCall(Configuration);
 
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -195,37 +195,51 @@ namespace Undani.Tracking.Core.Invoke
                 }
             }
 
-            start = new IntegrationCall(Configuration).ExecuteFormInstanceIntegration(configuration);
+            busCall.SendMessage(configuration);
 
-            return start;
+            return true;
         }
 
         private bool Custom_MailEvaluator(Guid systemActionInstanceId, string configuration)
         {
             bool start = false;
 
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            try
             {
-                cn.Open();
-
-                using (SqlCommand cmd = new SqlCommand("CUSTOM.usp_Set_SAI_MailEvaluator", cn))
+                using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cn.Open();
 
-                    cmd.ExecuteNonQuery();
+                    using (SqlCommand cmd = new SqlCommand("CUSTOM.usp_Set_SAI_MailEvaluator", cn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                        cmd.Parameters.Add(new SqlParameter("@EnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new SqlParameter("@UserContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                        cmd.Parameters.Add(new SqlParameter("@EvaluatorMail", SqlDbType.VarChar, 256) { Direction = ParameterDirection.Output });
 
-                    dynamic oJson = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@ProcedureInstanceContent"].Value, new ExpandoObjectConverter());
+                        cmd.ExecuteNonQuery();
 
-                    configuration = configuration.Replace("[SystemActionInstranceId]", systemActionInstanceId.ToString());
-                    configuration = configuration.Replace("[NumeroCliente]", oJson.SAIResponse.folioClienteField);
+                        dynamic oJson = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@UserContent"].Value, new ExpandoObjectConverter());
+
+                        configuration = configuration.Replace("[SystemActionInstanceId]", systemActionInstanceId.ToString());
+                        configuration = configuration.Replace("[EnvironmentId]", cmd.Parameters["@EnvironmentId"].Value.ToString());
+                        configuration = configuration.Replace("[NumeroTramite]", (string)cmd.Parameters["@ProcedureInstanceKey"].Value);
+                        configuration = configuration.Replace("[NombreCentroTrabajo]", (string)oJson.nombreCTField);
+                        configuration = configuration.Replace("[RegistroPatronal]", (string)oJson.registroPatronalField);
+                        configuration = configuration.Replace("[CorreoDestinatarios]", (string)cmd.Parameters["@EvaluatorMail"].Value);
+                    }
                 }
+
+                start = new TemplateCall(Configuration).Notification(configuration, Token);
             }
+            catch (Exception)
+            {
 
-            start = new IntegrationCall(Configuration).ExecuteFormInstanceIntegration(configuration);
+            }           
 
-            return start;
+            return true;
         }
     }
 }

@@ -8,13 +8,13 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 
-namespace Undani.Tracking.Execution.Core.Invoke.Resource
+namespace Undani.Tracking.Custom.Resource
 {
-    public class IntegrationCall : Call
+    public class TemplateCall : Call
     {
-        public IntegrationCall(IConfiguration configuration) : base(configuration) { }
+        public TemplateCall(IConfiguration configuration) : base(configuration) { }
 
-        public bool ExecuteFormInstanceIntegration(string content)
+        public void Notification(string content, string token)
         {
             HttpResponseMessage response;
             using (var httpClientHandler = new HttpClientHandler())
@@ -22,19 +22,22 @@ namespace Undani.Tracking.Execution.Core.Invoke.Resource
                 httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
                 var client = new HttpClient(httpClientHandler);
 
-                string url = Configuration["ApiBus"] + "/api/message/send";
+                client.DefaultRequestHeaders.Add("Authorization", token);
+
+                string url = Configuration["ApiTemplate"] + "/Execution/Template/Notification";
                 StringContent contentJson = new StringContent(content, Encoding.UTF8, "application/json");
                 response = client.PostAsync(url, contentJson).Result;
 
                 if (response.StatusCode != HttpStatusCode.OK)
-                    throw new Exception("There was an error when trying to contact the service bus");
+                    throw new Exception("There was an error when trying to contact template");
             }
 
             string json = response.Content.ReadAsStringAsync().Result;
 
             dynamic responseResult = JsonConvert.DeserializeObject<ExpandoObject>(json, new ExpandoObjectConverter());
 
-            return responseResult.IsSuccess;
+            if (responseResult.IsError)
+                throw new Exception("There was an error when execute the template");
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Undani.Tracking.Execution.Core.Invoke.Infra
 {
-    public class _User
+    internal class _User
     {
         public Guid SubjectId { get; set; }
         public string Email { get; set; }

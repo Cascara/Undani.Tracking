@@ -193,7 +193,7 @@ namespace Undani.Tracking.Core.Invoke
 
         private bool ProcedureInstanceFormDocumentToPDF(Guid systemActionInstanceId, string configuration)
         {
-            bool start = false;
+            BusCall busCall = new BusCall(Configuration);
 
             dynamic jsonConfiguration = JsonConvert.DeserializeObject<ExpandoObject>(configuration, new ExpandoObjectConverter());
 
@@ -236,11 +236,21 @@ namespace Undani.Tracking.Core.Invoke
 
                     cmd.ExecuteNonQuery();
 
-                    start = new BoxCall(Configuration).DocxToPDF(systemActionInstanceId, (Guid)cmd.Parameters["@OwnerId"].Value, documentsToConvert);
+                    var content = new
+                    {
+                        TargetQueue = "docx2pdf",
+                        MessageBody = new
+                        {
+                            SystemActionId = systemActionInstanceId,
+                            OwnerId = (Guid)cmd.Parameters["@OwnerId"].Value,
+                            DocumentsToConvert = documentsToConvert
+                        }
+                    };
 
+                    busCall.SendMessage(JsonConvert.SerializeObject(content));
                 }
 
-                return start;
+                return true; 
             }
         }
 

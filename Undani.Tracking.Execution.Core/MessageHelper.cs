@@ -84,11 +84,12 @@ namespace Undani.Tracking.Execution.Core
                             FlowInstanceKey = reader.GetString(3),
                             FlowInstanceContent = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(4), expandoConverter),
                             ProcedureInstanceKey = reader.GetString(5),
-                            StatesFlowInstance = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(6), expandoConverter),
-                            StatesProcedureInstance = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(7), expandoConverter),
-                            Start = reader.GetDateTime(8),
-                            Viewed = reader.GetBoolean(9),
-                            ActivityUserGroupTypeId = reader.GetInt32(10)
+                            ProcedureInstanceContent = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(6), expandoConverter),
+                            StatesFlowInstance = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(7), expandoConverter),
+                            StatesProcedureInstance = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(8), expandoConverter),
+                            Start = reader.GetDateTime(9),
+                            Viewed = reader.GetBoolean(10),
+                            ActivityUserGroupTypeId = reader.GetInt32(11)
                         });
                     }
                 }

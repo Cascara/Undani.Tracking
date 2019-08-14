@@ -158,16 +158,17 @@ namespace Undani.Tracking.Execution.Core
                     {
                         RefId = reader.GetGuid(0),
                         Name = reader.GetString(1),
-                        CatalogId = reader.GetString(2),
-                        CoustomViewer = reader.GetString(3),
-                        UserId = reader.GetGuid(4),
-                        UserName = reader.GetString(5),
-                        Start = reader.GetDateTime(6),
-                        End = reader.IsDBNull(7) ? new DateTime() : reader.GetDateTime(7),
-                        Days = reader.GetString(8),
-                        Hours = reader.GetString(9),
-                        Reference = reader.GetString(10),
-                        DocumentsSignedZiped = GetDocumentsSignedZiped(reader.GetString(11))
+                        Description = reader.GetString(2),
+                        CatalogId = reader.GetString(3),
+                        CoustomViewer = reader.GetString(4),
+                        UserId = reader.GetGuid(5),
+                        UserName = reader.GetString(6),
+                        Start = reader.GetDateTime(7),
+                        End = reader.IsDBNull(8) ? new DateTime() : reader.GetDateTime(8),
+                        Days = reader.GetString(9),
+                        Hours = reader.GetString(10),
+                        Reference = reader.GetString(11),
+                        DocumentsSignedZiped = GetDocumentsSignedZiped(reader.GetString(12))
                     });
                 }
             }

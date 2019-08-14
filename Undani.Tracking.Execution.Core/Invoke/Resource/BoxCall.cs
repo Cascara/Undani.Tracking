@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Undani.Tracking.Execution.Core.Invoke.Resource
 {
-    public class BoxCall : Call
+    internal class BoxCall : Call
     {
         public BoxCall(IConfiguration configuration) : base(configuration) { }
 
