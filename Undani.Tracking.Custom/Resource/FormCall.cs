@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -9,15 +8,14 @@ using System.Text;
 
 namespace Undani.Tracking.Custom.Resource
 {
-    public class FormCall : Call
+    public static class FormCall
     {
-        public FormCall(IConfiguration configuration) : base(configuration) { }
 
-        public string GetInstanceObject(Guid systemActionInstanceId, string token)
+        public static string GetInstanceObject(string cnDbTracking, string apiForm, Guid systemActionInstanceId, string token)
         {
             Guid formInstanceId;
             string json = "";
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            using (SqlConnection cn = new SqlConnection(cnDbTracking))
             {
                 cn.Open();
 
@@ -33,7 +31,7 @@ namespace Undani.Tracking.Custom.Resource
                 }
             }
 
-            string url = Configuration["ApiForm"] + "/Execution/GetJsonInstance?instanceId=" + formInstanceId;
+            string url = apiForm + "/Execution/GetJsonInstance?instanceId=" + formInstanceId;
 
             using (var client = new HttpClient())
             {

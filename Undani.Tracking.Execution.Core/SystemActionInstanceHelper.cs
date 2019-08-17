@@ -28,7 +28,11 @@ namespace Undani.Tracking.Execution.Core
 
                     cmd.ExecuteNonQuery();
 
-                    if (Start(systemActionInstanceId, (string)cmd.Parameters["@SystemActionTypeMethod"].Value, (string)cmd.Parameters["@SystemActionAlias"].Value, (string)cmd.Parameters["@SystemActionConfiguration"].Value))
+                    string method = (string)cmd.Parameters["@SystemActionTypeMethod"].Value;
+                    string alias = (string)cmd.Parameters["@SystemActionAlias"].Value;
+                    string configuration = (string)cmd.Parameters["@SystemActionConfiguration"].Value;
+
+                    if (Start(systemActionInstanceId, method, alias, configuration))
                     {
                         if (!(bool)cmd.Parameters["@SystemActionAsynchronous"].Value)
                         {

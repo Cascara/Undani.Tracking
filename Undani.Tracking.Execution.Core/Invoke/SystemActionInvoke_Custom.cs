@@ -41,23 +41,30 @@ namespace Undani.Tracking.Core.Invoke
                 }
             }
 
-            bool start = false;
+            _SystemActionResult _sytemActionResult;
 
             using (var client = new HttpClient())
             {
-                string url = Configuration["ApiCustom_" + ownerKey] + "/Custom/SystemAction/Invoke?systemActionInstanceId=" + systemActionInstanceId.ToString() + "&alias=" + alias + "&configuration=" + configuration;
+                string url = Configuration["ApiCustom_" + ownerKey] + "/Custom/SystemAction/Invoke?systemActionInstanceId=" + systemActionInstanceId.ToString() + "&alias=" + alias;
 
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Token);
+                client.DefaultRequestHeaders.Add("Authorization", Token);
 
-                HttpResponseMessage response = client.GetAsync(url).Result;
+                var formParameters = new List<KeyValuePair<string, string>>();
+                formParameters.Add(new KeyValuePair<string, string>("configuration", configuration));
+                var formContent = new FormUrlEncodedContent(formParameters);
+                
+                HttpResponseMessage response = client.PostAsync(url, formContent).Result;
 
                 if (response.StatusCode != HttpStatusCode.OK)
                     throw new Exception("There was an error when trying to invoke a custom system action");
 
-                start = bool.Parse(response.Content.ReadAsStringAsync().Result);
+                _sytemActionResult = JsonConvert.DeserializeObject<_SystemActionResult>(response.Content.ReadAsStringAsync().Result);
+
+                if (_sytemActionResult.Success == false)
+                    throw new Exception(_sytemActionResult.Error);
             }
 
-            return start;
+            return _sytemActionResult.Success;
         }
 
     }

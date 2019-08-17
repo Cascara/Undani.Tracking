@@ -13,7 +13,7 @@
       "launchBrowser": true,
       "launchUrl": "api/values",
       "environmentVariables": {
-        "CONFIGURATION_ENVIRONMENT": "85771C01-19ED-40D3-9666-D42CC6D8B467",
+        "CONFIGURATION_ENVIRONMENT": "BDE3686A-6C0B-4485-A0F8-30F4D3B2A7A7",
         "CONFIGURATION_SYSTEM": "FCF0AB47-D449-47E6-9582-93EA412C5F4E",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

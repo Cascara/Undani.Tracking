@@ -38,12 +38,44 @@ namespace Undani.Tracking.Core.Invoke
 
         public bool Invoke(Guid systemActionInstanceId, string method, string alias, string configuration)
         {
-            MethodInfo methodInfo = typeof(SystemActionInvoke).GetMethod(method);
+            bool result = false;
 
-            if (methodInfo.IsStatic)
-                return Convert.ToBoolean(methodInfo.Invoke(null, new object[] { systemActionInstanceId, alias, configuration }));
-            else
-                return Convert.ToBoolean(methodInfo.Invoke(this, new object[] { systemActionInstanceId, alias, configuration }));
+            switch (method)
+            {
+                case "Custom":
+                    result = Custom(systemActionInstanceId, alias, configuration);
+                    break;
+
+                case "Identity":
+                    result = Identity(systemActionInstanceId, alias, configuration);
+                    break;
+
+                case "Integration":
+                    result = Integration(systemActionInstanceId, alias, configuration);
+                    break;
+
+                case "KeyCalculation":
+                    result = KeyCalculation(systemActionInstanceId, alias, configuration);
+                    break;
+
+                case "State":
+                    result = State(systemActionInstanceId, alias, configuration);
+                    break;
+
+                case "Template":
+                    result = Template(systemActionInstanceId, alias, configuration);
+                    break;
+
+                case "Tracking":
+                    result = Tracking(systemActionInstanceId, alias, configuration);
+                    break;
+
+                case "UserRole":
+                    result = UserRole(systemActionInstanceId, alias, configuration);
+                    break;
+            }
+
+            return result;
         }
     }
 }
