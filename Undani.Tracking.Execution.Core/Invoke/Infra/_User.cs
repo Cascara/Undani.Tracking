@@ -13,7 +13,5 @@ namespace Undani.Tracking.Execution.Core.Invoke.Infra
         public string GivenName { get; set; }
         public string Name { get; set; }
         public string FamilyName { get; set; }
-        public string RFC { get; set; }
-        public Guid OwnerId { get; set; }
     }
 }

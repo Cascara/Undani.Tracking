@@ -17,26 +17,24 @@ namespace Undani.Tracking.Core.Invoke
 {
     public partial class SystemActionInvoke
     {
-        public bool Integration(Guid systemActionInstanceId, string alias, string configuration)
+        public bool Integration(Guid systemActionInstanceId, string alias, string settings)
         {
             bool start = false;
             switch (alias)
             {
                 case "FormInstanceIntegration":
-                    start = FormInstanceIntegration(systemActionInstanceId, configuration);
+                    start = FormInstanceIntegration(systemActionInstanceId, settings);
                     break;               
 
                 default:
-                    throw new Exception("The method is not implemented");
+                    throw new NotImplementedException();
             }
 
             return start;
         }
 
-        private bool FormInstanceIntegration(Guid systemActionInstanceId, string configuration)
-        {
-            BusCall busCall = new BusCall(Configuration);
-
+        private bool FormInstanceIntegration(Guid systemActionInstanceId, string settings)
+        {       
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
@@ -49,11 +47,15 @@ namespace Undani.Tracking.Core.Invoke
 
                     cmd.ExecuteNonQuery();
 
-                    configuration = configuration.Replace("[FormInstanceId]", cmd.Parameters["@FormInstanceId"].Value.ToString());
+                    settings = settings.Replace("[[FormInstanceId]]", cmd.Parameters["@FormInstanceId"].Value.ToString());
 
-                    busCall.SendMessage(configuration);
+                    BusCall busCall = new BusCall(Configuration);
+
+                    busCall.SendMessage(settings);
                 }
-            }            
+            }
+
+            SetConfiguration(systemActionInstanceId, settings);
 
             return true;
         }

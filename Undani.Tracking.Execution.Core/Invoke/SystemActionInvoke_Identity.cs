@@ -17,23 +17,23 @@ namespace Undani.Tracking.Core.Invoke
 {
     public partial class SystemActionInvoke
     {
-        public bool Identity(Guid systemActionInstanceId, string alias, string configuration)
+        public bool Identity(Guid systemActionInstanceId, string alias, string settings)
         {
             bool start = false;
             switch (alias)
             {
                 case "CreateUser":
-                    start = CreateUser(systemActionInstanceId, configuration);
+                    start = CreateUser(systemActionInstanceId, settings);
                     break;
 
                 default:
-                    throw new Exception("The method is not implemented");
+                    throw new NotImplementedException();
             }
 
             return start;
         }
 
-        private bool CreateUser(Guid systemActionInstanceId, string configuration)
+        private bool CreateUser(Guid systemActionInstanceId, string settings)
         {
             bool start = false;
 
@@ -62,16 +62,38 @@ namespace Undani.Tracking.Core.Invoke
                 }
             }
 
-            _User _user = new IdentityCall(Configuration).CreateUser(configuration, oJson);
+            dynamic dyConfiguration = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
+
+            IDictionary<string, object> dicConfiguration = dyConfiguration;
+
+            foreach (string key in dicConfiguration.Keys)
+            {
+                if (dicConfiguration[key].ToString().Contains("[["))
+                {
+                    settings = settings.Replace((string)dicConfiguration[key], (string)oJson.SelectToken(dicConfiguration[key].ToString().Replace("[[", "").Replace("]]", "")));
+                }                
+            }
+
+            settings = settings.Replace("{{OwnerId}}", ownerId.ToString());
+
+            _User _user = new IdentityCall(Configuration).CreateUser(settings);
 
             if (_user.SubjectId != Guid.Empty)
             {
+                dyConfiguration = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
+
+                string reference = dyConfiguration.Reference;
+
+                string roles = dyConfiguration.Roles;
+
                 UserHelper userHelper = new UserHelper(Configuration, UserId, Token);
 
-                userHelper.Create(_user.SubjectId, _user.OwnerId, _user.UserName, _user.GivenName, _user.FamilyName, _user.Email, _user.RFC, JsonConvert.SerializeObject(new { systemActionInstanceId = systemActionInstanceId }));
+                userHelper.Create(_user.SubjectId, ownerId, reference, roles, _user.UserName, _user.GivenName, _user.FamilyName, _user.Email, JsonConvert.SerializeObject(new { systemActionInstanceId = systemActionInstanceId }));
 
                 start = true;
             }
+
+            SetConfiguration(systemActionInstanceId, settings);
 
             return start;
         }

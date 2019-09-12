@@ -17,7 +17,7 @@ namespace Undani.Tracking.Core.Invoke
 {
     public partial class SystemActionInvoke
     {
-        public bool Custom(Guid systemActionInstanceId, string alias, string configuration)
+        public bool Custom(Guid systemActionInstanceId, string alias, string settings)
         {
             String ownerKey = String.Empty;
 
@@ -50,7 +50,7 @@ namespace Undani.Tracking.Core.Invoke
                 client.DefaultRequestHeaders.Add("Authorization", Token);
 
                 var formParameters = new List<KeyValuePair<string, string>>();
-                formParameters.Add(new KeyValuePair<string, string>("configuration", configuration));
+                formParameters.Add(new KeyValuePair<string, string>("settings", settings));
                 var formContent = new FormUrlEncodedContent(formParameters);
                 
                 HttpResponseMessage response = client.PostAsync(url, formContent).Result;

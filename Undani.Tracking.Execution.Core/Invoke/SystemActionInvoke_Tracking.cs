@@ -18,47 +18,47 @@ namespace Undani.Tracking.Core.Invoke
 {
     public partial class SystemActionInvoke
     {
-        public bool Tracking(Guid systemActionInstanceId, string alias, string configuration)
+        public bool Tracking(Guid systemActionInstanceId, string alias, string settings)
         {
             bool start = false;
             switch (alias)
             {
                 case "ProcedureInstanceStartDate":
-                    start = ProcedureInstanceStartDate(systemActionInstanceId);
+                    start = ProcedureInstanceStartDate(systemActionInstanceId, settings);
                     break;
 
                 case "ProcedureInstanceEndDate":
-                    start = ProcedureInstanceEndDate(systemActionInstanceId, configuration);
+                    start = ProcedureInstanceEndDate(systemActionInstanceId, settings);
                     break;
 
                 case "ProcedureInstanceUnique":
-                    start = ProcedureInstanceUnique(systemActionInstanceId, configuration);
+                    start = ProcedureInstanceUnique(systemActionInstanceId, settings);
                     break;
 
                 case "ProcedureInstanceFormDocument":
-                    start = ProcedureInstanceFormDocument(systemActionInstanceId, configuration);
+                    start = ProcedureInstanceFormDocument(systemActionInstanceId, settings);
                     break;
 
                 case "ProcedureInstanceFormDocumentToPDF":
-                    start = ProcedureInstanceFormDocumentToPDF(systemActionInstanceId, configuration);
+                    start = ProcedureInstanceFormDocumentToPDF(systemActionInstanceId, settings);
                     break;
 
                 case "FlowInstanceStartDate":
-                    start = FlowInstanceStartDate(systemActionInstanceId);
+                    start = FlowInstanceStartDate(systemActionInstanceId, settings);
                     break;
 
                 case "CreateFlowInstance":
-                    start = CreateFlowInstance(systemActionInstanceId, configuration);
+                    start = CreateFlowInstance(systemActionInstanceId, settings);
                     break;
 
                 default:
-                    throw new Exception("The method is not implemented");
+                    throw new NotImplementedException();
             }
 
             return start;
         }
 
-        private bool ProcedureInstanceStartDate(Guid systemActionInstanceId)
+        private bool ProcedureInstanceStartDate(Guid systemActionInstanceId, string settings)
         {
             bool start = false;
 
@@ -74,12 +74,14 @@ namespace Undani.Tracking.Core.Invoke
                     cmd.ExecuteNonQuery();
                     start = true;
                 }
-            }               
+            }
+
+            SetConfiguration(systemActionInstanceId, settings);
 
             return start;
         }
 
-        private bool ProcedureInstanceEndDate(Guid systemActionInstanceId, string configuration)
+        private bool ProcedureInstanceEndDate(Guid systemActionInstanceId, string settings)
         {
             bool start = false;
 
@@ -89,7 +91,7 @@ namespace Undani.Tracking.Core.Invoke
 
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceEndDate", cn))
                 {
-                    JObject oJson = JObject.Parse(configuration);
+                    JObject oJson = JObject.Parse(settings);
 
                     JToken token = JToken.FromObject(oJson);
 
@@ -110,12 +112,14 @@ namespace Undani.Tracking.Core.Invoke
 
                     start = true;
                 }
-
-                return start;
             }
+
+            SetConfiguration(systemActionInstanceId, settings);
+
+            return start;
         }
 
-        private bool ProcedureInstanceUnique(Guid systemActionInstanceId, string configuration)
+        private bool ProcedureInstanceUnique(Guid systemActionInstanceId, string settings)
         {
             bool start = false;
 
@@ -125,7 +129,7 @@ namespace Undani.Tracking.Core.Invoke
 
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceUnique", cn))
                 {
-                    JObject oJson = JObject.Parse(configuration);
+                    JObject oJson = JObject.Parse(settings);
 
                     JToken token = JToken.FromObject(oJson);
 
@@ -147,15 +151,17 @@ namespace Undani.Tracking.Core.Invoke
                     start = true;
                 }
 
+                SetConfiguration(systemActionInstanceId, settings);
+
                 return start;
             }
         }
 
-        private bool ProcedureInstanceFormDocument(Guid systemActionInstanceId, string configuration)
+        private bool ProcedureInstanceFormDocument(Guid systemActionInstanceId, string settings)
         {
             bool start = false;
 
-            dynamic jsonConfiguration = JsonConvert.DeserializeObject<ExpandoObject>(configuration, new ExpandoObjectConverter());
+            dynamic jsonConfiguration = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
 
             JObject oJson = JObject.Parse(new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token));
 
@@ -187,15 +193,18 @@ namespace Undani.Tracking.Core.Invoke
                     start = true;
                 }
 
-                return start;
             }
+
+            SetConfiguration(systemActionInstanceId, settings);
+
+            return start;
         }
 
-        private bool ProcedureInstanceFormDocumentToPDF(Guid systemActionInstanceId, string configuration)
+        private bool ProcedureInstanceFormDocumentToPDF(Guid systemActionInstanceId, string settings)
         {
             BusCall busCall = new BusCall(Configuration);
 
-            dynamic jsonConfiguration = JsonConvert.DeserializeObject<ExpandoObject>(configuration, new ExpandoObjectConverter());
+            dynamic jsonConfiguration = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
 
             JObject oJson = JObject.Parse(new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token));
 
@@ -249,12 +258,14 @@ namespace Undani.Tracking.Core.Invoke
 
                     busCall.SendMessage(JsonConvert.SerializeObject(content));
                 }
-
-                return true; 
             }
+
+            SetConfiguration(systemActionInstanceId, settings);
+
+            return true; 
         }
 
-        private bool FlowInstanceStartDate(Guid systemActionInstanceId)
+        private bool FlowInstanceStartDate(Guid systemActionInstanceId, string settings)
         {
             bool start = false;
 
@@ -272,10 +283,12 @@ namespace Undani.Tracking.Core.Invoke
                 }
             }
 
+            SetConfiguration(systemActionInstanceId, settings);
+
             return start;
         }
 
-        private bool CreateFlowInstance(Guid systemActionInstanceId, string configuration)
+        private bool CreateFlowInstance(Guid systemActionInstanceId, string settings)
         {
             bool start = false;            
 
@@ -291,7 +304,7 @@ namespace Undani.Tracking.Core.Invoke
                     cmd.Parameters.Add(new SqlParameter("@State", SqlDbType.VarChar, 50));
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
 
-                    List<_CreateFlow> createFlows = JsonConvert.DeserializeObject<List<_CreateFlow>>(configuration);
+                    List<_CreateFlow> createFlows = JsonConvert.DeserializeObject<List<_CreateFlow>>(settings);
 
                     FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, UserId);
                     int procedureInstanceId;
@@ -313,6 +326,8 @@ namespace Undani.Tracking.Core.Invoke
                     start = true;
                 }
             }
+
+            SetConfiguration(systemActionInstanceId, settings);
 
             return start;
         }

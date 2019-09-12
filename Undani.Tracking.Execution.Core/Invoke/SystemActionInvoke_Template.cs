@@ -17,23 +17,23 @@ namespace Undani.Tracking.Core.Invoke
 {
     public partial class SystemActionInvoke
     {
-        public bool Template(Guid systemActionInstanceId, string alias, string configuration)
+        public bool Template(Guid systemActionInstanceId, string alias, string settings)
         {
             bool start = false;
             switch (alias)
             {
                 case "FormInstanceRequest":
-                    start = FormInstanceRequest(systemActionInstanceId, configuration);
+                    start = FormInstanceRequest(systemActionInstanceId, settings);
                     break;
 
                 default:
-                    throw new Exception("The method is not implemented");
+                    throw new NotImplementedException();
             }
 
             return start;
         }
 
-        private bool FormInstanceRequest(Guid systemActionInstanceId, string configuration)
+        private bool FormInstanceRequest(Guid systemActionInstanceId, string settings)
         {
             bool start = false;
 
@@ -50,13 +50,15 @@ namespace Undani.Tracking.Core.Invoke
 
                     cmd.ExecuteNonQuery();
 
-                    configuration = configuration.Replace("[EnvironmentId]", cmd.Parameters["@EnvironmentId"].Value.ToString());
-                    configuration = configuration.Replace("[SystemActionInstanceId]", systemActionInstanceId.ToString());
-                    configuration = configuration.Replace("[FormInstanceId]", cmd.Parameters["@FormInstanceId"].Value.ToString());
+                    settings = settings.Replace("[[EnvironmentId]]", cmd.Parameters["@EnvironmentId"].Value.ToString());
+                    settings = settings.Replace("[[SystemActionInstanceId]]", systemActionInstanceId.ToString());
+                    settings = settings.Replace("[[FormInstanceId]]", cmd.Parameters["@FormInstanceId"].Value.ToString());
                 }
             }
 
-            start = new TemplateCall(Configuration).ExecuteFormInstanceRequest(configuration, Token);
+            start = new TemplateCall(Configuration).ExecuteFormInstanceRequest(settings, Token);
+
+            SetConfiguration(systemActionInstanceId, settings);
 
             return start;
         }

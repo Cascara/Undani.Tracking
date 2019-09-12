@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -14,6 +15,14 @@ namespace Undani.Tracking.Execution.Core.Invoke.Resource
     internal class BusCall : Call
     {
         public BusCall(IConfiguration configuration) : base(configuration) { }
+
+        //public void SendMessage(string queueName, string content)
+        //{
+
+        //    var bus = ClientBus.Bus.Connect(Configuration["CnSrvBus"], queueName).se;
+
+        //    bus.Send(JObject.Parse(content));
+        //}
 
         public void SendMessage(string content)
         {

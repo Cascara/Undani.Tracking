@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Undani.JWT;
 using Undani.Tracking.Execution.API.Infra;
 using Undani.Tracking.Execution.Core;
@@ -20,7 +21,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         {
             Configuration = configuration;
         }
-               
+
         #region ProcedureInstance
         [Route("ProcedureInstance")]
         public ProcedureInstance GetProcedureInstance(Guid procedureInstanceRefId)
@@ -90,7 +91,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         public bool SetProcedureInstanceState(Guid procedureInstanceRefId, string key, string state)
         {
             _User user = GetUser(Request);
-           return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).SetState(procedureInstanceRefId, key, state);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).SetState(procedureInstanceRefId, key, state);
         }
 
         [Route("ProcedureInstance/GetState")]
@@ -118,7 +119,7 @@ namespace Undani.Tracking.Execution.API.Controllers
             _User user = GetUser(Request);
             return new FlowInstanceHelper(Configuration, user.Id, user.Token).Get(flowInstanceRefId);
         }
-        
+
         [Route("FlowInstance/SetContentProperty")]
         public dynamic SetContentProperty(Guid flowInstanceRefId, string propertyName, string value)
         {
@@ -251,7 +252,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         public void SetActivityInstanceDocumentSigned(Guid elementInstanceRefId, string key, [FromBody] DocumentSigned[] documentSigneds)
         {
             _User user = GetUser(Request);
-            
+
             ActivityInstanceHelper activityInstanceHelper = new ActivityInstanceHelper(Configuration, user.Id, user.Token);
             activityInstanceHelper.SetDocumentsSigned(elementInstanceRefId, key, documentSigneds);
         }
@@ -288,25 +289,42 @@ namespace Undani.Tracking.Execution.API.Controllers
             }
             catch (Exception ex)
             {
-                return "Fail: " + ex.Message;
-            }                   
+                return JsonConvert.SerializeObject(ex);
+            }
+        }
+
+        [HttpPost]
+        [Route("SystemAccionInstance/Success")]
+        public string SuccessSystemAction([FromBody] SystemActionInstanceResponse systemActionInstanceResponse)
+        {
+            try
+            {
+                SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
+                systemActionInstanceHelper.Finish(systemActionInstanceResponse.SystemActionInstanceId, systemActionInstanceResponse.ProcedureInstanceContent, systemActionInstanceResponse.FlowInstanceContent);
+
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                return JsonConvert.SerializeObject(ex);
+            }
         }
 
         [Route("SystemAccionInstance/Execute")]
         public string ExecuteSystemAction(Guid systemActionInstanceId)
         {
-            //try
-            //{
+            try
+            {
                 SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
                 systemActionInstanceHelper.Execute(systemActionInstanceId);
 
                 return "Success";
-            //}
-            //catch (Exception ex)
-            //{
-            //    return ex.Message;
-            //}
-}
+            }
+            catch (Exception ex)
+            {
+                return JsonConvert.SerializeObject(ex);
+            }
+        }
         #endregion
 
         #region User
@@ -326,13 +344,21 @@ namespace Undani.Tracking.Execution.API.Controllers
 
         [Route("User/Create")]
         [HttpPost]
-        public void GetCreateUser(Guid userId, Guid ownerId, string userName, string givenName, string rfc, [FromForm] string content, string familyName = "", string email = "")
+        public void CreateUser(Guid userId, Guid ownerId, string reference, string roles, string userName, string givenName, [FromForm] string content, string familyName = "", string email = "")
         {
             _User user = GetUser(Request);
             UserHelper userHelper = new UserHelper(Configuration, user.Id, user.Token);
-            userHelper.Create(userId, ownerId, userName, givenName, familyName, email, rfc, content);
+            userHelper.Create(userId, ownerId, reference, roles, userName, givenName, familyName, email, content);
         }
 
+        [Route("User/SetContent")]
+        [HttpPost]
+        public void SetUserContent(Guid userId, [FromForm] string content)
+        {
+            _User user = GetUser(Request);
+            UserHelper userHelper = new UserHelper(Configuration, user.Id, user.Token);
+            userHelper.SetContent(userId, content);
+        }
         #endregion
 
         #region Tools   

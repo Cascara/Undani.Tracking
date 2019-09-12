@@ -55,6 +55,8 @@ namespace Undani.Tracking.Execution.Core
                 cmd.Parameters.Add(new SqlParameter("@ElementInstanceId", SqlDbType.Int) { Value = elementInstanceId });
 
                 cmd.ExecuteNonQuery();
+
+                ///TODO: Hacer la notificación
             }
         }
 

@@ -36,46 +36,64 @@ namespace Undani.Tracking.Core.Invoke
             get { return _token; }
         }
 
-        public bool Invoke(Guid systemActionInstanceId, string method, string alias, string configuration)
+        public bool Invoke(Guid systemActionInstanceId, string method, string alias, string settings)
         {
             bool result = false;
 
             switch (method)
             {
                 case "Custom":
-                    result = Custom(systemActionInstanceId, alias, configuration);
+                    result = Custom(systemActionInstanceId, alias, settings);
                     break;
 
                 case "Identity":
-                    result = Identity(systemActionInstanceId, alias, configuration);
+                    result = Identity(systemActionInstanceId, alias, settings);
                     break;
 
                 case "Integration":
-                    result = Integration(systemActionInstanceId, alias, configuration);
+                    result = Integration(systemActionInstanceId, alias, settings);
                     break;
 
                 case "KeyCalculation":
-                    result = KeyCalculation(systemActionInstanceId, alias, configuration);
+                    result = KeyCalculation(systemActionInstanceId, alias, settings);
                     break;
 
                 case "State":
-                    result = State(systemActionInstanceId, alias, configuration);
+                    result = State(systemActionInstanceId, alias, settings);
                     break;
 
                 case "Template":
-                    result = Template(systemActionInstanceId, alias, configuration);
+                    result = Template(systemActionInstanceId, alias, settings);
                     break;
 
                 case "Tracking":
-                    result = Tracking(systemActionInstanceId, alias, configuration);
+                    result = Tracking(systemActionInstanceId, alias, settings);
                     break;
 
                 case "UserRole":
-                    result = UserRole(systemActionInstanceId, alias, configuration);
+                    result = UserRole(systemActionInstanceId, alias, settings);
                     break;
             }
 
             return result;
+        }
+
+        private void SetConfiguration(Guid systemActionInstanceId, string settings)
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionInstanceSettings", cn))
+                {
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@Settings", SqlDbType.VarChar, -1) { Value = settings });
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
         }
     }
 }

@@ -23,27 +23,51 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@SystemActionTypeMethod", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@SystemActionAlias", SqlDbType.VarChar, 100) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@SystemActionConfiguration", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionSettings", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@SystemActionAsynchronous", SqlDbType.Bit) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionStrict", SqlDbType.Bit) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
                     string method = (string)cmd.Parameters["@SystemActionTypeMethod"].Value;
                     string alias = (string)cmd.Parameters["@SystemActionAlias"].Value;
-                    string configuration = (string)cmd.Parameters["@SystemActionConfiguration"].Value;
+                    string settings = (string)cmd.Parameters["@SystemActionSettings"].Value;
 
-                    if (Start(systemActionInstanceId, method, alias, configuration))
+                    bool isAsynchronous = (bool)cmd.Parameters["@SystemActionAsynchronous"].Value;
+                    bool isStrict = (bool)cmd.Parameters["@SystemActionStrict"].Value;
+
+                    bool startCorrect = Start(systemActionInstanceId, method, alias, settings);
+
+                    if (isAsynchronous)
                     {
-                        if (!(bool)cmd.Parameters["@SystemActionAsynchronous"].Value)
+                        if (!startCorrect)
+                        {
+                            throw new Exception("It was not possible to start the system action correctly.");
+                        }
+                    }
+                    else
+                    {
+                        if (startCorrect)
                         {
                             Finish(systemActionInstanceId);
+                        }
+                        else
+                        {
+                            if (isStrict)
+                            {
+                                throw new Exception("It was not possible to start the system action correctly.");
+                            }
+                            else
+                            {
+                                Finish(systemActionInstanceId);
+                            }
                         }
                     }
                 }
             }
         }
 
-        public bool Start(Guid systemActionInstanceId, string method, string alias, string configuration)
+        public bool Start(Guid systemActionInstanceId, string method, string alias, string settings)
         {
             bool invokedCorrect = false;
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
@@ -57,7 +81,7 @@ namespace Undani.Tracking.Execution.Core
 
                     cmd.ExecuteNonQuery();
 
-                    invokedCorrect = new SystemActionInvoke(Configuration, UserId, Token).Invoke(systemActionInstanceId, method, alias, configuration);
+                    invokedCorrect = new SystemActionInvoke(Configuration, UserId, Token).Invoke(systemActionInstanceId, method, alias, settings);
                 }
             }
 

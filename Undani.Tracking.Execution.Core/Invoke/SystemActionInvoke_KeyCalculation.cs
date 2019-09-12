@@ -16,27 +16,27 @@ namespace Undani.Tracking.Core.Invoke
 {
     public partial class SystemActionInvoke
     {
-        public bool KeyCalculation(Guid systemActionInstanceId, string alias, string configuration)
+        public bool KeyCalculation(Guid systemActionInstanceId, string alias, string settings)
         {
             bool start = false;
             switch (alias)
             {
                 case "FlowInstanceKey":
-                    start = FlowInstanceKey(systemActionInstanceId);
+                    start = FlowInstanceKey(systemActionInstanceId, settings);
                     break;
 
                 case "ProcedureInstanceKey":
-                    start = ProcedureInstanceKey(systemActionInstanceId);
+                    start = ProcedureInstanceKey(systemActionInstanceId, settings);
                     break;
 
                 default:
-                    throw new Exception("The method is not implemented");
+                    throw new NotImplementedException();
             }
 
             return start;
         }
 
-        private bool FlowInstanceKey(Guid systemActionInstanceId)
+        private bool FlowInstanceKey(Guid systemActionInstanceId, string settings)
         {
             bool start = false;
 
@@ -52,12 +52,14 @@ namespace Undani.Tracking.Core.Invoke
                     cmd.ExecuteNonQuery();
                     start = true;
                 }
-            }                       
+            }
+
+            SetConfiguration(systemActionInstanceId, settings);
 
             return start;
         }
 
-        private bool ProcedureInstanceKey(Guid systemActionInstanceId)
+        private bool ProcedureInstanceKey(Guid systemActionInstanceId, string settings)
         {
             bool start = false;
 
@@ -73,7 +75,9 @@ namespace Undani.Tracking.Core.Invoke
                     cmd.ExecuteNonQuery();
                     start = true;
                 }
-            }               
+            }
+
+            SetConfiguration(systemActionInstanceId, settings);
 
             return start;
         }
