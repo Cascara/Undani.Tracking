@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using System.Text;
 
-namespace Undani.Tracking.Execution.Core.Invoke.Resource
+namespace Undani.Tracking.Execution.Core.Resource
 {
     internal sealed class Crc32 : HashAlgorithm
     {

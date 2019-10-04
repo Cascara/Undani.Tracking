@@ -1,17 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using Undani.Tracking.Execution.Core.Invoke.Resource;
-using Undani.Tracking.Execution.Core.Invoke.Infra;
 using System.Data;
-using Newtonsoft.Json;
+using System.Data.SqlClient;
 using System.Dynamic;
-using Newtonsoft.Json.Converters;
 using Undani.Tracking.Execution.Core;
+using Undani.Tracking.Execution.Core.Invoke.Infra;
+using Undani.Tracking.Execution.Core.Resource;
 
 namespace Undani.Tracking.Core.Invoke
 {
@@ -71,7 +67,7 @@ namespace Undani.Tracking.Core.Invoke
                 if (dicConfiguration[key].ToString().Contains("[["))
                 {
                     settings = settings.Replace((string)dicConfiguration[key], (string)oJson.SelectToken(dicConfiguration[key].ToString().Replace("[[", "").Replace("]]", "")));
-                }                
+                }
             }
 
             settings = settings.Replace("{{OwnerId}}", ownerId.ToString());

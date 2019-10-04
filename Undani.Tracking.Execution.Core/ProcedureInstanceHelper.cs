@@ -150,9 +150,11 @@ namespace Undani.Tracking.Execution.Core
                             RefId = reader.GetGuid(0),
                             Name = reader.GetString(1),
                             Key = reader.GetString(2),
-                            Content = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(3), expandoConverter),
+                            Content = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(3), expandoConverter),
                             Start = reader.GetDateTime(4),
-                            States = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(5), expandoConverter)
+                            States = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(5), expandoConverter),
+                            DocumentsSignedZiped = GetDocumentsSignedZiped(reader.GetString(6)),
+                            DocumentsSigned = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(6), expandoConverter)
                         });
                     }
                 }
@@ -203,10 +205,11 @@ namespace Undani.Tracking.Execution.Core
                             RefId = reader.GetGuid(0),
                             Name = reader.GetString(1),
                             Key = reader.GetString(2),
-                            Content = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(3), expandoConverter),
+                            Content = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(3), expandoConverter),
                             Start = reader.GetDateTime(4),
                             End = reader.GetDateTime(5),
-                            States = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(6), expandoConverter),
+                            States = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(6), expandoConverter),
+                            DocumentsSignedZiped = GetDocumentsSignedZiped(reader.GetString(7)),
                             DocumentsSigned = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(7), expandoConverter)
                     });
                     }

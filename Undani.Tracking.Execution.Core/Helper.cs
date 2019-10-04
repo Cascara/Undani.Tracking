@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -40,6 +41,26 @@ namespace Undani.Tracking.Execution.Core
                 }
                 return _token;
             }
+        }
+
+        internal string GetDocumentsSignedZiped(string documentsSigned)
+        {
+            JObject jObject = JObject.Parse(documentsSigned);
+
+            JEnumerable<JToken> jTokens = jObject.Children();
+
+            JArray jArray;
+            string documents = "";
+            foreach (JToken jToken in jTokens)
+            {
+                jArray = (JArray)jObject[jToken.Path];
+                for (int i = 0; i < jArray.Count; i++)
+                {
+                    documents += "," + jArray[i]["SystemName"];
+                }
+            }
+
+            return documents != "" ? documents.Substring(1) : "";
         }
     }
 }

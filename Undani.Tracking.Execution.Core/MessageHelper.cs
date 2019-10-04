@@ -1,10 +1,13 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Dynamic;
+using Undani.Tracking.Execution.Core.Resource;
 
 namespace Undani.Tracking.Execution.Core
 {
@@ -49,14 +52,98 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_Messages", cn);
-                cmd.CommandType = CommandType.StoredProcedure;
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_Messages", cn) { CommandType = CommandType.StoredProcedure };
+                
                 cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                 cmd.Parameters.Add(new SqlParameter("@ElementInstanceId", SqlDbType.Int) { Value = elementInstanceId });
 
                 cmd.ExecuteNonQuery();
 
+                NotifyMessages(elementInstanceId);
+
                 ///TODO: Hacer la notificación
+            }
+        }
+
+        private void NotifyMessages(int elementInstanceId)
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_MessageToNotify", cn) { CommandType = CommandType.StoredProcedure })
+                {
+                    cmd.Parameters.Add(new SqlParameter("@ElementInstanceId", SqlDbType.Int) { Value = elementInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@ElementName", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ElementDescription", SqlDbType.VarChar, 500) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ElementStartDate", SqlDbType.DateTime) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@EnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@EMails", SqlDbType.VarChar, 1000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@NotificationSettings", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+
+                    cmd.ExecuteNonQuery();
+
+                    string notificationSettings = (string)cmd.Parameters["@NotificationSettings"].Value;
+
+                    if (notificationSettings != "{}")
+                    {
+                        string elementName = (string)cmd.Parameters["@ElementName"].Value;
+                        string elementDescription = (string)cmd.Parameters["@ElementDescription"].Value;
+                        DateTime elementStartDate = (DateTime)cmd.Parameters["@ElementStartDate"].Value;
+                        Guid environmentId = (Guid)cmd.Parameters["@EnvironmentId"].Value;
+                        string procedureInstanceKey = (string)cmd.Parameters["@ProcedureInstanceKey"].Value;
+                        string procedureInstanceContent = (string)cmd.Parameters["@ProcedureInstanceContent"].Value;
+                        string flowInstanceKey = (string)cmd.Parameters["@FlowInstanceKey"].Value;
+                        string flowInstanceContent = (string)cmd.Parameters["@FlowInstanceContent"].Value;
+                        string emails = (string)cmd.Parameters["@Emails"].Value;
+
+                        JObject joProcedureInstanceContent = JObject.Parse((string)cmd.Parameters["@ProcedureInstanceContent"].Value);
+                        JObject joFlowInstanceContent = JObject.Parse((string)cmd.Parameters["@FlowInstanceContent"].Value);
+
+                        notificationSettings = notificationSettings.Replace("{{ElementName}}", elementName);
+                        notificationSettings = notificationSettings.Replace("{{ElementDescription}}", elementName);
+                        notificationSettings = notificationSettings.Replace("{{ElementStartDate}}", elementName);
+                        notificationSettings = notificationSettings.Replace("{{EnvironmentId}}", elementName);
+                        notificationSettings = notificationSettings.Replace("{{ProcedureInstanceKey}}", elementName);
+                        notificationSettings = notificationSettings.Replace("{{FlowInstanceKey}}", elementName);
+                        notificationSettings = notificationSettings.Replace("{{Emails}}", elementName);
+
+                        dynamic dynNotificationSettings = JsonConvert.DeserializeObject<ExpandoObject>(notificationSettings, new ExpandoObjectConverter());
+
+                        IDictionary<string, object> dicGenericJson = dynNotificationSettings.MessageBody.GenericJson;
+
+                        string jsonPath = "";
+                        foreach (string key in dicGenericJson.Keys)
+                        {
+                            jsonPath = (string)dicGenericJson[key];
+                            if (jsonPath.Contains("[["))
+                            {
+                                jsonPath = jsonPath.Replace("[[", "").Replace("]]", "");
+
+                                if (jsonPath.Contains("ProcedureInstanceContent."))
+                                {
+                                    jsonPath = jsonPath.Replace("ProcedureInstanceContent.", "");
+                                    dicGenericJson[key] = (string)joProcedureInstanceContent.SelectToken(jsonPath);
+                                }
+                                else if (jsonPath.Contains("FlowInstanceContent."))
+                                {
+                                    jsonPath = jsonPath.Replace("FlowInstanceContent.", "");
+                                    dicGenericJson[key] = (string)joFlowInstanceContent.SelectToken(jsonPath);
+                                }
+                            }
+                        }
+
+                        notificationSettings = JsonConvert.SerializeObject(dynNotificationSettings);
+
+                        BusCall busCall = new BusCall(Configuration);
+
+                        busCall.SendMessage("template", notificationSettings);
+                    }
+                }
             }
         }
 
@@ -84,11 +171,11 @@ namespace Undani.Tracking.Execution.Core
                             ActivityName = reader.GetString(1),
                             FlowName = reader.GetString(2),
                             FlowInstanceKey = reader.GetString(3),
-                            FlowInstanceContent = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(4), expandoConverter),
+                            FlowInstanceContent = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(4), expandoConverter),
                             ProcedureInstanceKey = reader.GetString(5),
-                            ProcedureInstanceContent = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(6), expandoConverter),
-                            StatesFlowInstance = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(7), expandoConverter),
-                            StatesProcedureInstance = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(8), expandoConverter),
+                            ProcedureInstanceContent = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(6), expandoConverter),
+                            StatesFlowInstance = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(7), expandoConverter),
+                            StatesProcedureInstance = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(8), expandoConverter),
                             Start = reader.GetDateTime(9),
                             Viewed = reader.GetBoolean(10),
                             ActivityUserGroupTypeId = reader.GetInt32(11)
@@ -148,8 +235,8 @@ namespace Undani.Tracking.Execution.Core
                             ActivityName = reader.GetString(1),
                             FlowName = reader.GetString(2),
                             FlowInstanceKey = reader.GetString(3),
-                            FlowInstanceContent = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(4), expandoConverter),
-                            StatesFlowInstance = Newtonsoft.Json.JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(5), expandoConverter),
+                            FlowInstanceContent = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(4), expandoConverter),
+                            StatesFlowInstance = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(5), expandoConverter),
                             Start = reader.GetDateTime(6)
                         });
                     }

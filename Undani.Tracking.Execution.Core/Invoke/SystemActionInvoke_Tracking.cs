@@ -1,24 +1,20 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using Undani.Tracking.Execution.Core.Invoke.Resource;
-using Undani.Tracking.Execution.Core.Invoke.Infra;
-using System.Data;
-using System.Dynamic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Dynamic;
 using Undani.Tracking.Execution.Core;
+using Undani.Tracking.Execution.Core.Invoke.Infra;
+using Undani.Tracking.Execution.Core.Resource;
 
 namespace Undani.Tracking.Core.Invoke
 {
     public partial class SystemActionInvoke
     {
-        public bool Tracking(Guid systemActionInstanceId, string alias, string settings)
+        public bool Tracking(Guid systemActionInstanceId, string alias, string settings, bool isStrict)
         {
             bool start = false;
             switch (alias)
@@ -40,7 +36,7 @@ namespace Undani.Tracking.Core.Invoke
                     break;
 
                 case "ProcedureInstanceFormDocumentToPDF":
-                    start = ProcedureInstanceFormDocumentToPDF(systemActionInstanceId, settings);
+                    start = ProcedureInstanceFormDocumentToPDF(systemActionInstanceId, settings, isStrict);
                     break;
 
                 case "FlowInstanceStartDate":
@@ -161,11 +157,11 @@ namespace Undani.Tracking.Core.Invoke
         {
             bool start = false;
 
-            dynamic jsonConfiguration = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
+            dynamic dySettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
 
             JObject oJson = JObject.Parse(new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token));
 
-            JToken jToken = oJson.SelectToken(jsonConfiguration.Path);
+            JToken jToken = oJson.SelectToken(dySettings.Path);
 
             string documents = "";
 
@@ -175,7 +171,7 @@ namespace Undani.Tracking.Core.Invoke
             }
             else
             {
-                documents = JsonConvert.SerializeObject(jToken);               
+                documents = JsonConvert.SerializeObject(jToken);
             }
 
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
@@ -185,14 +181,13 @@ namespace Undani.Tracking.Core.Invoke
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceFormDocument", cn) { CommandType = CommandType.StoredProcedure })
                 {
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = jsonConfiguration.Key });
+                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = dySettings.Key });
                     cmd.Parameters.Add(new SqlParameter("@Document", SqlDbType.VarChar, 500) { Value = documents.Replace(".docx", ".pdf").Replace(".DOCX", ".pdf") });
 
                     cmd.ExecuteNonQuery();
 
                     start = true;
                 }
-
             }
 
             SetConfiguration(systemActionInstanceId, settings);
@@ -200,15 +195,15 @@ namespace Undani.Tracking.Core.Invoke
             return start;
         }
 
-        private bool ProcedureInstanceFormDocumentToPDF(Guid systemActionInstanceId, string settings)
+        private bool ProcedureInstanceFormDocumentToPDF(Guid systemActionInstanceId, string settings, bool isStrict)
         {
-            BusCall busCall = new BusCall(Configuration);
+            ExpandoObjectConverter expandoObjectConverter = new ExpandoObjectConverter();
 
-            dynamic jsonConfiguration = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
+            dynamic dySettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, expandoObjectConverter);
 
             JObject oJson = JObject.Parse(new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token));
 
-            JToken jToken = oJson.SelectToken(jsonConfiguration.Path);
+            JToken jToken = oJson.SelectToken(dySettings.Path);
 
             string documents = "";
             List<string> documentsToConvert = new List<string>();
@@ -239,30 +234,42 @@ namespace Undani.Tracking.Core.Invoke
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceFormDocumentToPDF", cn) { CommandType = CommandType.StoredProcedure })
                 {
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = jsonConfiguration.Key });
+                    cmd.Parameters.Add(new SqlParameter("@Key", SqlDbType.VarChar, 50) { Value = dySettings.Key });
                     cmd.Parameters.Add(new SqlParameter("@Document", SqlDbType.VarChar, 500) { Value = documents.Replace(".docx", ".pdf").Replace(".DOCX", ".pdf") });
                     cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
-                    var content = new
-                    {
-                        TargetQueue = "docx2pdf",
-                        MessageBody = new
-                        {
-                            SystemActionId = systemActionInstanceId,
-                            OwnerId = (Guid)cmd.Parameters["@OwnerId"].Value,
-                            DocumentsToConvert = documentsToConvert
-                        }
-                    };
+                    Guid systemActionInstanceIdRequest = systemActionInstanceId;
+                    if (!isStrict)
+                        systemActionInstanceIdRequest = Guid.Empty;
 
-                    busCall.SendMessage(JsonConvert.SerializeObject(content));
+                    settings = settings.Replace("{{SystemActionInstanceId}}", systemActionInstanceIdRequest.ToString());
+
+                    Guid ownerId = (Guid)cmd.Parameters["@OwnerId"].Value;
+                    settings = settings.Replace("{{OwnerId}}", ownerId.ToString());
+
+                    dySettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, expandoObjectConverter);
+
+                    IDictionary<string, object> dicMessageBody = dySettings.Converter.MessageBody;
+
+                    foreach (string key in dicMessageBody.Keys)
+                    {
+                        if ((string)dicMessageBody[key] == "{{DocumentsToConvert}}")
+                        {
+                            dicMessageBody[key] = documentsToConvert;
+                        }
+                    }
+
+                    BusCall busCall = new BusCall(Configuration);
+
+                    busCall.SendMessage("docx2pdf", JsonConvert.SerializeObject(dySettings.Converter));
                 }
             }
 
-            SetConfiguration(systemActionInstanceId, settings);
+            SetConfiguration(systemActionInstanceId, JsonConvert.SerializeObject(dySettings));
 
-            return true; 
+            return true;
         }
 
         private bool FlowInstanceStartDate(Guid systemActionInstanceId, string settings)
@@ -290,7 +297,7 @@ namespace Undani.Tracking.Core.Invoke
 
         private bool CreateFlowInstance(Guid systemActionInstanceId, string settings)
         {
-            bool start = false;            
+            bool start = false;
 
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -320,9 +327,9 @@ namespace Undani.Tracking.Core.Invoke
                         if (procedureInstanceId > 0)
                         {
                             flowInstanceHelper.Create(createFlow.FlowId, procedureInstanceId, systemActionInstanceId, createFlow.Version);
-                        }                        
+                        }
                     }
-                    
+
                     start = true;
                 }
             }

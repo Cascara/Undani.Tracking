@@ -1,14 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 
-namespace Undani.Tracking.Execution.Core.Invoke.Resource
+namespace Undani.Tracking.Execution.Core.Resource
 {
     internal class BoxCall : Call
     {
@@ -41,6 +39,6 @@ namespace Undani.Tracking.Execution.Core.Invoke.Resource
             string json = response.Content.ReadAsStringAsync().Result;
 
             return true;
-        }    
+        }
     }
 }

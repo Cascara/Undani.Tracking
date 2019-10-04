@@ -1,34 +1,33 @@
-﻿using Newtonsoft.Json;
+﻿using Newtonsoft.Json.Linq;
 using System;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using Undani.Tracking.Custom.Infra;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace Undani.Tracking.Custom.Resource
 {
-    public static class BusCall
+    public class BusCall
     {
-        public static void SendMessage(string apiBus, string content)
+        public void SendMessage(Guid systemActionInstanceId, string cnDbTracking, string cnSrvBus, string queueName, string message)
         {
-            using (var client = new HttpClient())
+            using (SqlConnection cn = new SqlConnection(cnDbTracking))
             {
-                HttpResponseMessage httpResponse;
+                cn.Open();
 
-                string url = apiBus + "/api/message/send";
-                StringContent contentJson = new StringContent(content, Encoding.UTF8, "application/json");
-                httpResponse = client.PostAsync(url, contentJson).Result;
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionInstanceSettings", cn))
+                {
 
-                if (httpResponse.StatusCode != HttpStatusCode.OK)
-                    throw new Exception("It was not possible to contact undani bus");
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@Settings", SqlDbType.VarChar, -1) { Value = message });
 
-                string json = httpResponse.Content.ReadAsStringAsync().Result;
-
-                _BusResult result = JsonConvert.DeserializeObject<_BusResult>(json);
-
-                if (!result.IsSuccess)
-                    throw new Exception("There was an error when trying to send a message");
+                    cmd.ExecuteNonQuery();
+                }
             }
+
+            var queueClient = ClientBus.Bus.Connect(cnSrvBus, queueName);
+
+            queueClient.Send(JObject.Parse(message));
+
 
         }
     }

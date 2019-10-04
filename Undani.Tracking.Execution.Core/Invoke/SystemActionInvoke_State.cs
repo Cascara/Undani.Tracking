@@ -1,16 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using Undani.Tracking.Execution.Core.Invoke.Resource;
-using Undani.Tracking.Execution.Core.Invoke.Infra;
-using System.Data;
-using System.Dynamic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Dynamic;
 
 namespace Undani.Tracking.Core.Invoke
 {

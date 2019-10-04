@@ -36,14 +36,22 @@ namespace Undani.Tracking.Execution.Core
                     bool isAsynchronous = (bool)cmd.Parameters["@SystemActionAsynchronous"].Value;
                     bool isStrict = (bool)cmd.Parameters["@SystemActionStrict"].Value;
 
-                    bool startCorrect = Start(systemActionInstanceId, method, alias, settings);
+                    bool startCorrect = Start(systemActionInstanceId, method, alias, settings, isStrict);
 
                     if (isAsynchronous)
                     {
-                        if (!startCorrect)
+                        if (isStrict)
                         {
-                            throw new Exception("It was not possible to start the system action correctly.");
+                            if (!startCorrect)
+                            {
+                                throw new Exception("It was not possible to start the system action correctly.");
+                            }
                         }
+                        else
+                        {
+                            Finish(systemActionInstanceId);
+                        }
+                        
                     }
                     else
                     {
@@ -67,7 +75,7 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public bool Start(Guid systemActionInstanceId, string method, string alias, string settings)
+        public bool Start(Guid systemActionInstanceId, string method, string alias, string settings, bool isStrict)
         {
             bool invokedCorrect = false;
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
@@ -81,7 +89,7 @@ namespace Undani.Tracking.Execution.Core
 
                     cmd.ExecuteNonQuery();
 
-                    invokedCorrect = new SystemActionInvoke(Configuration, UserId, Token).Invoke(systemActionInstanceId, method, alias, settings);
+                    invokedCorrect = new SystemActionInvoke(Configuration, UserId, Token).Invoke(systemActionInstanceId, method, alias, settings, isStrict);
                 }
             }
 

@@ -1,30 +1,20 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using Undani.Tracking.Execution.Core.Invoke.Resource;
-using Undani.Tracking.Execution.Core.Invoke.Infra;
+﻿using System;
 using System.Data;
-using Newtonsoft.Json;
-using System.Dynamic;
-using Newtonsoft.Json.Converters;
-using Undani.Tracking.Execution.Core;
+using System.Data.SqlClient;
+using Undani.Tracking.Execution.Core.Resource;
 
 namespace Undani.Tracking.Core.Invoke
 {
     public partial class SystemActionInvoke
     {
-        public bool Integration(Guid systemActionInstanceId, string alias, string settings)
+        public bool Integration(Guid systemActionInstanceId, string alias, string settings, bool isStrict)
         {
             bool start = false;
             switch (alias)
             {
                 case "FormInstanceIntegration":
-                    start = FormInstanceIntegration(systemActionInstanceId, settings);
-                    break;               
+                    start = FormInstanceIntegration(systemActionInstanceId, settings, isStrict);
+                    break;
 
                 default:
                     throw new NotImplementedException();
@@ -33,8 +23,8 @@ namespace Undani.Tracking.Core.Invoke
             return start;
         }
 
-        private bool FormInstanceIntegration(Guid systemActionInstanceId, string settings)
-        {       
+        private bool FormInstanceIntegration(Guid systemActionInstanceId, string settings, bool isStrict)
+        {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
@@ -47,11 +37,16 @@ namespace Undani.Tracking.Core.Invoke
 
                     cmd.ExecuteNonQuery();
 
-                    settings = settings.Replace("[[FormInstanceId]]", cmd.Parameters["@FormInstanceId"].Value.ToString());
+                    Guid systemActionInstanceIdRequest = systemActionInstanceId;
+                    if (!isStrict)
+                        systemActionInstanceIdRequest = Guid.Empty;
+
+                    settings = settings.Replace("{{SystemActionInstanceId}}", systemActionInstanceIdRequest.ToString());
+                    settings = settings.Replace("{{FormInstanceId}}", cmd.Parameters["@FormInstanceId"].Value.ToString());
 
                     BusCall busCall = new BusCall(Configuration);
 
-                    busCall.SendMessage(settings);
+                    busCall.SendMessage("integration", settings);
                 }
             }
 

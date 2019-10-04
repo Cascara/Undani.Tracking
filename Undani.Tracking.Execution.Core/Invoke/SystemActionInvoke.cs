@@ -36,14 +36,14 @@ namespace Undani.Tracking.Core.Invoke
             get { return _token; }
         }
 
-        public bool Invoke(Guid systemActionInstanceId, string method, string alias, string settings)
+        public bool Invoke(Guid systemActionInstanceId, string method, string alias, string settings, bool isStrict)
         {
             bool result = false;
 
             switch (method)
             {
                 case "Custom":
-                    result = Custom(systemActionInstanceId, alias, settings);
+                    result = Custom(systemActionInstanceId, alias, settings, isStrict);
                     break;
 
                 case "Identity":
@@ -51,7 +51,7 @@ namespace Undani.Tracking.Core.Invoke
                     break;
 
                 case "Integration":
-                    result = Integration(systemActionInstanceId, alias, settings);
+                    result = Integration(systemActionInstanceId, alias, settings, isStrict);
                     break;
 
                 case "KeyCalculation":
@@ -63,11 +63,11 @@ namespace Undani.Tracking.Core.Invoke
                     break;
 
                 case "Template":
-                    result = Template(systemActionInstanceId, alias, settings);
+                    result = Template(systemActionInstanceId, alias, settings, isStrict);
                     break;
 
                 case "Tracking":
-                    result = Tracking(systemActionInstanceId, alias, settings);
+                    result = Tracking(systemActionInstanceId, alias, settings, isStrict);
                     break;
 
                 case "UserRole":

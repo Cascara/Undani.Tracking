@@ -197,7 +197,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
         #endregion
 
-        #region Activity 
+        #region ActivityInstance 
         [Route("ActivityInstance")]
         public ActivityInstance GetActivityInstance(Guid elementInstanceRefId)
         {
@@ -258,7 +258,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
         #endregion
 
-        #region Action 
+        #region ActionInstance 
         [Route("ActionInstance/Execute")]
         public bool ExecuteActionInstance(Guid actionRefId, Guid elementInstanceRefId)
         {
@@ -275,7 +275,7 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
         #endregion
 
-        #region SystemAction
+        #region SystemAccionInstance
         [HttpPost]
         [Route("SystemAccionInstance/Finish")]
         public string FinishSystemAction(Guid systemActionInstanceId, [FromForm] string procedureInstanceContent = "{}", [FromForm] string flowInstanceContent = "{}")
@@ -311,18 +311,18 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
 
         [Route("SystemAccionInstance/Execute")]
-        public string ExecuteSystemAction(Guid systemActionInstanceId)
+        public Exception ExecuteSystemAction(Guid systemActionInstanceId)
         {
             try
             {
                 SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
                 systemActionInstanceHelper.Execute(systemActionInstanceId);
 
-                return "Success";
+                return null;
             }
             catch (Exception ex)
             {
-                return JsonConvert.SerializeObject(ex);
+                return ex;
             }
         }
         #endregion
