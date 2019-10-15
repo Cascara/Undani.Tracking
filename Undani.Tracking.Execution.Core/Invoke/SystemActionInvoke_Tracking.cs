@@ -47,6 +47,22 @@ namespace Undani.Tracking.Core.Invoke
                     start = CreateFlowInstance(systemActionInstanceId, settings);
                     break;
 
+                case "EvaluateDailyActionInstancePause":
+                    start = EvaluateDailyActionInstancePause(systemActionInstanceId);
+                    break;
+
+                case "EvaluateDailyProcedureInstancePause":
+                    start = EvaluateDailyProcedureInstancePause(systemActionInstanceId);
+                    break;
+
+                case "ProcedureInstanceContent":
+                    start = ProcedureInstanceContent(systemActionInstanceId, settings);
+                    break;
+
+                case "FlowInstanceContent":
+                    start = FlowInstanceContent(systemActionInstanceId, settings);
+                    break;
+
                 default:
                     throw new NotImplementedException();
             }
@@ -337,6 +353,162 @@ namespace Undani.Tracking.Core.Invoke
             SetConfiguration(systemActionInstanceId, settings);
 
             return start;
+        }
+
+        private bool EvaluateDailyActionInstancePause(Guid systemActionInstanceId)
+        {
+            bool start = false;
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ActionInstancePause", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@Start", SqlDbType.Bit) { Direction = ParameterDirection.Output });
+
+                    cmd.ExecuteNonQuery();
+
+                    start = (bool)cmd.Parameters["@Start"].Value;
+                }
+            }
+
+            return start;
+        }
+
+        private bool EvaluateDailyProcedureInstancePause(Guid systemActionInstanceId)
+        {
+            bool start = false;
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstancePause", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@Start", SqlDbType.Bit) { Direction = ParameterDirection.Output });
+
+                    cmd.ExecuteNonQuery();
+
+                    start = (bool)cmd.Parameters["@Start"].Value;
+                }
+            }
+
+            return start;
+        }
+
+        private bool ProcedureInstanceContent(Guid systemActionInstanceId, string settings)
+        {
+            string jsonFormInstance = new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token);
+
+            JObject joFormInstance = JObject.Parse(jsonFormInstance);
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceContent", cn) { CommandType = CommandType.StoredProcedure })
+                {
+                    
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+
+                    cmd.ExecuteNonQuery();
+
+                    int procedureInstanceId = (int)cmd.Parameters["@ProcedureInstanceId"].Value;
+
+                    cmd.CommandText = "EXECUTION.usp_Set_ProcedureInstanceContentProperty";
+
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Value = procedureInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50));
+                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 1000));
+
+                    dynamic dynSettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
+
+                    IDictionary<string, object> dicSettings = dynSettings;
+
+                    string jsonPath = "";
+                    foreach (string key in dicSettings.Keys)
+                    {
+                        jsonPath = (string)dicSettings[key];
+                        if (jsonPath.Contains("[["))
+                        {
+                            jsonPath = jsonPath.Replace("[[", "").Replace("]]", "");
+
+                            cmd.Parameters["@PropertyName"].Value = key;
+                            cmd.Parameters["@Value"].Value = (string)joFormInstance.SelectToken(jsonPath);
+
+                            cmd.ExecuteNonQuery();
+
+                            settings = settings.Replace((string)dicSettings[key], (string)joFormInstance.SelectToken(jsonPath));
+                        }
+                    }
+
+                    SetConfiguration(systemActionInstanceId, settings);
+                }
+            }
+
+            return true;
+        }
+
+        private bool FlowInstanceContent(Guid systemActionInstanceId, string settings)
+        {
+            string jsonFormInstance = new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token);
+
+            JObject joFormInstance = JObject.Parse(jsonFormInstance);
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_FlowInstanceContent", cn) { CommandType = CommandType.StoredProcedure })
+                {
+
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+
+                    cmd.ExecuteNonQuery();
+
+                    int flowInstanceId = (int)cmd.Parameters["@FlowInstanceId"].Value;
+
+                    cmd.CommandText = "EXECUTION.usp_Set_FlowInstanceContentProperty";
+
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50));
+                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 1000));
+
+                    dynamic dynSettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
+
+                    IDictionary<string, object> dicSettings = dynSettings;
+
+                    string jsonPath = "";
+                    foreach (string key in dicSettings.Keys)
+                    {
+                        jsonPath = (string)dicSettings[key];
+                        if (jsonPath.Contains("[["))
+                        {
+                            jsonPath = jsonPath.Replace("[[", "").Replace("]]", "");
+
+                            cmd.Parameters["@PropertyName"].Value = key;
+                            cmd.Parameters["@Value"].Value = (string)joFormInstance.SelectToken(jsonPath);
+
+                            cmd.ExecuteNonQuery();
+
+                            settings = settings.Replace((string)dicSettings[key], (string)joFormInstance.SelectToken(jsonPath));
+                        }
+                    }
+
+                    SetConfiguration(systemActionInstanceId, settings);
+                }
+            }
+
+            return true;
         }
     }
 }

@@ -18,5 +18,6 @@ namespace Undani.Tracking.Execution
         public DateTime Start { get; set; }
         public bool Viewed { get; set; }
         public int ActivityUserGroupTypeId { get; set; }
+        public int Status { get; set; }
     }
 }

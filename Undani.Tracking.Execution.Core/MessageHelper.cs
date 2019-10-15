@@ -71,7 +71,7 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_MessageToNotify", cn) { CommandType = CommandType.StoredProcedure })
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ActivityInstanceToNotify", cn) { CommandType = CommandType.StoredProcedure })
                 {
                     cmd.Parameters.Add(new SqlParameter("@ElementInstanceId", SqlDbType.Int) { Value = elementInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@ElementName", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output });
@@ -105,12 +105,12 @@ namespace Undani.Tracking.Execution.Core
                         JObject joFlowInstanceContent = JObject.Parse((string)cmd.Parameters["@FlowInstanceContent"].Value);
 
                         notificationSettings = notificationSettings.Replace("{{ElementName}}", elementName);
-                        notificationSettings = notificationSettings.Replace("{{ElementDescription}}", elementName);
-                        notificationSettings = notificationSettings.Replace("{{ElementStartDate}}", elementName);
-                        notificationSettings = notificationSettings.Replace("{{EnvironmentId}}", elementName);
-                        notificationSettings = notificationSettings.Replace("{{ProcedureInstanceKey}}", elementName);
-                        notificationSettings = notificationSettings.Replace("{{FlowInstanceKey}}", elementName);
-                        notificationSettings = notificationSettings.Replace("{{Emails}}", elementName);
+                        notificationSettings = notificationSettings.Replace("{{ElementDescription}}", elementDescription);
+                        notificationSettings = notificationSettings.Replace("{{ElementStartDate}}", elementStartDate.ToString("dd/MM/yyyy hh:mm"));
+                        notificationSettings = notificationSettings.Replace("{{EnvironmentId}}", environmentId.ToString());
+                        notificationSettings = notificationSettings.Replace("{{ProcedureInstanceKey}}", procedureInstanceKey);
+                        notificationSettings = notificationSettings.Replace("{{FlowInstanceKey}}", flowInstanceKey);
+                        notificationSettings = notificationSettings.Replace("{{Emails}}", emails);
 
                         dynamic dynNotificationSettings = JsonConvert.DeserializeObject<ExpandoObject>(notificationSettings, new ExpandoObjectConverter());
 
@@ -127,21 +127,28 @@ namespace Undani.Tracking.Execution.Core
                                 if (jsonPath.Contains("ProcedureInstanceContent."))
                                 {
                                     jsonPath = jsonPath.Replace("ProcedureInstanceContent.", "");
-                                    dicGenericJson[key] = (string)joProcedureInstanceContent.SelectToken(jsonPath);
+                                    notificationSettings = notificationSettings.Replace((string)dicGenericJson[key], (string)joProcedureInstanceContent.SelectToken(jsonPath));
                                 }
                                 else if (jsonPath.Contains("FlowInstanceContent."))
                                 {
                                     jsonPath = jsonPath.Replace("FlowInstanceContent.", "");
-                                    dicGenericJson[key] = (string)joFlowInstanceContent.SelectToken(jsonPath);
+                                    notificationSettings = notificationSettings.Replace((string)dicGenericJson[key], (string)joFlowInstanceContent.SelectToken(jsonPath));
                                 }
                             }
                         }
 
-                        notificationSettings = JsonConvert.SerializeObject(dynNotificationSettings);
-
                         BusCall busCall = new BusCall(Configuration);
 
                         busCall.SendMessage("template", notificationSettings);
+
+                        cmd.CommandText = "EXECUTION.usp_Set_ActivityInstanceNotificationSettings";
+
+                        cmd.Parameters.Clear();
+                        cmd.Parameters.Add(new SqlParameter("@ElementInstanceId", SqlDbType.Int) { Value = elementInstanceId });
+                        cmd.Parameters.Add(new SqlParameter("@NotificationSettings", SqlDbType.VarChar, 2000) { Value = notificationSettings });
+
+                        cmd.ExecuteNonQuery();
+
                     }
                 }
             }
@@ -178,7 +185,8 @@ namespace Undani.Tracking.Execution.Core
                             StatesProcedureInstance = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(8), expandoConverter),
                             Start = reader.GetDateTime(9),
                             Viewed = reader.GetBoolean(10),
-                            ActivityUserGroupTypeId = reader.GetInt32(11)
+                            ActivityUserGroupTypeId = reader.GetInt32(11),
+                            Status = reader.GetInt32(12)
                         });
                     }
                 }
@@ -244,6 +252,19 @@ namespace Undani.Tracking.Execution.Core
             }
 
             return messages;
+        }
+
+        public void SetStatus()
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_MessageStatus", cn) { CommandType = CommandType.StoredProcedure };
+
+                cmd.ExecuteNonQuery();
+            }
+
         }
     }
 }

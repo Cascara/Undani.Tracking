@@ -63,7 +63,10 @@ namespace Undani.Tracking.Execution.Core
                         {
                             if (isStrict)
                             {
-                                throw new Exception("It was not possible to start the system action correctly.");
+                                if (!alias.Contains("EvaluateDaily"))
+                                {
+                                    throw new Exception("It was not possible to start the system action correctly.");
+                                }                                
                             }
                             else
                             {
@@ -130,6 +133,24 @@ namespace Undani.Tracking.Execution.Core
                     }
                     
                         
+                }
+            }
+        }
+
+        public void ExecuteDaily()
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_SystemActionInstanceExecuteDaily", cn) { CommandType = CommandType.StoredProcedure };
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        Execute(reader.GetGuid(0));
+                    }
                 }
             }
         }

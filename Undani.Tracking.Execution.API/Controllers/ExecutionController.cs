@@ -390,7 +390,24 @@ namespace Undani.Tracking.Execution.API.Controllers
 
             return user;
         }
+
+        [Route("Daily")]
+        public bool Daily()
+        {
+            MessageHelper messageHelper = new MessageHelper(Configuration, Guid.Empty);
+            messageHelper.SetStatus();
+
+            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
+            systemActionInstanceHelper.ExecuteDaily();
+
+            return true;
+        }
         #endregion
 
+        #region Temporary
+
+
+
+        #endregion
     }
 }
