@@ -427,12 +427,15 @@ namespace Undani.Tracking.Core.Invoke
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Value = procedureInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50));
                     cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 1000));
+                    cmd.Parameters.Add(new SqlParameter("@Type", SqlDbType.VarChar, 20));
 
                     dynamic dynSettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
 
                     IDictionary<string, object> dicSettings = dynSettings;
 
                     string jsonPath = "";
+                    JToken jToken;
+                    string value = "";
                     foreach (string key in dicSettings.Keys)
                     {
                         jsonPath = (string)dicSettings[key];
@@ -441,11 +444,41 @@ namespace Undani.Tracking.Core.Invoke
                             jsonPath = jsonPath.Replace("[[", "").Replace("]]", "");
 
                             cmd.Parameters["@PropertyName"].Value = key;
-                            cmd.Parameters["@Value"].Value = (string)joFormInstance.SelectToken(jsonPath);
+
+                            jToken = joFormInstance.SelectToken(jsonPath);
+
+                            if (jToken.Type == JTokenType.Object || jToken.Type == JTokenType.Array)
+                            {
+                                value = JsonConvert.SerializeObject(jToken);
+                                cmd.Parameters["@Type"].Value = "Object";
+                            }
+                            else if (jToken.Type == JTokenType.Integer)
+                            {
+                                value = jToken.ToString();
+                                cmd.Parameters["@Type"].Value = "Integer";
+                            }
+                            else if (jToken.Type == JTokenType.Float)
+                            {
+                                value = jToken.ToString();
+                                cmd.Parameters["@Type"].Value = "Decimal";
+                            }
+                            else if (jToken.Type == JTokenType.Boolean)
+                            {
+                                value = jToken.ToString();
+                                cmd.Parameters["@Type"].Value = "Boolean";
+                            }
+                            else
+                            {
+                                value = jToken.ToString();
+                                cmd.Parameters["@Type"].Value = "String";
+                            }
+
+
+                            cmd.Parameters["@Value"].Value = value;
 
                             cmd.ExecuteNonQuery();
 
-                            settings = settings.Replace((string)dicSettings[key], (string)joFormInstance.SelectToken(jsonPath));
+                            settings = settings.Replace((string)dicSettings[key], value);
                         }
                     }
 
@@ -482,12 +515,15 @@ namespace Undani.Tracking.Core.Invoke
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50));
                     cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 1000));
+                    cmd.Parameters.Add(new SqlParameter("@Type", SqlDbType.VarChar, 20));
 
                     dynamic dynSettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
 
                     IDictionary<string, object> dicSettings = dynSettings;
 
                     string jsonPath = "";
+                    JToken jToken;
+                    string value = "";
                     foreach (string key in dicSettings.Keys)
                     {
                         jsonPath = (string)dicSettings[key];
@@ -496,11 +532,40 @@ namespace Undani.Tracking.Core.Invoke
                             jsonPath = jsonPath.Replace("[[", "").Replace("]]", "");
 
                             cmd.Parameters["@PropertyName"].Value = key;
-                            cmd.Parameters["@Value"].Value = (string)joFormInstance.SelectToken(jsonPath);
+
+                            jToken = joFormInstance.SelectToken(jsonPath);
+
+                            if (jToken.Type == JTokenType.Object || jToken.Type == JTokenType.Array)
+                            {
+                                value = JsonConvert.SerializeObject(jToken);
+                                cmd.Parameters["@Type"].Value = "Object";
+                            }
+                            else if (jToken.Type == JTokenType.Integer)
+                            {
+                                value = jToken.ToString();
+                                cmd.Parameters["@Type"].Value = "Integer";
+                            }
+                            else if (jToken.Type == JTokenType.Float)
+                            {
+                                value = jToken.ToString();
+                                cmd.Parameters["@Type"].Value = "Decimal";
+                            }
+                            else if (jToken.Type == JTokenType.Boolean)
+                            {
+                                value = jToken.ToString();
+                                cmd.Parameters["@Type"].Value = "Boolean";
+                            }
+                            else
+                            {
+                                value = jToken.ToString();
+                                cmd.Parameters["@Type"].Value = "String";
+                            }                            
+
+                            cmd.Parameters["@Value"].Value = value;
 
                             cmd.ExecuteNonQuery();
 
-                            settings = settings.Replace((string)dicSettings[key], (string)joFormInstance.SelectToken(jsonPath));
+                            settings = settings.Replace((string)dicSettings[key], value);
                         }
                     }
 

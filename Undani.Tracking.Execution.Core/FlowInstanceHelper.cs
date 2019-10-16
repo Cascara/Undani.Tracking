@@ -205,41 +205,6 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public void SetUserGroupFormInstance(Guid formIntanceId, UserGroup[] responsibles)
-        {
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
-            {
-                cn.Open();
-
-                using (SqlCommand cmd = new SqlCommand())
-                {
-                    cmd.Connection = cn;
-                    cmd.CommandText = "EXECUTION.usp_Delete_UserGroupFormInstanceId";
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
-                    cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Value = formIntanceId });
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
-
-                    cmd.ExecuteNonQuery();
-
-                    cmd.CommandText = "EXECUTION.usp_Set_UserGroup";
-                    cmd.Parameters.RemoveAt("@FormInstanceId");
-                    cmd.Parameters["@FlowInstanceId"].Direction = ParameterDirection.Input;
-
-                    cmd.Parameters.Add(new SqlParameter("@AddUserId", SqlDbType.UniqueIdentifier));
-                    cmd.Parameters.Add(new SqlParameter("@Order", SqlDbType.Int));
-                    foreach (UserGroup responsible in responsibles)
-                    {
-                        cmd.Parameters["@AddUserId"].Value = responsible.UserId;
-                        cmd.Parameters["@Order"].Value = responsible.Order;
-
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-        }
-
         public dynamic SetContentProperty(Guid flowInstanceRefId, string propertyName, string value)
         {
             string content;
@@ -252,31 +217,6 @@ namespace Undani.Tracking.Execution.Core
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Value = flowInstanceRefId });
-                    cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50) { Value = propertyName });
-                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 250) { Value = value });
-                    cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
-
-                    cmd.ExecuteNonQuery();
-
-                    content = (string)cmd.Parameters["@Content"].Value;
-                }
-            }
-
-            return JsonConvert.DeserializeObject<ExpandoObject>(content, new ExpandoObjectConverter());
-        }
-
-        public dynamic SetContentPropertyFormInstance(Guid formInstanceId, string propertyName, string value)
-        {
-            string content;
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
-            {
-                cn.Open();
-
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_ContentPropertyFormInstanceId", cn))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
-                    cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Value = formInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50) { Value = propertyName });
                     cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 250) { Value = value });
                     cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });

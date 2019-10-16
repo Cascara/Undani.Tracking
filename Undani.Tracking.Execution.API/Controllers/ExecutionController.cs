@@ -127,13 +127,6 @@ namespace Undani.Tracking.Execution.API.Controllers
             return new FlowInstanceHelper(Configuration, user.Id, user.Token).SetContentProperty(flowInstanceRefId, propertyName, value);
         }
 
-        [Route("FlowInstance/SetContentProperty/ByFormInstance")]
-        public dynamic SetContentPropertyFormInstance(Guid formInstanceId, string propertyName, string value)
-        {
-            _User user = GetUser(Request);
-            return new FlowInstanceHelper(Configuration, user.Id, user.Token).SetContentPropertyFormInstance(formInstanceId, propertyName, value);
-        }
-
         [HttpPost]
         [Route("FlowInstance/SetUserGroup")]
         public void SetUserGroup(Guid flowInstanceRefId, [FromBody] UserGroup[] users)
@@ -141,15 +134,6 @@ namespace Undani.Tracking.Execution.API.Controllers
             _User user = GetUser(Request);
             FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, user.Id, user.Token);
             flowInstanceHelper.SetUserGroup(flowInstanceRefId, users);
-        }
-
-        [HttpPost]
-        [Route("FlowInstance/SetUserGroup/ByFormInstance")]
-        public void SetUserGroupFormInstance(Guid formInstanceId, [FromBody] UserGroup[] users)
-        {
-            _User user = GetUser(Request);
-            FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, user.Id, user.Token);
-            flowInstanceHelper.SetUserGroupFormInstance(formInstanceId, users);
         }
 
         [Route("FlowInstance/SetState")]
@@ -313,17 +297,17 @@ namespace Undani.Tracking.Execution.API.Controllers
         [Route("SystemAccionInstance/Execute")]
         public Exception ExecuteSystemAction(Guid systemActionInstanceId)
         {
-            try
-            {
+            //try
+            //{
                 SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
                 systemActionInstanceHelper.Execute(systemActionInstanceId);
 
                 return null;
-            }
-            catch (Exception ex)
-            {
-                return ex;
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    return ex;
+            //}
         }
         #endregion
 
