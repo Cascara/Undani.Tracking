@@ -306,8 +306,9 @@ namespace Undani.Tracking.Execution.Core
                         {
                             activityInstanceSignature.ElementId = reader.GetString(0);
                             activityInstanceSignature.FormInstanceId = reader.GetGuid(8);
-                            activityInstanceSignature.EnvironmentId = reader.GetGuid(9);
-                            activityInstanceSignature.ProcedureInstanceRefId = reader.GetGuid(10);
+                            activityInstanceSignature.OwnerId = reader.GetGuid(9);
+                            activityInstanceSignature.EnvironmentId = reader.GetGuid(10);
+                            activityInstanceSignature.ProcedureName = reader.GetString(11);
                         }
                             
                     }
