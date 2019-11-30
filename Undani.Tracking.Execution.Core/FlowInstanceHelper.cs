@@ -205,29 +205,26 @@ namespace Undani.Tracking.Execution.Core
             }
         }
 
-        public dynamic SetContentProperty(Guid flowInstanceRefId, string propertyName, string value)
+        public bool SetContentProperty(Guid flowInstanceRefId, string propertyName, string value, string type)
         {
-            string content;
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_ContentProperty", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_FlowInstanceRefIdContentProperty", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Value = flowInstanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50) { Value = propertyName });
-                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 250) { Value = value });
-                    cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 1000) { Value = value });
+                    cmd.Parameters.Add(new SqlParameter("@Type", SqlDbType.VarChar, 20) { Value = type });
 
                     cmd.ExecuteNonQuery();
-
-                    content = (string)cmd.Parameters["@Content"].Value;
                 }
             }
 
-            return JsonConvert.DeserializeObject<ExpandoObject>(content, new ExpandoObjectConverter());
+            return true;
         }
 
         public bool SetState(Guid flowInstanceRefId, string key, string state)

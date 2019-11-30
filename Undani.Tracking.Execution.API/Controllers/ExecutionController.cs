@@ -64,6 +64,13 @@ namespace Undani.Tracking.Execution.API.Controllers
             return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetResolved();
         }
 
+        [Route("ProcedureInstance/GetToTransfer")]
+        public List<ProcedureInstanceSummary> GetProcedureInstanceToTransfer()
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetToTransfer();
+        }
+
         [Route("ProcedureInstance/GetLog")]
         public List<ActivityInstanceSummary> GetProcedureInstanceLog(Guid procedureInstanceRefId)
         {
@@ -110,6 +117,35 @@ namespace Undani.Tracking.Execution.API.Controllers
             ProcedureInstanceHelper procedureInstanceHelper = new ProcedureInstanceHelper(Configuration, user.Id, user.Token);
             procedureInstanceHelper.SetDocumentsSigned(procedureInstanceRefId, key, documentSigneds);
         }
+
+        [HttpPost]
+        [Route("ProcedureInstance/SetContentProperty")]
+        public dynamic SetProcedureInstanceContentProperty(Guid procedureInstanceRefId, [FromForm] string value, string type = "", string propertyName = ".")
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).SetContentProperty(procedureInstanceRefId, propertyName, value, type);
+        }
+
+        [Route("ProcedureInstance/Transfer")]
+        public bool ProcedureInstanceTransfer(Guid elementInstanceRefId, Guid destinyUserId, string key)
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).Transfer(elementInstanceRefId, destinyUserId, key);
+        }
+
+        [Route("ProcedureInstance/TransferAll")]
+        public bool ProcedureInstanceTransferAll(Guid sourceUserId, Guid destinyUserId)
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).TransferAll(sourceUserId, destinyUserId);
+        }
+
+        [Route("ProcedureInstance/GetUserSelected")]
+        public List<UserSelected> GetProcedureInstanceTUserSelected(Guid procedureInstanceRefId)
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetUserSelected(procedureInstanceRefId);
+        }
         #endregion
 
         #region FlowInstance
@@ -120,11 +156,12 @@ namespace Undani.Tracking.Execution.API.Controllers
             return new FlowInstanceHelper(Configuration, user.Id, user.Token).Get(flowInstanceRefId);
         }
 
+        [HttpPost]
         [Route("FlowInstance/SetContentProperty")]
-        public dynamic SetContentProperty(Guid flowInstanceRefId, string propertyName, string value)
+        public dynamic SetFlowInstanceContentProperty(Guid flowInstanceRefId, [FromForm] string value, string type = "", string propertyName = ".")
         {
             _User user = GetUser(Request);
-            return new FlowInstanceHelper(Configuration, user.Id, user.Token).SetContentProperty(flowInstanceRefId, propertyName, value);
+            return new FlowInstanceHelper(Configuration, user.Id, user.Token).SetContentProperty(flowInstanceRefId, propertyName, value, type);
         }
 
         [HttpPost]
@@ -319,11 +356,17 @@ namespace Undani.Tracking.Execution.API.Controllers
             return new UserHelper(Configuration, user.Id, user.Token).Get(ownerId);
         }
 
+        [Route("User/GetAll")]
+        public List<UserSummary> GetAllUsers(string role) { 
+            _User user = GetUser(Request);
+            return new UserHelper(Configuration, user.Id, user.Token).Get(role);
+        }
+
         [Route("User/GetOwnerRoles")]
         public List<string> GetUserOwnerRoles(Guid ownerId)
         {
             _User user = GetUser(Request);            
-            return new UserHelper(Configuration, user.Id, user.Token).GetOwnerRoles(ownerId); ;
+            return new UserHelper(Configuration, user.Id, user.Token).GetOwnerRoles(ownerId);
         }
 
         [Route("User/Create")]

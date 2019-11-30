@@ -407,6 +407,8 @@ namespace Undani.Tracking.Core.Invoke
 
             JObject joFormInstance = JObject.Parse(jsonFormInstance);
 
+            JObject joSettings = JObject.Parse(settings);
+
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
@@ -438,14 +440,27 @@ namespace Undani.Tracking.Core.Invoke
                     string value = "";
                     foreach (string key in dicSettings.Keys)
                     {
-                        jsonPath = (string)dicSettings[key];
-                        if (jsonPath.Contains("[["))
+                        if (dicSettings[key] != null)
                         {
-                            jsonPath = jsonPath.Replace("[[", "").Replace("]]", "");
+                            jsonPath = "";
 
-                            cmd.Parameters["@PropertyName"].Value = key;
+                            if (dicSettings[key].GetType().Name == "String")
+                            {
+                                jsonPath = (string)dicSettings[key];
+                            }
 
-                            jToken = joFormInstance.SelectToken(jsonPath);
+                            if (jsonPath.Contains("[["))
+                            {
+                                jsonPath = jsonPath.Replace("[[", "").Replace("]]", "");
+
+                                jToken = joFormInstance.SelectToken(jsonPath);
+
+                                settings = settings.Replace((string)dicSettings[key], value);
+                            }
+                            else
+                            {
+                                jToken = joSettings.SelectToken(key);
+                            }
 
                             if (jToken.Type == JTokenType.Object || jToken.Type == JTokenType.Array)
                             {
@@ -472,14 +487,18 @@ namespace Undani.Tracking.Core.Invoke
                                 value = jToken.ToString();
                                 cmd.Parameters["@Type"].Value = "String";
                             }
-
-
-                            cmd.Parameters["@Value"].Value = value;
-
-                            cmd.ExecuteNonQuery();
-
-                            settings = settings.Replace((string)dicSettings[key], value);
                         }
+                        else
+                        {
+                            value = "";
+                            cmd.Parameters["@Type"].Value = "Null";
+                        }
+
+                        cmd.Parameters["@PropertyName"].Value = key;                        
+
+                        cmd.Parameters["@Value"].Value = value;
+
+                        cmd.ExecuteNonQuery();                        
                     }
 
                     SetConfiguration(systemActionInstanceId, settings);
@@ -494,6 +513,8 @@ namespace Undani.Tracking.Core.Invoke
             string jsonFormInstance = new FormCall(Configuration).GetInstanceObject(systemActionInstanceId, Token);
 
             JObject joFormInstance = JObject.Parse(jsonFormInstance);
+
+            JObject joSettings = JObject.Parse(settings);
 
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
@@ -526,14 +547,27 @@ namespace Undani.Tracking.Core.Invoke
                     string value = "";
                     foreach (string key in dicSettings.Keys)
                     {
-                        jsonPath = (string)dicSettings[key];
-                        if (jsonPath.Contains("[["))
+                        if (dicSettings[key] != null)
                         {
-                            jsonPath = jsonPath.Replace("[[", "").Replace("]]", "");
+                            jsonPath = "";
 
-                            cmd.Parameters["@PropertyName"].Value = key;
+                            if (dicSettings[key].GetType().Name == "String")
+                            {
+                                jsonPath = (string)dicSettings[key];
+                            }
 
-                            jToken = joFormInstance.SelectToken(jsonPath);
+                            if (jsonPath.Contains("[["))
+                            {
+                                jsonPath = jsonPath.Replace("[[", "").Replace("]]", "");
+
+                                jToken = joFormInstance.SelectToken(jsonPath);
+
+                                settings = settings.Replace((string)dicSettings[key], value);
+                            }
+                            else
+                            {
+                                jToken = joSettings.SelectToken(key);
+                            }
 
                             if (jToken.Type == JTokenType.Object || jToken.Type == JTokenType.Array)
                             {
@@ -559,14 +593,19 @@ namespace Undani.Tracking.Core.Invoke
                             {
                                 value = jToken.ToString();
                                 cmd.Parameters["@Type"].Value = "String";
-                            }                            
-
-                            cmd.Parameters["@Value"].Value = value;
-
-                            cmd.ExecuteNonQuery();
-
-                            settings = settings.Replace((string)dicSettings[key], value);
+                            }
                         }
+                        else
+                        {
+                            value = "";
+                            cmd.Parameters["@Type"].Value = "Null";
+                        }
+
+                        cmd.Parameters["@PropertyName"].Value = key;
+
+                        cmd.Parameters["@Value"].Value = value;
+
+                        cmd.ExecuteNonQuery();
                     }
 
                     SetConfiguration(systemActionInstanceId, settings);

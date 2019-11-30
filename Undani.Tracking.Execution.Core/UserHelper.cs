@@ -121,6 +121,36 @@ namespace Undani.Tracking.Execution.Core
             return user;
         }
 
+        public List<UserSummary> Get(string role)
+        {
+            List<UserSummary> userSummaries = new List<UserSummary>();
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_Users", cn) { CommandType = CommandType.StoredProcedure })
+                {
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                    cmd.Parameters.Add(new SqlParameter("@Role", SqlDbType.VarChar, 50) { Value = role });
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            userSummaries.Add(new UserSummary() { 
+                                Id = reader.GetGuid(0),
+                                GivenName = reader.GetString(1),
+                                FamilyName = reader.GetString(2),
+                                EMail = reader.GetString(3)
+                            });
+                        }
+                    }
+                }
+            }
+
+            return userSummaries;
+        }
+
         public void SetContent (Guid userId, string content)
         {
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
