@@ -3,7 +3,7 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Dynamic;
 using System.Net.Http;
 using System.Text;
@@ -81,6 +81,55 @@ namespace Undani.Tracking.Execution.Core
                                 activity.End = (DateTime)dr["EndDate"];
                             else if ((Guid)dr["UserId"] == UserId)
                                 activity.ActionButtons = new ActionInstanceHelper(Configuration, UserId, Token).GetActions((string)dr["ElementId"]);
+                        }
+                        else
+                            throw new Exception("Could not get the activity");
+                    }
+                }
+            }
+
+            return activity;
+        }
+
+        public ActivityInstance GetSupport(Guid ownerId, Guid elementInstanceRefId)
+        {
+            ActivityInstance activity;
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_SupportActivityInstance", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                    cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = ownerId });
+                    cmd.Parameters.Add(new SqlParameter("@ElementInstanceRefId", SqlDbType.UniqueIdentifier) { Value = elementInstanceRefId });
+
+                    using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                    {
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+
+                        if (dt.Rows.Count == 1)
+                        {
+                            DataRow dr = dt.Rows[0];
+                            activity = new ActivityInstance()
+                            {
+                                RefId = elementInstanceRefId,
+                                Name = (string)dr["ElementName"],
+                                CatalogId = (string)dr["ActivityCatalogId"],
+                                CoustomViewer = (string)dr["ActivityCoustomViewer"],
+                                ActionButtonsDisabled = (bool)dr["ActionsDisabled"],
+                                Start = (DateTime)dr["StartDate"],
+                                FormInstanceId = (Guid)dr["FormInstanceId"],
+                                FormReadOnly = (bool)dr["ActivityFormReadOnly"],
+                                FlowInstanceSummary = new FlowInstanceHelper(Configuration, UserId, Token).GetSummary((int)dr["FlowInstanceId"]),
+                                DocumentsSigned = JsonConvert.DeserializeObject<ExpandoObject>((string)dr["DocumentsSigned"], new ExpandoObjectConverter())
+                            };
+
+                            if (dr["EndDate"] != DBNull.Value)
+                                activity.End = (DateTime)dr["EndDate"];
+                            
                         }
                         else
                             throw new Exception("Could not get the activity");

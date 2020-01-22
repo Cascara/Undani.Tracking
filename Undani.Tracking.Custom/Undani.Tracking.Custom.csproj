@@ -5,15 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="Undani.Bus" Version="1.0.2" />
     <PackageReference Include="Undani.Core.Extensions.NETCore" Version="1.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System.Data.SqlClient">
-      <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\system.data.sqlclient\4.4.0\ref\netstandard2.0\System.Data.SqlClient.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

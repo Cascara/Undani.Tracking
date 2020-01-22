@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Undani.JWT;
 using Undani.Tracking.Execution.API.Infra;
+using Undani.Tracking.Execution.API.Model;
 using Undani.Tracking.Execution.Core;
 using Undani.Tracking.Execution.Core.Infra;
 
@@ -50,6 +51,13 @@ namespace Undani.Tracking.Execution.API.Controllers
             return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetInProcess();
         }
 
+        //[Route("ProcedureInstance/GetSupportInProcess")]
+        //public List<ProcedureInstanceSummary> GetSupportProcedureInstanceInProcess(Guid ownerId, Guid environmentId)
+        //{
+        //    _User user = GetUser(Request);
+        //    return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetSupportInProcess(ownerId, environmentId);
+        //}
+
         [Route("ProcedureInstance/GetInProcessCount")]
         public int GetProcedureInstanceInProcessCount()
         {
@@ -76,6 +84,13 @@ namespace Undani.Tracking.Execution.API.Controllers
         {
             _User user = GetUser(Request);
             return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetLog(procedureInstanceRefId);
+        }
+
+        [Route("ProcedureInstance/GetSupportLog")]
+        public List<ActivityInstanceSummary> GetSupportProcedureInstanceLog(Guid ownerId, Guid procedureInstanceRefId)
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetSupportLog(ownerId, procedureInstanceRefId);
         }
 
         [Route("ProcedureInstance/GetComments")]
@@ -166,7 +181,7 @@ namespace Undani.Tracking.Execution.API.Controllers
 
         [HttpPost]
         [Route("FlowInstance/SetUserGroup")]
-        public void SetUserGroup(Guid flowInstanceRefId, [FromBody] UserGroup[] users)
+        public void SetUserGroup(Guid flowInstanceRefId, [FromForm] UserGroup[] users)
         {
             _User user = GetUser(Request);
             FlowInstanceHelper flowInstanceHelper = new FlowInstanceHelper(Configuration, user.Id, user.Token);
@@ -224,6 +239,13 @@ namespace Undani.Tracking.Execution.API.Controllers
         {
             _User user = GetUser(Request);
             return new ActivityInstanceHelper(Configuration, user.Id, user.Token).Get(elementInstanceRefId);
+        }
+
+        [Route("ActivityInstance/GetSupport")]
+        public ActivityInstance GetSupportActivityInstance(Guid ownerId, Guid elementInstanceRefId)
+        {
+            _User user = GetUser(Request);
+            return new ActivityInstanceHelper(Configuration, user.Id, user.Token).GetSupport(ownerId, elementInstanceRefId);
         }
 
         [Route("ActivityInstance/Anonymous")]

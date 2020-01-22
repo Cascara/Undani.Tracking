@@ -4,7 +4,7 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Dynamic;
 using System.Text;
 
@@ -163,6 +163,41 @@ namespace Undani.Tracking.Execution.Core
             return procedures;
         }
 
+        //public List<ProcedureInstanceSummary> GetSupportInProcess(Guid ownerId, Guid environmentId)
+        //{
+        //    List<ProcedureInstanceSummary> procedures = new List<ProcedureInstanceSummary>();
+
+        //    using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+        //    {
+        //        cn.Open();
+
+        //        SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_SupportProcedureInstanceInProcess", cn) { CommandType = CommandType.StoredProcedure };
+
+        //        cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+        //        cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = ownerId });
+        //        cmd.Parameters.Add(new SqlParameter("@EnvironmentId", SqlDbType.UniqueIdentifier) { Value = environmentId });
+
+        //        using (SqlDataReader reader = cmd.ExecuteReader())
+        //        {
+
+        //            ExpandoObjectConverter expandoConverter = new ExpandoObjectConverter();
+        //            while (reader.Read())
+        //            {
+        //                procedures.Add(new ProcedureInstanceSummary()
+        //                {
+        //                    RefId = reader.GetGuid(0),
+        //                    Name = reader.GetString(1),
+        //                    Key = reader.GetString(2),
+        //                    Content = JsonConvert.DeserializeObject<ExpandoObject>(reader.GetString(3), expandoConverter),
+        //                    Start = reader.GetDateTime(4)
+        //                });
+        //            }
+        //        }
+        //    }
+
+        //    return procedures;
+        //}
+
         public int GetInProcessCount()
         {
             int inProcessCount = 0;
@@ -264,6 +299,23 @@ namespace Undani.Tracking.Execution.Core
                 cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                 cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Value = procedureInstanceRefId });
                
+                return new ActivityInstanceHelper(Configuration, UserId, Token).FillActivitiesInstanceSummary(cmd);
+            }
+        }
+
+        public List<ActivityInstanceSummary> GetSupportLog(Guid ownerId, Guid procedureInstanceRefId)
+        {
+            List<ActivityInstanceSummary> activityLog = new List<ActivityInstanceSummary>();
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_SupportProcedureInstanceRefIdLog", cn) { CommandType = CommandType.StoredProcedure };
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = ownerId });
+                cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Value = procedureInstanceRefId });
+
                 return new ActivityInstanceHelper(Configuration, UserId, Token).FillActivitiesInstanceSummary(cmd);
             }
         }

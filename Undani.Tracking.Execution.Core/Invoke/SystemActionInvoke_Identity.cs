@@ -3,7 +3,7 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Dynamic;
 using Undani.Tracking.Execution.Core;
 using Undani.Tracking.Execution.Core.Invoke.Infra;

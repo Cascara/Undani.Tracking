@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Undani.Tracking.Execution
+namespace Undani.Tracking.Execution.API.Model
 {
     public class SystemActionInstanceResponse
     {
         public Guid SystemActionInstanceId { get; set; }
         public string ProcedureInstanceContent { get; set; }
         public string FlowInstanceContent { get; set; }
-
     }
 }
