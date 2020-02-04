@@ -63,6 +63,10 @@ namespace Undani.Tracking.Core.Invoke
                     start = FlowInstanceContent(systemActionInstanceId, settings);
                     break;
 
+                case "CopyFormInstance":
+                    start = CopyFormInstance(systemActionInstanceId, settings);
+                    break;
+
                 default:
                     throw new NotImplementedException();
             }
@@ -613,6 +617,31 @@ namespace Undani.Tracking.Core.Invoke
             }
 
             return true;
+        }
+
+        private bool CopyFormInstance(Guid systemActionInstanceId, string settings)
+        {
+            bool start = false;
+
+            dynamic oSettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
+
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_CopyFormInstance", cn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
+                    cmd.Parameters.Add(new SqlParameter("@KeySource", SqlDbType.VarChar, 50) { Value = oSettings.KeySource });
+                    cmd.Parameters.Add(new SqlParameter("@KeyDestiny", SqlDbType.VarChar, 50) { Value = oSettings.KeyDestiny });
+
+                    cmd.ExecuteNonQuery();
+                    start = true;
+                }
+            }
+
+            return start;
         }
     }
 }
