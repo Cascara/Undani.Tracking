@@ -36,7 +36,10 @@ namespace Undani.Tracking.Execution.API
                                     .AllowAnyHeader()
                                     .AllowCredentials());
 
+            app.UseStaticFiles();
+
             app.UseMvc();
+
         }
     }
 }

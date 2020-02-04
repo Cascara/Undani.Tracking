@@ -83,7 +83,7 @@ namespace Undani.Tracking.Execution.Core
                                 activity.ActionButtons = new ActionInstanceHelper(Configuration, UserId, Token).GetActions((string)dr["ElementId"]);
                         }
                         else
-                            throw new Exception("Could not get the activity");
+                            throw new Exception("Could not get the activity (ai:" + elementInstanceRefId.ToString() + ", uid:" + UserId.ToString() + ")");
                     }
                 }
             }
@@ -132,7 +132,7 @@ namespace Undani.Tracking.Execution.Core
                             
                         }
                         else
-                            throw new Exception("Could not get the activity");
+                            throw new Exception("Could not get the activity (ai:" + elementInstanceRefId.ToString() + ", uid:" + UserId.ToString() + ")");
                     }
                 }
             }

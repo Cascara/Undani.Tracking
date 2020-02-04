@@ -73,6 +73,10 @@ namespace Undani.Tracking.Core.Invoke
                 case "UserRole":
                     result = UserRole(systemActionInstanceId, alias, settings);
                     break;
+
+                case "DocumentAnalysis":
+                    result = DocumentAnalysis(systemActionInstanceId, alias, settings, isStrict);
+                    break;
             }
 
             return result;

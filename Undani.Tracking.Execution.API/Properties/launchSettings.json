@@ -11,9 +11,9 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "api/values",
+      "launchUrl": "",
       "environmentVariables": {
-        "CONFIGURATION_ENVIRONMENT": "F943C91D-711A-462B-BE43-43F04D67FA86",
+        "CONFIGURATION_ENVIRONMENT": "496880EB-25BD-4950-A57B-E2F00AE309C8",
         "CONFIGURATION_SYSTEM": "FCF0AB47-D449-47E6-9582-93EA412C5F4E",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -21,7 +21,7 @@
     "Undani.Tracking.Execution.API": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/values",
+      "launchUrl": "",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

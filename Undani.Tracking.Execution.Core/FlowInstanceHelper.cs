@@ -258,7 +258,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Value = flowInstanceRefId });
-                    cmd.Parameters.Add(new SqlParameter("@States", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@States", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
                     cmd.ExecuteNonQuery();
 
                     return JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@States"].Value, new ExpandoObjectConverter());
