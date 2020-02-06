@@ -51,12 +51,12 @@ namespace Undani.Tracking.Execution.API.Controllers
             return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetInProcess();
         }
 
-        //[Route("ProcedureInstance/GetSupportInProcess")]
-        //public List<ProcedureInstanceSummary> GetSupportProcedureInstanceInProcess(Guid ownerId, Guid environmentId)
-        //{
-        //    _User user = GetUser(Request);
-        //    return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetSupportInProcess(ownerId, environmentId);
-        //}
+        [Route("ProcedureInstance/GetSupportInProcess")]
+        public List<ProcedureInstanceSummary> GetSupportProcedureInstanceInProcess(Guid ownerId, Guid environmentId)
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetSupportInProcess(ownerId, environmentId);
+        }
 
         [Route("ProcedureInstance/GetInProcessCount")]
         public int GetProcedureInstanceInProcessCount()
