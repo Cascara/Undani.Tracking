@@ -400,6 +400,14 @@ namespace Undani.Tracking.Execution.API.Controllers
             userHelper.Create(userId, ownerId, reference, roles, userName, givenName, familyName, email, content);
         }
 
+        [Route("User/Set")]
+        public void SetUser(Guid userId, string reference, string givenName, string familyName = "", string email = "")
+        {
+            _User user = GetUser(Request);
+            UserHelper userHelper = new UserHelper(Configuration, user.Id, user.Token);
+            userHelper.Set(userId, reference, givenName, familyName, email);
+        }
+
         [Route("User/SetContent")]
         [HttpPost]
         public void SetUserContent(Guid userId, [FromForm] string content)

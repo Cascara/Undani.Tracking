@@ -19,10 +19,8 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_User", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Create_User", cn) { CommandType = CommandType.StoredProcedure })
                 {
-
-                    cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
                     cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = ownerId });
                     cmd.Parameters.Add(new SqlParameter("@Reference", SqlDbType.VarChar, 100) { Value = reference });
@@ -90,10 +88,9 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_User", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_User", cn) { CommandType = CommandType.StoredProcedure })
                 {
 
-                    cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@OwnerId", SqlDbType.UniqueIdentifier) { Value = ownerId });
                     cmd.Parameters.Add(new SqlParameter("@Reference", SqlDbType.VarChar, 100) { Direction = ParameterDirection.Output });
@@ -157,13 +154,31 @@ namespace Undani.Tracking.Execution.Core
             {
                 cn.Open();
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_UserContent", cn))
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_UserContent", cn) { CommandType = CommandType.StoredProcedure })
                 {
-                    cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
                     cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, 2000) { Value = content });
 
                     cmd.ExecuteNonQuery();                    
+                }
+            }
+        }
+
+        public void Set(Guid userId, string reference, string givenName, string familyName, string email)
+        {
+            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            {
+                cn.Open();
+
+                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_User", cn) { CommandType = CommandType.StoredProcedure })
+                {
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
+                    cmd.Parameters.Add(new SqlParameter("@Reference", SqlDbType.VarChar, 100) { Value = reference });
+                    cmd.Parameters.Add(new SqlParameter("@GivenName", SqlDbType.VarChar, 100) { Value = givenName });
+                    cmd.Parameters.Add(new SqlParameter("@FamilyName", SqlDbType.VarChar, 100) { Value = familyName });
+                    cmd.Parameters.Add(new SqlParameter("@EMail", SqlDbType.VarChar, 256) { Value = email });
+
+                    cmd.ExecuteNonQuery();
                 }
             }
         }
