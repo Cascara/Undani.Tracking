@@ -424,7 +424,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceRefId", SqlDbType.UniqueIdentifier) { Value = procedureInstanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50) { Value = propertyName });
-                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 1000) { Value = value });
+                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, -1) { Value = value });
                     cmd.Parameters.Add(new SqlParameter("@Type", SqlDbType.VarChar, 20) {Value = type });
 
                     cmd.ExecuteNonQuery();

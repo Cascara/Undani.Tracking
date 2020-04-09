@@ -111,8 +111,8 @@ namespace Undani.Tracking.Execution.Core
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionInstanceFinish", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 1000) { Value = procedureInstanceContent });
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceContent", SqlDbType.VarChar, 1000) { Value = flowInstanceContent });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, -1) { Value = procedureInstanceContent });
+                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceContent", SqlDbType.VarChar, -1) { Value = flowInstanceContent });
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.InputOutput, Value = systemActionInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 

@@ -90,7 +90,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ProcedureRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceName", SqlDbType.VarChar, 250) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, -1) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceStartDate", SqlDbType.DateTime) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceEnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceStates", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
@@ -100,7 +100,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@FlowRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowName", SqlDbType.VarChar, 500) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceContent", SqlDbType.VarChar, -1) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceStates", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceCreated", SqlDbType.DateTime) { Direction = ParameterDirection.Output });
 
@@ -217,7 +217,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Value = flowInstanceRefId });
                     cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50) { Value = propertyName });
-                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 1000) { Value = value });
+                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, -1) { Value = value });
                     cmd.Parameters.Add(new SqlParameter("@Type", SqlDbType.VarChar, 20) { Value = type });
 
                     cmd.ExecuteNonQuery();

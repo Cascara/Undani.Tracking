@@ -432,7 +432,7 @@ namespace Undani.Tracking.Core.Invoke
                     cmd.Parameters.Clear();
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Value = procedureInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50));
-                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 1000));
+                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, -1));
                     cmd.Parameters.Add(new SqlParameter("@Type", SqlDbType.VarChar, 20));
 
                     dynamic dynSettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
@@ -539,7 +539,7 @@ namespace Undani.Tracking.Core.Invoke
                     cmd.Parameters.Clear();
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceId", SqlDbType.Int) { Value = flowInstanceId });
                     cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50));
-                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 1000));
+                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, -1));
                     cmd.Parameters.Add(new SqlParameter("@Type", SqlDbType.VarChar, 20));                    
 
                     dynamic dynSettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());

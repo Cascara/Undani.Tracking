@@ -20,7 +20,7 @@ namespace Undani.Tracking.Core.Invoke
             switch (alias)
             {
                 
-                case "ProcedureInstanceContent":
+                case "DAOnProcedureInstanceContent":
                     start = DAOnProcedureInstanceContent(systemActionInstanceId, settings);
                     break;
 
@@ -37,105 +37,63 @@ namespace Undani.Tracking.Core.Invoke
 
             JObject joFormInstance = JObject.Parse(jsonFormInstance);
 
-            JObject joSettings = JObject.Parse(settings);
+            settings = settings.Replace("{{SystemActionInstanceId}}", systemActionInstanceId.ToString());
 
 
+            string items = "";
 
-            using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
+            string value = "";
+
+            if (joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='5')].Archivo.SystemName") != null)
             {
-                cn.Open();
+                value = "{\"UrlBoxFile\":\"{{ApiBox}}/Execution/Box/Download?systemName={{Identificacion}}\",\"Elements\":[{\"Entity\":\"DocumentosCT.Tipo.id:5\",\"Value\":\"{{Nombre}} {{PrimerApellido}} {{SegundoApellido}}\"}]}";
 
-                using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SAI_ProcedureInstanceContent", cn) { CommandType = CommandType.StoredProcedure })
-                {
-                    
-                    cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Value = systemActionInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Direction = ParameterDirection.Output });
+                value = value.Replace("{{Identificacion}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='5')].Archivo.SystemName").ToString());
 
-                    cmd.ExecuteNonQuery();
+                value = value.Replace("{{Nombre}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Nombre").ToString());
+                value = value.Replace("{{PrimerApellido}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.PrimerApellido").ToString());
+                value = value.Replace("{{SegundoApellido}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.SegundoApellido").ToString());
 
-                    int procedureInstanceId = (int)cmd.Parameters["@ProcedureInstanceId"].Value;
-
-                    cmd.CommandText = "EXECUTION.usp_Set_ProcedureInstanceContentProperty";
-
-                    cmd.Parameters.Clear();
-                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceId", SqlDbType.Int) { Value = procedureInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@PropertyName", SqlDbType.VarChar, 50));
-                    cmd.Parameters.Add(new SqlParameter("@Value", SqlDbType.VarChar, 1000));
-                    cmd.Parameters.Add(new SqlParameter("@Type", SqlDbType.VarChar, 20));
-
-                    dynamic dynSettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, new ExpandoObjectConverter());
-
-                    IDictionary<string, object> dicSettings = dynSettings;
-
-                    string jsonPath = "";
-                    JToken jToken;
-                    string value = "";
-                    foreach (string key in dicSettings.Keys)
-                    {
-                        if (dicSettings[key] != null)
-                        {
-                            jsonPath = "";
-
-                            if (dicSettings[key].GetType().Name == "String")
-                            {
-                                jsonPath = (string)dicSettings[key];
-                            }
-
-                            if (jsonPath.Contains("[["))
-                            {
-                                jsonPath = jsonPath.Replace("[[", "").Replace("]]", "");
-
-                                jToken = joFormInstance.SelectToken(jsonPath);
-
-                                settings = settings.Replace((string)dicSettings[key], value);
-                            }
-                            else
-                            {
-                                jToken = joSettings.SelectToken(key);
-                            }
-
-                            if (jToken.Type == JTokenType.Object || jToken.Type == JTokenType.Array)
-                            {
-                                value = JsonConvert.SerializeObject(jToken);
-                                cmd.Parameters["@Type"].Value = "Object";
-                            }
-                            else if (jToken.Type == JTokenType.Integer)
-                            {
-                                value = jToken.ToString();
-                                cmd.Parameters["@Type"].Value = "Integer";
-                            }
-                            else if (jToken.Type == JTokenType.Float)
-                            {
-                                value = jToken.ToString();
-                                cmd.Parameters["@Type"].Value = "Decimal";
-                            }
-                            else if (jToken.Type == JTokenType.Boolean)
-                            {
-                                value = jToken.ToString();
-                                cmd.Parameters["@Type"].Value = "Boolean";
-                            }
-                            else
-                            {
-                                value = jToken.ToString();
-                                cmd.Parameters["@Type"].Value = "String";
-                            }
-                        }
-                        else
-                        {
-                            value = "";
-                            cmd.Parameters["@Type"].Value = "Null";
-                        }
-
-                        cmd.Parameters["@PropertyName"].Value = key;                        
-
-                        cmd.Parameters["@Value"].Value = value;
-
-                        cmd.ExecuteNonQuery();                        
-                    }
-
-                    SetConfiguration(systemActionInstanceId, settings);
-                }
+                items += "," + value;
             }
+
+            if (joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='3')].Archivo.SystemName") != null)
+            {
+                value = "{\"UrlBoxFile\":\"{{ApiBox}}/Execution/Box/Download?systemName={{Comprobante}}\",\"Elements\":[{\"Entity\":\"DocumentosCT.Tipo.id:3\",\"Value\":\"{{Calle}} {{NumeroExterior}} {{CodigoPostal}} {{Colonia}} {{Municipio}} {{Entidad}}\"}]}";
+
+                value = value.Replace("{{Comprobante}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='3')].Archivo.SystemName").ToString());
+
+                value = value.Replace("{{Calle}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Calle").ToString());
+                value = value.Replace("{{NumeroExterior}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.NumeroExterior").ToString());
+                value = value.Replace("{{CodigoPostal}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.CodigoPostal").ToString());
+                value = value.Replace("{{Colonia}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Colonia.text").ToString());
+                value = value.Replace("{{Municipio}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Municipio.text").ToString());
+                value = value.Replace("{{Entidad}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Entidad.text").ToString());
+
+                items += "," + value;
+            }
+
+            if (joFormInstance.SelectToken("$.Integration.Representante.DocumentosRL[?(@.Tipo.id=='5')].Archivo.SystemName") != null)
+            {
+                value = "{\"UrlBoxFile\":\"{{ApiBox}}/Execution/Box/Download?systemName={{Identificacion}}\",\"Elements\":[{\"Entity\":\"DocumentosRL.Tipo.id:5\",\"Value\":\"{{Nombre}} {{PrimerApellido}} {{SegundoApellido}}\"}]}";
+
+                value = value.Replace("{{Identificacion}}", joFormInstance.SelectToken("$.Integration.Representante.DocumentosRL[?(@.Tipo.id=='5')].Archivo.SystemName").ToString());
+
+                value = value.Replace("{{Nombre}}", joFormInstance.SelectToken("$.Integration.Representante.RLNombre").ToString());
+                value = value.Replace("{{PrimerApellido}}", joFormInstance.SelectToken("$.Integration.Representante.RLPrimerApellido").ToString());
+                value = value.Replace("{{SegundoApellido}}", joFormInstance.SelectToken("$.Integration.Representante.RLSegundoApellido").ToString());
+
+                items += "," + value;
+            }
+
+            settings = settings.Replace("{{Items}}", items.Substring(1));
+            settings = settings.Replace("{{ApiBox}}", Configuration["ApiBox"]);
+
+            BusCall busCall = new BusCall(Configuration);
+
+            busCall.SendMessage("adi", settings);
+
+            SetConfiguration(systemActionInstanceId, settings);
 
             return true;
         }

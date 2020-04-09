@@ -62,9 +62,8 @@ namespace Undani.Tracking.Execution.Core
                             activityInstanceHelper.Create(elementId, (int)cmd.Parameters["@ElementInstanceId"].Value);
                             break;
 
-                        case 2:
-                            ///TODO: Crear la funcionalidad de GATEWAY
-                            break;
+                        default:
+                            throw new NotImplementedException();
                     }
 
                     return (Guid)cmd.Parameters["@ElementInstanceRefId"].Value; ;

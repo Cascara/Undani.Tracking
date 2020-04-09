@@ -28,7 +28,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@GivenName", SqlDbType.VarChar, 100) { Value = givenName });
                     cmd.Parameters.Add(new SqlParameter("@FamilyName", SqlDbType.VarChar, 100) { Value = familyName });
                     cmd.Parameters.Add(new SqlParameter("@EMail", SqlDbType.VarChar, 256) { Value = email });
-                    cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, 2000) { Value = content });
+                    cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, -1) { Value = content });
 
                     cmd.ExecuteNonQuery();
 
@@ -99,7 +99,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@GivenName", SqlDbType.VarChar, 100) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FamilyName", SqlDbType.VarChar, 100) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@EMail", SqlDbType.VarChar, 256) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, -1) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
@@ -157,7 +157,7 @@ namespace Undani.Tracking.Execution.Core
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_UserContent", cn) { CommandType = CommandType.StoredProcedure })
                 {
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = userId });
-                    cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, 2000) { Value = content });
+                    cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.VarChar, -1) { Value = content });
 
                     cmd.ExecuteNonQuery();                    
                 }

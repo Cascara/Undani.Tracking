@@ -79,9 +79,9 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@ElementStartDate", SqlDbType.DateTime) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@EnvironmentId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, -1) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceContent", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceContent", SqlDbType.VarChar, -1) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@EMails", SqlDbType.VarChar, 1000) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@NotificationSettings", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
 
