@@ -46,44 +46,53 @@ namespace Undani.Tracking.Core.Invoke
 
             if (joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='5')].Archivo.SystemName") != null)
             {
-                value = "{\"UrlBoxFile\":\"{{ApiBox}}/Execution/Box/Download?systemName={{Identificacion}}\",\"Elements\":[{\"Entity\":\"DocumentosCT.Tipo.id:5\",\"Value\":\"{{Nombre}} {{PrimerApellido}} {{SegundoApellido}}\"}]}";
+                if (joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='5')].Archivo.SystemName").ToString() != "")
+                {
+                    value = "{\"UrlBoxFile\":\"{{ApiBox}}/Execution/Box/Download?systemName={{Identificacion}}\",\"Elements\":[{\"Entity\":\"DocumentosCT.Tipo.id:5\",\"Value\":\"{{Nombre}} {{PrimerApellido}} {{SegundoApellido}}\"}]}";
 
-                value = value.Replace("{{Identificacion}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='5')].Archivo.SystemName").ToString());
+                    value = value.Replace("{{Identificacion}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='5')].Archivo.SystemName").ToString());
 
-                value = value.Replace("{{Nombre}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Nombre").ToString());
-                value = value.Replace("{{PrimerApellido}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.PrimerApellido").ToString());
-                value = value.Replace("{{SegundoApellido}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.SegundoApellido").ToString());
+                    value = value.Replace("{{Nombre}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Nombre").ToString());
+                    value = value.Replace("{{PrimerApellido}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.PrimerApellido").ToString());
+                    value = value.Replace("{{SegundoApellido}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.SegundoApellido").ToString());
 
-                items += "," + value;
+                    items += "," + value;
+                }                
             }
 
             if (joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='3')].Archivo.SystemName") != null)
             {
-                value = "{\"UrlBoxFile\":\"{{ApiBox}}/Execution/Box/Download?systemName={{Comprobante}}\",\"Elements\":[{\"Entity\":\"DocumentosCT.Tipo.id:3\",\"Value\":\"{{Calle}} {{NumeroExterior}} {{CodigoPostal}} {{Colonia}} {{Municipio}} {{Entidad}}\"}]}";
+                if (joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='3')].Archivo.SystemName").ToString() != "")
+                {
+                    value = "{\"UrlBoxFile\":\"{{ApiBox}}/Execution/Box/Download?systemName={{Comprobante}}\",\"Elements\":[{\"Entity\":\"DocumentosCT.Tipo.id:3\",\"Value\":\"{{Calle}} {{NumeroExterior}} {{CodigoPostal}} {{Colonia}} {{Municipio}} {{Entidad}}\"}]}";
 
-                value = value.Replace("{{Comprobante}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='3')].Archivo.SystemName").ToString());
+                    value = value.Replace("{{Comprobante}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='3')].Archivo.SystemName").ToString());
 
-                value = value.Replace("{{Calle}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Calle").ToString());
-                value = value.Replace("{{NumeroExterior}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.NumeroExterior").ToString());
-                value = value.Replace("{{CodigoPostal}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.CodigoPostal").ToString());
-                value = value.Replace("{{Colonia}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Colonia.text").ToString());
-                value = value.Replace("{{Municipio}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Municipio.text").ToString());
-                value = value.Replace("{{Entidad}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Entidad.text").ToString());
+                    value = value.Replace("{{Calle}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Calle").ToString());
+                    value = value.Replace("{{NumeroExterior}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.NumeroExterior").ToString());
+                    value = value.Replace("{{CodigoPostal}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.CodigoPostal").ToString());
+                    value = value.Replace("{{Colonia}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Colonia.text").ToString());
+                    value = value.Replace("{{Municipio}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Municipio.text").ToString());
+                    value = value.Replace("{{Entidad}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Entidad.text").ToString());
 
-                items += "," + value;
+                    items += "," + value;
+                }                
             }
 
             if (joFormInstance.SelectToken("$.Integration.Representante.DocumentosRL[?(@.Tipo.id=='5')].Archivo.SystemName") != null)
             {
-                value = "{\"UrlBoxFile\":\"{{ApiBox}}/Execution/Box/Download?systemName={{Identificacion}}\",\"Elements\":[{\"Entity\":\"DocumentosRL.Tipo.id:5\",\"Value\":\"{{Nombre}} {{PrimerApellido}} {{SegundoApellido}}\"}]}";
+                if (joFormInstance.SelectToken("$.Integration.Representante.DocumentosRL[?(@.Tipo.id=='5')].Archivo.SystemName").ToString() != "")
+                {
+                    value = "{\"UrlBoxFile\":\"{{ApiBox}}/Execution/Box/Download?systemName={{Identificacion}}\",\"Elements\":[{\"Entity\":\"DocumentosRL.Tipo.id:5\",\"Value\":\"{{Nombre}} {{PrimerApellido}} {{SegundoApellido}}\"}]}";
 
-                value = value.Replace("{{Identificacion}}", joFormInstance.SelectToken("$.Integration.Representante.DocumentosRL[?(@.Tipo.id=='5')].Archivo.SystemName").ToString());
+                    value = value.Replace("{{Identificacion}}", joFormInstance.SelectToken("$.Integration.Representante.DocumentosRL[?(@.Tipo.id=='5')].Archivo.SystemName").ToString());
 
-                value = value.Replace("{{Nombre}}", joFormInstance.SelectToken("$.Integration.Representante.RLNombre").ToString());
-                value = value.Replace("{{PrimerApellido}}", joFormInstance.SelectToken("$.Integration.Representante.RLPrimerApellido").ToString());
-                value = value.Replace("{{SegundoApellido}}", joFormInstance.SelectToken("$.Integration.Representante.RLSegundoApellido").ToString());
+                    value = value.Replace("{{Nombre}}", joFormInstance.SelectToken("$.Integration.Representante.RLNombre").ToString());
+                    value = value.Replace("{{PrimerApellido}}", joFormInstance.SelectToken("$.Integration.Representante.RLPrimerApellido").ToString());
+                    value = value.Replace("{{SegundoApellido}}", joFormInstance.SelectToken("$.Integration.Representante.RLSegundoApellido").ToString());
 
-                items += "," + value;
+                    items += "," + value;
+                }
             }
 
             settings = settings.Replace("{{Items}}", items.Substring(1));

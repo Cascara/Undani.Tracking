@@ -349,17 +349,17 @@ namespace Undani.Tracking.Execution.API.Controllers
         [Route("SystemAccionInstance/Execute")]
         public Exception ExecuteSystemAction(Guid systemActionInstanceId)
         {
-            //try
-            //{
+            try
+            {
                 SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
                 systemActionInstanceHelper.Execute(systemActionInstanceId);
 
                 return null;
-            //}
-            //catch (Exception ex)
-            //{
-            //    return ex;
-            //}
+            }
+            catch (Exception ex)
+            {
+                return ex;
+            }
         }
         #endregion
 
