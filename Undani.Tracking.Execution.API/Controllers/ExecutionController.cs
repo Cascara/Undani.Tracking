@@ -452,12 +452,14 @@ namespace Undani.Tracking.Execution.API.Controllers
 
             return true;
         }
-        #endregion
 
-        #region Temporary
-
-
-
+        [HttpPost]
+        [Route("FowardMessage")]
+        public void Daily([FromForm] string queueName, [FromForm] string message)
+        {
+            SystemActionInstanceHelper systemActionInstanceHelper = new SystemActionInstanceHelper(Configuration, Guid.Empty);
+            systemActionInstanceHelper.FowardMessage(queueName, message);
+        }
         #endregion
     }
 }

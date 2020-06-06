@@ -4,6 +4,7 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using System.Reflection;
 using Undani.Tracking.Core.Invoke;
+using Undani.Tracking.Execution.Core.Resource;
 
 namespace Undani.Tracking.Execution.Core
 {
@@ -153,6 +154,12 @@ namespace Undani.Tracking.Execution.Core
                     }
                 }
             }
+        }
+
+        public void FowardMessage(string queueName, string message)
+        {
+            BusCall busCall = new BusCall(Configuration);
+            busCall.SendMessage(queueName, message);
         }
     }
 }
