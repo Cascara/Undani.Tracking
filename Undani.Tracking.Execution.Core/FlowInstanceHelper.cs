@@ -99,6 +99,7 @@ namespace Undani.Tracking.Execution.Core
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowRefId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowName", SqlDbType.VarChar, 500) { Direction = ParameterDirection.Output });
+                    cmd.Parameters.Add(new SqlParameter("@FlowVersion", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceKey", SqlDbType.VarChar, 50) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceContent", SqlDbType.VarChar, -1) { Direction = ParameterDirection.Output });
                     cmd.Parameters.Add(new SqlParameter("@FlowInstanceStates", SqlDbType.VarChar, 2000) { Direction = ParameterDirection.Output });
@@ -113,6 +114,7 @@ namespace Undani.Tracking.Execution.Core
                         flowInstanceSummary.RefId = (Guid)cmd.Parameters["@FlowInstanceRefId"].Value;
                         flowInstanceSummary.FlowRefId = (Guid)cmd.Parameters["@FlowRefId"].Value;
                         flowInstanceSummary.Name = (string)cmd.Parameters["@FlowName"].Value;
+                        flowInstanceSummary.Version = (string)cmd.Parameters["@FlowVersion"].Value;
                         flowInstanceSummary.Key = (string)cmd.Parameters["@FlowInstanceKey"].Value;
                         flowInstanceSummary.Content = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@FlowInstanceContent"].Value, expandoObjectConverter);
                         flowInstanceSummary.States = JsonConvert.DeserializeObject<ExpandoObject>((string)cmd.Parameters["@FlowInstanceStates"].Value, expandoObjectConverter);

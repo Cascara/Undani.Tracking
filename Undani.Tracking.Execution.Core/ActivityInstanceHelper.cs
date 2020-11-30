@@ -217,7 +217,8 @@ namespace Undani.Tracking.Execution.Core
                         Days = reader.GetString(9),
                         Hours = reader.GetString(10),
                         Reference = reader.GetString(11),
-                        DocumentsSignedZiped = GetDocumentsSignedZiped(reader.GetString(12))
+                        FlowVersion = reader.GetString(12),
+                        DocumentsSignedZiped = GetDocumentsSignedZiped(reader.GetString(13))
                     });
                 }
             }
