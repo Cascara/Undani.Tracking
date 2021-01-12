@@ -112,29 +112,45 @@ namespace Undani.Tracking.Execution.Core
                 using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionInstanceFinish", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, -1) { Value = procedureInstanceContent });
-                    cmd.Parameters.Add(new SqlParameter("@FlowInstanceContent", SqlDbType.VarChar, -1) { Value = flowInstanceContent });
                     cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.InputOutput, Value = systemActionInstanceId });
-                    cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 
                     cmd.ExecuteNonQuery();
 
-
-                    if (cmd.Parameters["@SystemActionInstanceId"].Value != DBNull.Value)
-                    {
-                        if ((Guid)cmd.Parameters["@SystemActionInstanceId"].Value != Guid.Empty)
-                        {
-                            Execute((Guid)cmd.Parameters["@SystemActionInstanceId"].Value);
-                        }                        
-                    }                        
-                    else
-                    {
-                        ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, UserId, Token);
-                        actionInstanceHelper.Finish((Guid)cmd.Parameters["@ActionInstanceId"].Value);
-                    }
-                    
-                        
+                    systemActionInstanceId = (Guid)cmd.Parameters["@SystemActionInstanceId"].Value;
                 }
+
+                if (systemActionInstanceId != Guid.Empty)
+                {
+                    using (SqlCommand cmd = new SqlCommand("EXECUTION.usp_Set_SystemActionInstanceFinishContent", cn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new SqlParameter("@ProcedureInstanceContent", SqlDbType.VarChar, -1) { Value = procedureInstanceContent });
+                        cmd.Parameters.Add(new SqlParameter("@FlowInstanceContent", SqlDbType.VarChar, -1) { Value = flowInstanceContent });
+                        cmd.Parameters.Add(new SqlParameter("@SystemActionInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.InputOutput, Value = systemActionInstanceId });
+                        cmd.Parameters.Add(new SqlParameter("@ActionInstanceId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
+
+                        cmd.ExecuteNonQuery();
+
+
+                        if (cmd.Parameters["@SystemActionInstanceId"].Value != DBNull.Value)
+                        {
+                            if ((Guid)cmd.Parameters["@SystemActionInstanceId"].Value != Guid.Empty)
+                            {
+                                Execute((Guid)cmd.Parameters["@SystemActionInstanceId"].Value);
+                            }
+                        }
+                        else
+                        {
+                            ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, UserId, Token);
+                            actionInstanceHelper.Finish((Guid)cmd.Parameters["@ActionInstanceId"].Value);
+                        }
+                    }
+                }
+                else
+                {
+                    throw new Exception("System action completion request is duplicated");
+                }
+                
             }
         }
 
