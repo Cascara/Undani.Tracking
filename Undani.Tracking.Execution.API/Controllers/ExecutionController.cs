@@ -31,6 +31,13 @@ namespace Undani.Tracking.Execution.API.Controllers
             return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).Get(procedureInstanceRefId);
         }
 
+        [Route("ProcedureInstance/ByKey")]
+        public ProcedureInstanceSummary GetProcedureInstanceByKey(string key)
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetByKey(key);
+        }
+
         [Route("ProcedureInstance/Create")]
         public ProcedureInstanceCreated CreateProcedureInstance(Guid procedureRefId)
         {
@@ -153,6 +160,13 @@ namespace Undani.Tracking.Execution.API.Controllers
         {
             _User user = GetUser(Request);
             return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetUserSelected(procedureInstanceRefId);
+        }
+
+        [Route("ProcedureInstance/Delete")]
+        public bool DeleteProcedureInstance(Guid procedureInstanceRefId)
+        {
+            _User user = GetUser(Request);
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).Delete(procedureInstanceRefId);
         }
         #endregion
 
