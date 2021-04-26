@@ -240,13 +240,14 @@ namespace Undani.Tracking.Core.Invoke
                 foreach (JToken item in jToken)
                 {
                     document = (string)item["SystemName"];
-                    if ((document.Contains(".docx") || document.Contains(".DOCX")) && (bool)item["ToPDF"])
+                    if (document.ToLower().Contains(".docx") && (bool)item["ToPDF"])
                     {
                         documentsToConvert.Add((string)item["SystemName"]);
                     }
                 }
             }
 
+            Guid ownerId;
             using (SqlConnection cn = new SqlConnection(Configuration["CnDbTracking"]))
             {
                 cn.Open();
@@ -260,32 +261,35 @@ namespace Undani.Tracking.Core.Invoke
 
                     cmd.ExecuteNonQuery();
 
-                    Guid systemActionInstanceIdRequest = systemActionInstanceId;
-                    if (!isStrict)
-                        systemActionInstanceIdRequest = Guid.Empty;
+                    ownerId = (Guid)cmd.Parameters["@OwnerId"].Value;
 
-                    settings = settings.Replace("{{SystemActionInstanceId}}", systemActionInstanceIdRequest.ToString());
-
-                    Guid ownerId = (Guid)cmd.Parameters["@OwnerId"].Value;
-                    settings = settings.Replace("{{OwnerId}}", ownerId.ToString());
-
-                    dySettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, expandoObjectConverter);
-
-                    IDictionary<string, object> dicMessageBody = dySettings.Converter.MessageBody;
-
-                    foreach (string key in dicMessageBody.Keys)
-                    {
-                        if ((string)dicMessageBody[key] == "{{DocumentsToConvert}}")
-                        {
-                            dicMessageBody[key] = documentsToConvert;
-                        }
-                    }
-
-                    BusCall busCall = new BusCall(Configuration);
-
-                    busCall.SendMessage("docx2pdf", JsonConvert.SerializeObject(dySettings.Converter));
+                    
                 }
             }
+
+            Guid systemActionInstanceIdRequest = systemActionInstanceId;
+            if (!isStrict)
+                systemActionInstanceIdRequest = Guid.Empty;
+
+            settings = settings.Replace("{{SystemActionInstanceId}}", systemActionInstanceIdRequest.ToString());
+
+            settings = settings.Replace("{{OwnerId}}", ownerId.ToString());
+
+            dySettings = JsonConvert.DeserializeObject<ExpandoObject>(settings, expandoObjectConverter);
+
+            IDictionary<string, object> dicMessageBody = dySettings.Converter.MessageBody;
+
+            foreach (string key in dicMessageBody.Keys)
+            {
+                if ((string)dicMessageBody[key] == "{{DocumentsToConvert}}")
+                {
+                    dicMessageBody[key] = documentsToConvert;
+                }
+            }
+
+            BusCall busCall = new BusCall(Configuration);
+
+            busCall.SendMessage("docx2pdf", JsonConvert.SerializeObject(dySettings.Converter));
 
             SetConfiguration(systemActionInstanceId, JsonConvert.SerializeObject(dySettings));
 
