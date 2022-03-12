@@ -58,8 +58,11 @@ namespace Undani.Tracking.Core.Invoke
 
                 _sytemActionResult = JsonConvert.DeserializeObject<_SystemActionResult>(json);
 
-                if (_sytemActionResult.Success == false)
-                    throw JsonConvert.DeserializeObject<Exception>(_sytemActionResult.Error);
+                if (!alias.Contains("EvaluateDaily"))
+                {
+                    if (_sytemActionResult.Success == false)
+                        throw JsonConvert.DeserializeObject<Exception>(_sytemActionResult.Error);
+                }
             }
 
             return _sytemActionResult.Success;
