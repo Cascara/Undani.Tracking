@@ -7,21 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Execution",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Execution", "Execution", "{C9D24A99-3CC6-4382-B309-9B2EF8C23437}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configuration", "Configuration", "{29534DA3-3C3A-420D-8B49-B7D158B90D7A}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Execution.API", "Undani.Tracking.Execution.API\Undani.Tracking.Execution.API.csproj", "{0EA97819-1B74-49CA-BD47-B3C2AEF16E04}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Execution.Core", "Undani.Tracking.Execution.Core\Undani.Tracking.Execution.Core.csproj", "{A19484FC-C626-4D05-9490-77B5BBF3163C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Configuration", "Undani.Tracking.Configuration\Undani.Tracking.Configuration.csproj", "{99571EB2-9F1F-4A91-8E79-47C0DE278635}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Configuration.Core", "Undani.Tracking.Configuration.Core\Undani.Tracking.Configuration.Core.csproj", "{454E8C96-AE9E-4F1B-909E-7067C75D6856}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Configuration.FrontEnd", "Undani.Tracking.Configuration.FrontEnd\Undani.Tracking.Configuration.FrontEnd.csproj", "{2250951F-0F13-4B81-868D-51501F9A8DD9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking", "Undani.Tracking\Undani.Tracking.csproj", "{A5DE225D-EE07-4E22-912B-C456A97FE319}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Undani.Tracking.Custom", "Undani.Tracking.Custom\Undani.Tracking.Custom.csproj", "{B94E8D90-8300-4C69-A15C-726B62C3A6BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Undani.Tracking.Custom", "Undani.Tracking.Custom\Undani.Tracking.Custom.csproj", "{B94E8D90-8300-4C69-A15C-726B62C3A6BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,18 +33,6 @@ Global
 		{A19484FC-C626-4D05-9490-77B5BBF3163C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A19484FC-C626-4D05-9490-77B5BBF3163C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A19484FC-C626-4D05-9490-77B5BBF3163C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{99571EB2-9F1F-4A91-8E79-47C0DE278635}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99571EB2-9F1F-4A91-8E79-47C0DE278635}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{99571EB2-9F1F-4A91-8E79-47C0DE278635}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99571EB2-9F1F-4A91-8E79-47C0DE278635}.Release|Any CPU.Build.0 = Release|Any CPU
-		{454E8C96-AE9E-4F1B-909E-7067C75D6856}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{454E8C96-AE9E-4F1B-909E-7067C75D6856}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{454E8C96-AE9E-4F1B-909E-7067C75D6856}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{454E8C96-AE9E-4F1B-909E-7067C75D6856}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2250951F-0F13-4B81-868D-51501F9A8DD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2250951F-0F13-4B81-868D-51501F9A8DD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2250951F-0F13-4B81-868D-51501F9A8DD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2250951F-0F13-4B81-868D-51501F9A8DD9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A5DE225D-EE07-4E22-912B-C456A97FE319}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A5DE225D-EE07-4E22-912B-C456A97FE319}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5DE225D-EE07-4E22-912B-C456A97FE319}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -69,9 +49,6 @@ Global
 		{C9509198-DED5-4F1D-BB89-8ECD1075FF34} = {C9D24A99-3CC6-4382-B309-9B2EF8C23437}
 		{0EA97819-1B74-49CA-BD47-B3C2AEF16E04} = {C9D24A99-3CC6-4382-B309-9B2EF8C23437}
 		{A19484FC-C626-4D05-9490-77B5BBF3163C} = {C9D24A99-3CC6-4382-B309-9B2EF8C23437}
-		{99571EB2-9F1F-4A91-8E79-47C0DE278635} = {29534DA3-3C3A-420D-8B49-B7D158B90D7A}
-		{454E8C96-AE9E-4F1B-909E-7067C75D6856} = {29534DA3-3C3A-420D-8B49-B7D158B90D7A}
-		{2250951F-0F13-4B81-868D-51501F9A8DD9} = {29534DA3-3C3A-420D-8B49-B7D158B90D7A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8DD5D5E8-5B8C-4B2C-BF49-EF191A1ADA09}

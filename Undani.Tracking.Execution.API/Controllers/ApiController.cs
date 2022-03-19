@@ -8,7 +8,7 @@ namespace Undani.Tracking.Execution.API.Controllers
     {
         public string GetVersion()
         {
-            return "2.0.1";
+            return "Tracking v2.0.1 2022-03-17T12:04:25 / .Net Core 2.1";
         }
 
     }

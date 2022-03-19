@@ -73,10 +73,10 @@ namespace Undani.Tracking.Execution.API.Controllers
         }
 
         [Route("ProcedureInstance/GetToTransfer")]
-        public List<ProcedureInstanceSummary> GetProcedureInstanceToTransfer()
+        public List<ProcedureInstanceSummary> GetProcedureInstanceToTransfer(int year)
         {
             _User user = GetUser(Request);
-            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetToTransfer();
+            return new ProcedureInstanceHelper(Configuration, user.Id, user.Token).GetToTransfer(year);
         }
 
         [Route("ProcedureInstance/GetLog")]

@@ -266,7 +266,7 @@ namespace Undani.Tracking.Execution.Core
             return procedures;
         }
 
-        public List<ProcedureInstanceSummary> GetToTransfer()
+        public List<ProcedureInstanceSummary> GetToTransfer(int year)
         {
             List<ProcedureInstanceSummary> procedures = new List<ProcedureInstanceSummary>();
 
@@ -277,6 +277,7 @@ namespace Undani.Tracking.Execution.Core
                 SqlCommand cmd = new SqlCommand("EXECUTION.usp_Get_ProcedureInstanceToTransfer", cn) { CommandType = CommandType.StoredProcedure };
 
                 cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.UniqueIdentifier) { Value = UserId });
+                cmd.Parameters.Add(new SqlParameter("@Year", SqlDbType.Int) { Value = year });
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
