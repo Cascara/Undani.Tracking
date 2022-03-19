@@ -10,6 +10,7 @@
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
+      "launchBrowser": true,
       "environmentVariables": {
         "CONFIGURATION_ENVIRONMENT": "496880EB-25BD-4950-A57B-E2F00AE309C8",
         "CONFIGURATION_SYSTEM": "FCF0AB47-D449-47E6-9582-93EA412C5F4E",
