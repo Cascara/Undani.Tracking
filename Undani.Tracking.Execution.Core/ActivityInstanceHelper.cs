@@ -177,10 +177,11 @@ namespace Undani.Tracking.Execution.Core
                             cmd.Parameters.Clear();
                             cmd.Parameters.Add(new SqlParameter("@ElementInstanceId", SqlDbType.Int) { Value = elementInstanceId });
                             cmd.Parameters.Add(new SqlParameter("@FormInstanceId", SqlDbType.UniqueIdentifier) { Value = _activityInstance.FormInstanceId.Value });
+                            cmd.Parameters.Add(new SqlParameter("@FormInstanceIdSaved", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output });
 
                             cmd.ExecuteNonQuery();
 
-                            return _activityInstance.FormInstanceId.Value;
+                            return (Guid)cmd.Parameters["@FormInstanceIdSaved"].Value;
                         }
                         else
                         {

@@ -309,6 +309,13 @@ namespace Undani.Tracking.Execution.API.Controllers
         #endregion
 
         #region ActionInstance 
+        [Route("ActionInstance/Execute/User")]
+        public bool ExecuteActionInstanceUser(Guid actionRefId, Guid elementInstanceRefId, Guid userId)
+        {
+            ActionInstanceHelper actionInstanceHelper = new ActionInstanceHelper(Configuration, userId);
+            return actionInstanceHelper.Execute(actionRefId, elementInstanceRefId);
+        }
+
         [Route("ActionInstance/Execute")]
         public bool ExecuteActionInstance(Guid actionRefId, Guid elementInstanceRefId)
         {

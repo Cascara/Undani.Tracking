@@ -101,7 +101,7 @@ namespace Undani.Tracking.Execution.Core.Resource
             HttpResponseMessage response = null;
             using (var client = new HttpClient())
             {
-                client.DefaultRequestHeaders.Add("Authorization", token);
+                //client.DefaultRequestHeaders.Add("Authorization", token);
                 StringContent content = new StringContent("", Encoding.UTF8, "text/plain");
 
                 response = client.PostAsync(url, content).Result;
