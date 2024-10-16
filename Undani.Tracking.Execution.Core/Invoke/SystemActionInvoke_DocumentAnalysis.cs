@@ -68,10 +68,10 @@ namespace Undani.Tracking.Core.Invoke
 
                     value = value.Replace("{{Comprobante}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.DocumentosCT[?(@.Tipo.id=='3')].Archivo.SystemName").ToString());
 
-                    value = value.Replace("{{Calle}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Calle").ToString());
-                    value = value.Replace("{{NumeroExterior}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.NumeroExterior").ToString());
-                    value = value.Replace("{{CodigoPostal}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.CodigoPostal").ToString());
-                    value = value.Replace("{{Colonia}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Colonia.text").ToString());
+                    value = value.Replace("{{Calle}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Calle").ToString().Replace("\"", ""));
+                    value = value.Replace("{{NumeroExterior}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.NumeroExterior").ToString().Replace("\"", ""));
+                    value = value.Replace("{{CodigoPostal}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.CodigoPostal").ToString().Replace("\"", ""));
+                    value = value.Replace("{{Colonia}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Colonia.text").ToString().Replace("\"", ""));
                     value = value.Replace("{{Municipio}}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Municipio.text").ToString());
                     value = value.Replace("{{Entidad}", joFormInstance.SelectToken("$.Integration.CentroTrabajo.Entidad.text").ToString());
 

@@ -7,8 +7,18 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="Undani.Bus" Version="1.0.2" />
-    <PackageReference Include="Undani.Core.Extensions.NETCore" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Undani.Bus.Common">
+      <HintPath>..\..\..\DROPBOX\Dropbox\Undani\DLLFONA\Undani.Bus.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Undani.ClientBus">
+      <HintPath>..\..\..\DROPBOX\Dropbox\Undani\DLLFONA\Undani.ClientBus.dll</HintPath>
+    </Reference>
+    <Reference Include="Undani.Core.Extensions.NETCore">
+      <HintPath>..\..\..\DROPBOX\Dropbox\Undani\DLLFONA\Undani.Core.Extensions.NETCore.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
